@@ -1,8 +1,8 @@
-#include "pace_graph.hpp" 
+#include "pace_graph.hpp"
 
-#include <stdexcept>
 #include <cstdio>
 #include <sstream>
+#include <stdexcept>
 
 // Implementation of member functions
 
@@ -10,20 +10,16 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
     left = a;
     right = b;
 
-    for (int i = 0; i <= b; i++) {
-        right_order[i] = i + 1;
-    }
-
     edgeset = edges;
 
-    for (const auto& edge : edges) {
+    for (const auto &edge : edges) {
         auto [head, tail] = edge;
         neighbors[head].push_back(tail);
         neighbors[tail].push_back(head);
     }
 }
 
-PaceGraph PaceGraph::from_gr(std::ifstream& gr) {
+PaceGraph PaceGraph::from_gr(std::ifstream &gr) {
     int a = 0;
     int b = 0;
     bool pfound = false;
@@ -42,7 +38,8 @@ PaceGraph PaceGraph::from_gr(std::ifstream& gr) {
             sscanf(line.c_str(), "%d %d", &u, &v);
             edges.push_back(std::make_tuple(u - 1, v - 1));
         } else {
-            throw std::invalid_argument("ERROR: Encountered edge before p-line.");
+            throw std::invalid_argument(
+                "ERROR: Encountered edge before p-line.");
         }
     }
 
@@ -62,7 +59,7 @@ std::string PaceGraph::to_gr() {
     std::ostringstream result;
     result << "p ocr " << left << " " << right << " " << edgeset.size() << "\n";
 
-    for (const auto& edge : edgeset) {
+    for (const auto &edge : edgeset) {
         auto [head, tail] = edge;
         result << head + 1 << " " << tail + 1 << "\n";
     }
