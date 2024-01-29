@@ -17,6 +17,12 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
         neighbors[head].push_back(tail);
         neighbors[tail].push_back(head);
     }
+    for (int i = 0; i < neighbors.size(); i++){
+        std::list<int> nbs = neighbors[i];
+        std::vector<int> adjVector;
+        for (const auto& n : nbs) adjVector.push_back(n);
+        neighbors2.push_back(adjVector);
+    }
 }
 
 PaceGraph PaceGraph::from_gr(std::ifstream &gr) {

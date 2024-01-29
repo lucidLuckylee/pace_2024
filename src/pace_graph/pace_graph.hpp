@@ -22,6 +22,7 @@ class PaceGraph {
 
     // Maps each vertex to their neighbors
     std::unordered_map<int, std::list<int>> neighbors;
+    std::vector<std::vector<int>> neighbors2;
 
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges);
 

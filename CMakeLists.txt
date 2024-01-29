@@ -10,7 +10,9 @@ set(CMAKE_BUILD_TYPE Debug)
 add_library(PaceGraph src/pace_graph/pace_graph.cpp)
 
 # Add heuristic_solver executable
-add_executable(heuristic_solver src/heuristic_solver/main.cpp)
+add_executable(heuristic_solver src/heuristic_solver/main.cpp
+        src/exact/exact.cpp
+        src/exact/exact.h)
 
 # Link the executable with the PaceGraph library
 target_link_libraries(heuristic_solver PaceGraph)
