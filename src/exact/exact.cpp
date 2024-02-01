@@ -18,6 +18,7 @@ int decide(PaceGraph * g, int k){
     }
     list<tuple<int,int,int>> orderedP; // total order P
     tuple<int,int> intSysJ[g->right]; // Interval system J
+    tuple<int,bool> intSysJM1[2 * g->right]; // Interval system J ^{-1}: true = left, false = right
     int cnt = 1; // values from 1 to 2 * g->right
     for (int i = 0; i < g->left; i++) {
         stack<int> pX1, pX2, pX3;
@@ -33,17 +34,21 @@ int decide(PaceGraph * g, int k){
         }
         while (!pX1.empty()) {
             tuple<int,int> *p = &intSysJ[(pX1.top()) - g->left];
+            intSysJM1[cnt] = make_tuple((pX1.top()) - g->left, false);
             get<1>(*p) = cnt++;
             pX1.pop();
         }
         while (!pX2.empty()){
             tuple<int,int> *p = &intSysJ[(pX2.top()) - g->left];
+            intSysJM1[cnt] = make_tuple((pX2.top()) - g->left, true);
             get<0>(*p) = cnt++;
+            intSysJM1[cnt] = make_tuple((pX2.top()) - g->left, false);
             get<1>(*p) = cnt++;
             pX2.pop();
         }
         while (!pX3.empty()){
             tuple<int,int> *p = &intSysJ[(pX3.top()) - g->left];
+            intSysJM1[cnt] = make_tuple((pX3.top()) - g->left, true);
             get<0>(*p) = cnt++;
             pX3.pop();
         }
