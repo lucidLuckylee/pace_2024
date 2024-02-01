@@ -8,7 +8,7 @@ int main() {
     try {
         // Example: Creating a PaceGraph from a file
         PaceGraph graph_from_file =
-            PaceGraph::from_file("../data/website_20.gr");
+            PaceGraph::from_file("../data/cycle_8_shuffled.gr");
 
         // Create an Order with a std::list Container
         Order<std::list<int>> test_order(1, 4);
@@ -21,6 +21,10 @@ int main() {
         std::cout << "PaceGraph objects created successfully." << std::endl;
         std::cout << "Graph in gr format: " << std::endl;
         std::cout << graph_from_file.to_gr() << std::endl;
+
+        std::cout << "Crossing matrix: " << std::endl;
+
+        graph_from_file.print_crossing_matrix();
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;

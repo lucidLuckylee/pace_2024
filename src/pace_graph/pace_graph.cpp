@@ -7,8 +7,8 @@
 // Implementation of member functions
 
 PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
-    left = a;
-    right = b;
+    size_A = a;
+    size_B = b;
 
     edgeset = edges;
 
@@ -17,11 +17,31 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
         neighbors[head].push_back(tail);
         neighbors[tail].push_back(head);
     }
-    for (int i = 0; i < neighbors.size(); i++){
+    for (int i = 0; i < neighbors.size(); i++) {
         std::list<int> nbs = neighbors[i];
         std::vector<int> adjVector;
-        for (const auto& n : nbs) adjVector.push_back(n);
+        for (const auto &n : nbs)
+            adjVector.push_back(n);
         neighbors2.push_back(adjVector);
+    }
+
+    crossing_matrix = new int[size_B * size_B];
+    for (int i = 0; i < size_B * size_B; i++)
+        crossing_matrix[i] = 0;
+
+    for (int i = 0; i < size_B; i++) {
+        for (int j = i + 1; j < size_B; j++) {
+
+            for (int m : neighbors2[size_A + i]) {
+                for (int n : neighbors2[size_A + j]) {
+                    if (m > n) {
+                        crossing_matrix[i * size_B + j]++;
+                    } else if (n > m) {
+                        crossing_matrix[j * size_B + i]++;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -63,7 +83,8 @@ PaceGraph PaceGraph::from_file(std::string filePath) {
 
 std::string PaceGraph::to_gr() {
     std::ostringstream result;
-    result << "p ocr " << left << " " << right << " " << edgeset.size() << "\n";
+    result << "p ocr " << size_A << " " << size_B << " " << edgeset.size()
+           << "\n";
 
     for (const auto &edge : edgeset) {
         auto [head, tail] = edge;
@@ -71,4 +92,13 @@ std::string PaceGraph::to_gr() {
     }
 
     return result.str();
+}
+
+void PaceGraph::print_crossing_matrix() {
+    for (int i = 0; i < size_B; i++) {
+        for (int j = 0; j < size_B; j++) {
+            printf("%d ", crossing_matrix[i * size_B + j]);
+        }
+        printf("\n");
+    }
 }
