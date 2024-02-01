@@ -3,9 +3,6 @@ project(pace2024)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Enable debugging info
-set(CMAKE_BUILD_TYPE Debug)
-
 # Add PaceGraph source file
 add_library(PaceGraph src/pace_graph/pace_graph.cpp)
 
