@@ -3,6 +3,7 @@
 
 // #include "pace_graph.hpp"
 
+#include "pace_graph.hpp"
 #include <iterator>
 #include <numeric>
 #include <sstream>
@@ -20,53 +21,57 @@
  *      Order<std::vector<int>> test_order_3(std::vector({1,2,3,4}));
  *
  */
-template <typename Container> class Order {
-  public:
-    Container vertices;
+class Order {
+  private:
+    std::vector<int> vertex_to_position;
+    std::vector<int> position_to_vertex;
 
-    template <typename InputContainer> Order(const InputContainer &vertices) {
-        for (const auto &vertex : vertices) {
-            this->vertices.push_back(vertex);
+  public:
+    explicit Order(int size) {
+        for (int i = 0; i < size; ++i) {
+            vertex_to_position.push_back(i);
+            position_to_vertex.push_back(i);
         }
     }
 
-    /*
-     * @brief Create an Order from a range of integers.
-     *
-     * @param start included in the order
-     * @param end not included in the order
-     */
-    Order(const int start, const int end) {
-        vertices.resize(end);
-        std::iota(vertices.begin(), vertices.end(), start);
-    };
+    void swap_by_vertices(const int v, const int u) {
+        int pos1 = vertex_to_position[v];
+        int pos2 = vertex_to_position[u];
 
-    /*
-     * @brief Copy constructor.
-     *
-     * @param other Order to be copied
-     */
-    template <typename OtherContainer>
-    Order(const Order<OtherContainer> &other) {
-        for (const auto &vertex : other.vertices) {
-            vertices.push_back(vertex);
-        }
-    };
+        vertex_to_position[v] = pos2;
+        vertex_to_position[u] = pos1;
 
-    void swap_vertices(const int index_a, const int index_b) {
-        auto it_a = std::next(std::begin(vertices), index_a);
-        auto it_b = std::next(std::begin(vertices), index_b);
+        position_to_vertex[pos1] = u;
+        position_to_vertex[pos2] = v;
+    }
 
-        std::iter_swap(it_a, it_b);
+    void swap_by_position(const int pos1, const int pos2) {
+        int u = position_to_vertex[pos1];
+        int v = position_to_vertex[pos2];
+        swap_by_vertices(u, v);
     }
 
     std::string to_string() {
         std::ostringstream result;
-        for (const auto &vertex : vertices) {
-            result << vertex << " ";
+        for (const auto &vertex : position_to_vertex) {
+            result << vertex << "\n";
         }
 
         return result.str();
+    }
+
+    int count_crossings(const PaceGraph graph) {
+        int c = 0;
+        for (int i = 0; i < position_to_vertex.size(); i++) {
+            for (int j = i + 1; j < position_to_vertex.size(); j++) {
+                int u = position_to_vertex[i];
+                int v = position_to_vertex[j];
+
+                c += graph.crossing_matrix[u * position_to_vertex.size() + v];
+            }
+        }
+
+        return c;
     }
 
     // TODO (Lukas, Fanny): Keep this here or move it to PaceGraph as
@@ -74,7 +79,6 @@ template <typename Container> class Order {
     //                      or somewhere else as
     //                      void count_crossings(Order order, PaceGraph graph);
     // TODO (Lukas): Implement me!
-    // void count_crossings(const PaceGraph graph);
 
     // TODO (Lukas): Implement me!
     // void permute(int seed);

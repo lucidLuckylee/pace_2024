@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-namespace std {}
 class PaceGraph {
   public:
     // Number of size_B vertices

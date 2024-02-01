@@ -8,16 +8,9 @@ int main() {
     try {
         // Example: Creating a PaceGraph from a file
         PaceGraph graph_from_file =
-            PaceGraph::from_file("../data/cycle_8_shuffled.gr");
+            PaceGraph::from_file("../data/grid_9_shuffled.gr");
 
         // Create an Order with a std::list Container
-        Order<std::list<int>> test_order(1, 4);
-        Order<std::deque<int>> test_order_2(test_order);
-        Order<std::vector<int>> test_order_3(std::vector({1, 2, 3, 4}));
-        std::cout << "test_order: " << test_order.to_string() << std::endl;
-        std::cout << "test_order_2: " << test_order_2.to_string() << std::endl;
-        std::cout << "test_order_3: " << test_order_3.to_string() << std::endl;
-
         std::cout << "PaceGraph objects created successfully." << std::endl;
         std::cout << "Graph in gr format: " << std::endl;
         std::cout << graph_from_file.to_gr() << std::endl;
@@ -25,6 +18,19 @@ int main() {
         std::cout << "Crossing matrix: " << std::endl;
 
         graph_from_file.print_crossing_matrix();
+
+        Order test_order(graph_from_file.size_B);
+        test_order.swap_by_vertices(0, 1);
+        test_order.swap_by_vertices(4, 1);
+        test_order.swap_by_vertices(3, 4);
+
+        // test_order.swap_by_vertices(1, 2);
+        // test_order.swap_by_vertices(3, 1);
+        // test_order.swap_by_vertices(3, 2);
+
+        std::cout << test_order.to_string() << std::endl;
+        std::cout << "Number of crossings: "
+                  << test_order.count_crossings(graph_from_file) << std::endl;
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
