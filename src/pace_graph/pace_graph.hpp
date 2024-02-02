@@ -10,35 +10,52 @@
 
 class PaceGraph {
   public:
-    // Number of size_B vertices
-    // Vertices in the size_B set are [size_A, size_A + size_B - 1]
-    int size_B;
+    /** Number of size_free vertices
+    We name this vertices: [0,..., size_free - 1]
+     */
+    int size_free;
 
-    // Vertices in the size_A set are [0, size_A - 1]
-    int size_A;
+    /** We name this vertices: [0,..., size_fixed - 1]
+     */
+    int size_fixed;
 
-    // TODO (Lukas, Fanny): Use both edgeset and neighbors list?
-    std::vector<std::tuple<int, int>> edgeset;
+    /**  Saves the neighbors of a vertex i \in [0,..., size_free - 1] in
+     * neighbors_free[i]. These neighbors are sorted in ascending order.
+     */
+    std::vector<std::vector<int>> neighbors_free;
 
-    // Maps each vertex to their neighbors
-    std::unordered_map<int, std::list<int>> neighbors;
+    /** Saves the neighbors of a vertex i \in [0,..., size_fixed - 1] in
+     * neighbors_fixed[i]. These neighbors are sorted in ascending order.
+     */
+    std::vector<std::vector<int>> neighbors_fixed;
 
-    // maybe sort it?
-    std::vector<std::vector<int>> neighbors2;
+    /** Saving the numbers of crossing between two vertices i and j \in [0,...,
+     * size_free - 1] in crossing_matrix[i][j] when i comes before j.
+     */
+    std::vector<std::vector<int>> crossing_matrix;
 
-    // size: size_B x size_B
-    // crossing_matrix[i*size_B + j] = number of crossings when i is placed
-    // before j
-    int *crossing_matrix;
-
+    /**
+     *
+     * @param a the number of size_fixed vertices
+     * @param b the number of size_free vertices
+     * @param edges an array of tuples (u, v) representing the edges of the
+     * graph. u must be always in [0,..., a - 1] and v must be always in [0,...,
+     * b - 1]
+     */
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges);
 
+    /**
+     * To read more about the .gr file format, see:
+     * https://pacechallenge.org/2024/io/
+     * @param gr a file stream (e.g. stdin or a file stream from a file)
+     */
     static PaceGraph from_gr(std::ifstream &gr);
 
     static PaceGraph from_file(std::string filePath);
 
     std::string to_gr();
-    void print_crossing_matrix();
+
+    std::string print_crossing_matrix();
 };
 
 #endif // PACE_GRAPH_HPP

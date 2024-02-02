@@ -19,7 +19,7 @@ int main() {
 
         graph_from_file.print_crossing_matrix();
 
-        Order test_order(graph_from_file.size_B);
+        Order test_order(graph_from_file.size_free);
         test_order.swap_by_vertices(0, 1);
         test_order.swap_by_vertices(4, 1);
         test_order.swap_by_vertices(3, 4);

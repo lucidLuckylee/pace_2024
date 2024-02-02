@@ -21,6 +21,8 @@
  *      Order<std::vector<int>> test_order_3(std::vector({1,2,3,4}));
  *
  */
+
+// TODO Maybe add a partial order
 class Order {
   private:
     std::vector<int> vertex_to_position;

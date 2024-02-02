@@ -1,43 +1,48 @@
 #include "pace_graph.hpp"
 
+#include <algorithm>
 #include <cstdio>
 #include <sstream>
 #include <stdexcept>
 
-// Implementation of member functions
-
 PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
-    size_A = a;
-    size_B = b;
+    size_fixed = a;
+    size_free = b;
 
-    edgeset = edges;
+    for (int i = 0; i < size_free; i++) {
+        neighbors_free.emplace_back();
+    }
+    for (int i = 0; i < size_fixed; i++) {
+        neighbors_fixed.emplace_back();
+    }
 
     for (const auto &edge : edges) {
-        auto [head, tail] = edge;
-        neighbors[head].push_back(tail);
-        neighbors[tail].push_back(head);
-    }
-    for (int i = 0; i < neighbors.size(); i++) {
-        std::list<int> nbs = neighbors[i];
-        std::vector<int> adjVector;
-        for (const auto &n : nbs)
-            adjVector.push_back(n);
-        neighbors2.push_back(adjVector);
+        auto [u, v] = edge;
+        neighbors_fixed[u].push_back(v);
+        neighbors_free[v].push_back(u);
     }
 
-    crossing_matrix = new int[size_B * size_B];
-    for (int i = 0; i < size_B * size_B; i++)
-        crossing_matrix[i] = 0;
+    for (auto &neighbors : neighbors_fixed) {
+        std::sort(neighbors.begin(), neighbors.end());
+    }
 
-    for (int i = 0; i < size_B; i++) {
-        for (int j = i + 1; j < size_B; j++) {
+    for (auto &neighbors : neighbors_free) {
+        std::sort(neighbors.begin(), neighbors.end());
+    }
 
-            for (int m : neighbors2[size_A + i]) {
-                for (int n : neighbors2[size_A + j]) {
+    crossing_matrix.resize(size_free);
+    for (int i = 0; i < size_free; i++) {
+        crossing_matrix[i] = std::vector<int>(size_free, 0);
+    }
+
+    for (int i = 0; i < size_free; i++) {
+        for (int j = i + 1; j < size_free; j++) {
+            for (int m : neighbors_free[i]) {
+                for (int n : neighbors_free[j]) {
                     if (m > n) {
-                        crossing_matrix[i * size_B + j]++;
+                        crossing_matrix[i][j]++;
                     } else if (n > m) {
-                        crossing_matrix[j * size_B + i]++;
+                        crossing_matrix[j][i]++;
                     }
                 }
             }
@@ -62,7 +67,7 @@ PaceGraph PaceGraph::from_gr(std::ifstream &gr) {
         } else if (pfound) {
             int u, v;
             sscanf(line.c_str(), "%d %d", &u, &v);
-            edges.push_back(std::make_tuple(u - 1, v - 1));
+            edges.push_back(std::make_tuple(u - 1, v - 1 - a));
         } else {
             throw std::invalid_argument(
                 "ERROR: Encountered edge before p-line.");
@@ -83,22 +88,32 @@ PaceGraph PaceGraph::from_file(std::string filePath) {
 
 std::string PaceGraph::to_gr() {
     std::ostringstream result;
-    result << "p ocr " << size_A << " " << size_B << " " << edgeset.size()
+
+    int num_edges = 0;
+    for (const auto &neighbors : neighbors_fixed) {
+        num_edges += neighbors.size();
+    }
+
+    result << "p ocr " << size_fixed << " " << size_free << " " << num_edges
            << "\n";
 
-    for (const auto &edge : edgeset) {
-        auto [head, tail] = edge;
-        result << head + 1 << " " << tail + 1 << "\n";
+    for (int i = 0; i < size_fixed; i++) {
+        for (const auto &neighbor : neighbors_fixed[i]) {
+            result << i + 1 << " " << neighbor + 1 << "\n";
+        }
     }
 
     return result.str();
 }
 
-void PaceGraph::print_crossing_matrix() {
-    for (int i = 0; i < size_B; i++) {
-        for (int j = 0; j < size_B; j++) {
-            printf("%d ", crossing_matrix[i * size_B + j]);
+std::string PaceGraph::print_crossing_matrix() {
+    std::ostringstream result;
+
+    for (int i = 0; i < size_free; i++) {
+        for (int j = 0; j < size_free; j++) {
+            result << crossing_matrix[i][j] << " ";
         }
-        printf("\n");
+        result << std::endl;
     }
+    return result.str();
 }
