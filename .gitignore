@@ -35,3 +35,8 @@
 build
 # Helper script to compile and run
 run.sh
+
+.idea
+cmake-build-debug
+cmake-build-release
+
