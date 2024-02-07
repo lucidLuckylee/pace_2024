@@ -6,6 +6,7 @@
 #include "pace_graph.hpp"
 #include <iterator>
 #include <numeric>
+#include <random>
 #include <sstream>
 #include <vector>
 
@@ -21,8 +22,6 @@
  *      Order<std::vector<int>> test_order_3(std::vector({1,2,3,4}));
  *
  */
-
-// TODO Maybe add a partial order
 class Order {
   private:
     std::vector<int> vertex_to_position;
@@ -33,6 +32,16 @@ class Order {
         for (int i = 0; i < size; ++i) {
             vertex_to_position.push_back(i);
             position_to_vertex.push_back(i);
+        }
+    }
+
+    explicit Order(const std::vector<int> &position_to_vertex_input)
+        : position_to_vertex(position_to_vertex_input),
+          vertex_to_position(position_to_vertex_input.size()) {
+
+        for (size_t i = 0; i < position_to_vertex.size(); ++i) {
+            int vertex = position_to_vertex[i];
+            vertex_to_position[vertex] = i;
         }
     }
 
@@ -47,10 +56,38 @@ class Order {
         position_to_vertex[pos2] = v;
     }
 
+    int get_position(const int vertex) { return vertex_to_position[vertex]; }
+    int get_vertex(const int position) { return position_to_vertex[position]; }
+
     void swap_by_position(const int pos1, const int pos2) {
         int u = position_to_vertex[pos1];
         int v = position_to_vertex[pos2];
         swap_by_vertices(u, v);
+    }
+
+    int cost_change_if_swap_position(const int pos1, const int pos2,
+                                     const PaceGraph &graph) {
+
+        if (pos1 > pos2) {
+            return cost_change_if_swap_position(pos2, pos1, graph);
+        }
+
+        int u = position_to_vertex[pos1];
+        int v = position_to_vertex[pos2];
+
+        int cost_change = 0;
+        // TODO: this can be AVX accelerated (we may have to save the
+        // crossing_matrix two times (once transposed))
+        for (int pos = pos1; pos < pos2; pos++) {
+            int w = position_to_vertex[pos];
+            cost_change -= graph.crossing_matrix[u][w];
+            cost_change += graph.crossing_matrix[w][u];
+
+            cost_change += graph.crossing_matrix[v][w];
+            cost_change -= graph.crossing_matrix[w][v];
+        }
+
+        return cost_change;
     }
 
     std::string to_string() {
@@ -69,21 +106,25 @@ class Order {
                 int u = position_to_vertex[i];
                 int v = position_to_vertex[j];
 
-                c += graph.crossing_matrix[u * position_to_vertex.size() + v];
+                c += graph.crossing_matrix[u][v];
             }
         }
 
         return c;
     }
 
-    // TODO (Lukas, Fanny): Keep this here or move it to PaceGraph as
-    //                      void count_crossings(Order order);
-    //                      or somewhere else as
-    //                      void count_crossings(Order order, PaceGraph graph);
-    // TODO (Lukas): Implement me!
+    void permute() {
+        std::random_device rd;
+        std::mt19937 g(rd());
 
-    // TODO (Lukas): Implement me!
-    // void permute(int seed);
+        // Shuffle the position_to_vertex vector
+        std::shuffle(position_to_vertex.begin(), position_to_vertex.end(), g);
+
+        // Update the vertex_to_position vector to reflect the new positions
+        for (size_t i = 0; i < position_to_vertex.size(); ++i) {
+            vertex_to_position[position_to_vertex[i]] = i;
+        }
+    }
 };
 
 #endif // ORDER_HPP

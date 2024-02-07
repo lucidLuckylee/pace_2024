@@ -1,0 +1,35 @@
+//
+// Created by Sebastian Palarus on 07.02.24.
+//
+
+#include "genetic_algorithm.h"
+#include "local_search.h"
+#include <iostream>
+
+
+Order genetic_algorithm(PaceGraph &graph, int time_limit) {
+    Order bestOrder(graph.size_free);
+    int bestCost = bestOrder.count_crossings(graph);
+
+    int start = time(0);
+
+    int number_of_iterations = 0;
+    while (time(0) - start < time_limit) {
+        Order newOrder(graph.size_free);
+        newOrder.permute();
+
+        local_search(graph, newOrder);
+
+        int newCost = newOrder.count_crossings(graph);
+        if (newCost < bestCost) {
+            bestOrder = newOrder;
+            bestCost = newCost;
+        }
+        number_of_iterations++;
+    }
+
+    std::cout << "Heuristic finished with: " << number_of_iterations
+              << " iterations" << std::endl;
+
+    return bestOrder;
+}

@@ -10,7 +10,11 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp)
 # Add heuristic_solver executable
 add_executable(heuristic_solver src/heuristic_solver/main.cpp
         src/exact/exact.cpp
-        src/exact/exact.h)
+        src/exact/exact.h
+        src/heuristic_solver/local_search.cpp
+        src/heuristic_solver/local_search.h
+        src/heuristic_solver/genetic_algorithm.cpp
+        src/heuristic_solver/genetic_algorithm.h)
 
 
 # Link the executable with the PaceGraph library
