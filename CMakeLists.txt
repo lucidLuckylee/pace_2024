@@ -20,18 +20,10 @@ add_executable(heuristic_solver src/heuristic_solver/main.cpp
 # Link the executable with the PaceGraph library
 target_link_libraries(heuristic_solver PaceGraph)
 
-option(ENABLE_ILP_SOLVER "Enable ILP Solver Build and OR-Tools Download" OFF)
+option(ENABLE_ILP_SOLVER "Enable ILP Solver Build (Requires ortools)" OFF)
 
 if (ENABLE_ILP_SOLVER)
-    include(FetchContent)
-
-    FetchContent_Declare(
-            ortools
-            GIT_REPOSITORY https://github.com/google/or-tools
-            GIT_TAG stable
-    )
-    set(BUILD_DEPS ON CACHE BOOL "Build OR-Tools' dependencies")
-    FetchContent_MakeAvailable(ortools)
+    find_package(ortools CONFIG REQUIRED)
 
     add_executable(ilp_solver src/ilp_solver/main.cpp)
 
