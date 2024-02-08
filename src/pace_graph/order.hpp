@@ -4,6 +4,7 @@
 // #include "pace_graph.hpp"
 
 #include "pace_graph.hpp"
+#include <algorithm>
 #include <iterator>
 #include <numeric>
 #include <random>

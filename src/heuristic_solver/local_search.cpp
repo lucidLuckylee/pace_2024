@@ -1,6 +1,7 @@
 #include "local_search.h"
 
 #include <algorithm>
+#include <chrono>
 #include <random>
 
 int local_search(PaceGraph &graph, Order &order) {
