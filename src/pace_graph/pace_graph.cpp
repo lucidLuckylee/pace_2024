@@ -33,8 +33,8 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
     crossing_matrix.resize(size_free);
     crossing_matrix_transposed.resize(size_free);
     for (int i = 0; i < size_free; i++) {
-        crossing_matrix[i] = std::vector<int>(size_free, 0);
-        crossing_matrix_transposed[i] = std::vector<int>(size_free, 0);
+        crossing_matrix[i] = new int[size_free];
+        crossing_matrix_transposed[i] = new int[size_free];
     }
 
     for (int i = 0; i < size_free; i++) {
