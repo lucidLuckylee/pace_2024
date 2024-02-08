@@ -90,15 +90,14 @@ class Order {
         int v = position_to_vertex[pos2];
 
         int cost_change = 0;
-        // TODO: this can be AVX accelerated (we may have to save the
-        // crossing_matrix two times (once transposed))
+        // TODO: this can be AVX accelerated
         for (int pos = pos1; pos < pos2; pos++) {
             int w = position_to_vertex[pos];
             cost_change -= graph.crossing_matrix[u][w];
-            cost_change += graph.crossing_matrix[w][u];
+            cost_change += graph.crossing_matrix_transposed[u][w];
 
             cost_change += graph.crossing_matrix[v][w];
-            cost_change -= graph.crossing_matrix[w][v];
+            cost_change -= graph.crossing_matrix_transposed[v][w];
         }
 
         return cost_change;
