@@ -28,6 +28,10 @@ class Order {
     std::vector<int> position_to_vertex;
 
   public:
+    /**
+     * Creates an Order with a given size. The order will be the identity
+     * permutation.
+     */
     explicit Order(int size) {
         for (int i = 0; i < size; ++i) {
             vertex_to_position.push_back(i);
@@ -35,6 +39,10 @@ class Order {
         }
     }
 
+    /**
+     * Creates an Order from a given position_to_vertex vector.
+     * @param position_to_vertex_input for each position i, the vertex at that
+     */
     explicit Order(const std::vector<int> &position_to_vertex_input)
         : position_to_vertex(position_to_vertex_input),
           vertex_to_position(position_to_vertex_input.size()) {
@@ -65,6 +73,11 @@ class Order {
         swap_by_vertices(u, v);
     }
 
+    /**
+     * Returns the cost change if the vertices at position pos1 and pos2 are
+     * swapped, but the swap will not be performed.
+     * @return the cost change
+     */
     int cost_change_if_swap_position(const int pos1, const int pos2,
                                      const PaceGraph &graph) {
 
@@ -113,6 +126,9 @@ class Order {
         return c;
     }
 
+    /**
+     * Randomly permutes the order.
+     */
     void permute() {
         std::random_device rd;
         std::mt19937 g(rd());

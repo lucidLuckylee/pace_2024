@@ -1,12 +1,12 @@
-//
-// Created by Sebastian Palarus on 07.02.24.
-//
-
 #include "genetic_algorithm.h"
 #include "local_search.h"
 #include <iostream>
 
-
+/**
+ * @param graph get a
+ * @param time_limit
+ * @return
+ */
 Order genetic_algorithm(PaceGraph &graph, int time_limit) {
     Order bestOrder(graph.size_free);
     int bestCost = bestOrder.count_crossings(graph);

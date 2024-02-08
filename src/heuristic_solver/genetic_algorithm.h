@@ -1,7 +1,3 @@
-//
-// Created by Sebastian Palarus on 07.02.24.
-//
-
 #ifndef PACE2024_GENETIC_ALGORITHM_H
 #define PACE2024_GENETIC_ALGORITHM_H
 
