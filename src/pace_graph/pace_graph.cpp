@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -35,6 +36,11 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
     for (int i = 0; i < size_free; i++) {
         crossing_matrix[i] = new int[size_free];
         crossing_matrix_transposed[i] = new int[size_free];
+
+        for (int j = 0; j < size_free; j++) {
+            crossing_matrix[i][j] = 0;
+            crossing_matrix_transposed[i][j] = 0;
+        }
     }
 
     for (int i = 0; i < size_free; i++) {
@@ -124,4 +130,11 @@ std::string PaceGraph::print_crossing_matrix() {
         result << std::endl;
     }
     return result.str();
+}
+
+PaceGraph::~PaceGraph() {
+    for (int i = 0; i < size_free; i++) {
+        delete[] crossing_matrix[i];
+        delete[] crossing_matrix_transposed[i];
+    }
 }

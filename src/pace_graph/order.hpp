@@ -119,7 +119,7 @@ class Order {
         return result.str();
     }
 
-    int count_crossings(const PaceGraph graph) {
+    int count_crossings(const PaceGraph &graph) {
         int c = 0;
         for (int i = 0; i < position_to_vertex.size(); i++) {
             for (int j = i + 1; j < position_to_vertex.size(); j++) {

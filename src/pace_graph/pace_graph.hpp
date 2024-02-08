@@ -52,6 +52,8 @@ class PaceGraph {
      */
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges);
 
+    ~PaceGraph();
+
     /**
      * To read more about the .gr file format, see:
      * https://pacechallenge.org/2024/io/
