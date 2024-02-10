@@ -3,12 +3,16 @@
 #include "ortools/linear_solver/linear_solver.h"
 
 int main() {
-    PaceGraph graph_from_file = PaceGraph::from_file("../data/tree_6_10.gr");
+
+    auto solver_name = "SCIP";
+
+    PaceGraph graph_from_file =
+        PaceGraph::from_file("/home/jt/Downloads/exact-public/1.gr");
 
     std::unique_ptr<operations_research::MPSolver> solver(
-        operations_research::MPSolver::CreateSolver("SCIP"));
+        operations_research::MPSolver::CreateSolver(solver_name));
     if (!solver) {
-        LOG(WARNING) << "SCIP solver unavailable.";
+        LOG(WARNING) << solver_name << " solver unavailable.";
         return 0;
     }
 
@@ -37,6 +41,7 @@ int main() {
                 symmetry_constraint->SetCoefficient(varij, 1);
                 symmetry_constraint->SetCoefficient(varji, 1);
 
+                /* Add all transitivity constraints at once
                 for (int k = 0; k < graph_from_file.size_free; ++k) {
                     if (j != k && i != k) {
                         auto varjk = variable_matrix[j][k];
@@ -48,16 +53,42 @@ int main() {
                         transitivity_constraint->SetCoefficient(varjk, 1);
                         transitivity_constraint->SetCoefficient(varik, -1);
                     }
-                }
+                }*/
             }
         }
     }
     objective->SetMinimization();
+    bool is_transitivity;
 
-    auto result_status = solver->Solve();
-    if (result_status != operations_research::MPSolver::OPTIMAL) {
-        std::cerr << "The problem does not have an optimal solution!";
-    }
+    do {
+        solver->Solve();
+        is_transitivity = true;
+
+        for (int i = 0; i < graph_from_file.size_free; ++i) {
+            for (int j = 0; j < graph_from_file.size_free; ++j) {
+                for (int k = 0; k < graph_from_file.size_free; ++k) {
+                    if (j != k && i != k) {
+                        auto varij = variable_matrix[i][j];
+                        auto varjk = variable_matrix[j][k];
+                        auto varik = variable_matrix[i][k];
+
+                        if (varij->solution_value() > 0.5 &&
+                            varjk->solution_value() > 0.5 &&
+                            varik->solution_value() < 0.5) {
+                            auto *transitivity_constraint =
+                                solver->MakeRowConstraint(-solver->infinity(),
+                                                          1);
+                            transitivity_constraint->SetCoefficient(varij, 1);
+                            transitivity_constraint->SetCoefficient(varjk, 1);
+                            transitivity_constraint->SetCoefficient(varik, -1);
+                            is_transitivity = false;
+                        }
+                    }
+                }
+            }
+        }
+
+    } while (!is_transitivity);
 
     std::cout << "#Crossings " << objective->Value() << std::endl;
 
