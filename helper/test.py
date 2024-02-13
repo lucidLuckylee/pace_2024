@@ -33,16 +33,17 @@ def run_command_with_limit(cmd, input_file, timeout, mem_limit_gb=None):
                         process.terminate()
                         raise MemoryError("Process exceeded memory limit")
 
-        with open(input_file, 'r') as f:
-            completed_process = subprocess.run(cmd.split(), stdin=f, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                               timeout=timeout)
+                    if time.time() - start_time > timeout:
+                        process.terminate()
+                        raise subprocess.TimeoutExpired(process.args, timeout)
+            process.wait()
+            stdout = "".join([s.decode('utf-8') for s in process.stdout.readlines()])
+            stderr = "".join([s.decode('utf-8') for s in process.stderr.readlines()])
 
-        stdout = completed_process.stdout.decode('utf-8')
-        stderr = completed_process.stderr.decode('utf-8')
+            return_code = process.returncode
 
-        return_code = completed_process.returncode
-        end_time = time.time()
-        was_timeout = False
+            end_time = time.time()
+            was_timeout = False
 
     except subprocess.TimeoutExpired:
         # This block will be entered if the command times out
