@@ -110,15 +110,6 @@ class Order {
         return cost_change;
     }
 
-    std::string to_string() {
-        std::ostringstream result;
-        for (const auto &vertex : position_to_vertex) {
-            result << vertex << "\n";
-        }
-
-        return result.str();
-    }
-
     int count_crossings(const PaceGraph &graph) {
         int c = 0;
         for (int i = 0; i < position_to_vertex.size(); i++) {
@@ -147,6 +138,15 @@ class Order {
         for (size_t i = 0; i < position_to_vertex.size(); ++i) {
             vertex_to_position[position_to_vertex[i]] = i;
         }
+    }
+
+    std::string convert_to_real_node_id(PaceGraph &graph) {
+        std::ostringstream result;
+        for (const auto &vertex : position_to_vertex) {
+            result << vertex + 1 + graph.size_fixed << "\n";
+        }
+
+        return result.str();
     }
 };
 

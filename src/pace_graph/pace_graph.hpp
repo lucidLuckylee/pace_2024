@@ -67,8 +67,8 @@ class PaceGraph {
 
     std::string print_crossing_matrix();
 
-    int size() {return size_fixed + size_free;}
-    int edge_count() const {return neighbors_free.size();}
+    int size() { return size_fixed + size_free; }
+    int edge_count() const { return neighbors_free.size(); }
 };
 
 #endif // PACE_GRAPH_HPP
