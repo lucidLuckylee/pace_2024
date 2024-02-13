@@ -1,4 +1,5 @@
 #include "genetic_algorithm.h"
+#include "cheap_heuristics.h"
 #include "local_search.h"
 #include <iostream>
 
@@ -15,6 +16,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
 
     int number_of_iterations = 0;
     while (time(0) - start < time_limit) {
+        // Order newOrder = mean_position_algorithm(graph, median);
         Order newOrder(graph.size_free);
         newOrder.permute();
 
