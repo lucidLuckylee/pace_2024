@@ -64,6 +64,8 @@ int main() {
         solver->Solve();
         is_transitivity = true;
 
+        std::vector<std::tuple<operations_research::MPVariable*, operations_research::MPVariable*, operations_research::MPVariable*>> transitivity_violations;
+
         for (int i = 0; i < graph_from_file.size_free; ++i) {
             for (int j = 0; j < graph_from_file.size_free; ++j) {
                 for (int k = 0; k < graph_from_file.size_free; ++k) {
@@ -75,17 +77,24 @@ int main() {
                         if (varij->solution_value() > 0.5 &&
                             varjk->solution_value() > 0.5 &&
                             varik->solution_value() < 0.5) {
-                            auto *transitivity_constraint =
-                                solver->MakeRowConstraint(-solver->infinity(),
-                                                          1);
-                            transitivity_constraint->SetCoefficient(varij, 1);
-                            transitivity_constraint->SetCoefficient(varjk, 1);
-                            transitivity_constraint->SetCoefficient(varik, -1);
+
+                            transitivity_violations.emplace_back(varij, varjk, varik);
                             is_transitivity = false;
                         }
                     }
                 }
             }
+        }
+
+        for (const auto& violation : transitivity_violations) {
+            operations_research::MPVariable* varij, *varjk, *varik;
+            std::tie(varij, varjk, varik) = violation;
+
+            auto *transitivity_constraint =
+                solver->MakeRowConstraint(-solver->infinity(), 1);
+            transitivity_constraint->SetCoefficient(varij, 1);
+            transitivity_constraint->SetCoefficient(varjk, 1);
+            transitivity_constraint->SetCoefficient(varik, -1);
         }
 
     } while (!is_transitivity);
