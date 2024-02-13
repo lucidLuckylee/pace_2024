@@ -59,7 +59,7 @@ class PaceGraph {
      * https://pacechallenge.org/2024/io/
      * @param gr a file stream (e.g. stdin or a file stream from a file)
      */
-    static PaceGraph from_gr(std::ifstream &gr);
+    static PaceGraph from_gr(std::istream &gr);
 
     static PaceGraph from_file(std::string filePath);
 

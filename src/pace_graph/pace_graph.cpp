@@ -64,7 +64,7 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
     }
 }
 
-PaceGraph PaceGraph::from_gr(std::ifstream &gr) {
+PaceGraph PaceGraph::from_gr(std::istream &gr) {
     int a = 0;
     int b = 0;
     bool pfound = false;

@@ -7,7 +7,7 @@ int main() {
     auto solver_name = "SCIP";
 
     PaceGraph graph_from_file =
-        PaceGraph::from_file("/home/jt/Downloads/exact-public/1.gr");
+        PaceGraph::from_gr(std::cin);
 
     std::unique_ptr<operations_research::MPSolver> solver(
         operations_research::MPSolver::CreateSolver(solver_name));
