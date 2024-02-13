@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import time
 import argparse
 
@@ -20,24 +21,35 @@ def run_command_with_limit(cmd, input_file, timeout, mem_limit_gb=None):
 
     try:
 
-        with open(input_file, 'r') as f, subprocess.Popen(["bash", "-c", cmd], stdin=f, stdout=subprocess.PIPE,
+        stdout = ""
+        if mem_limit_gb is None:
+            cmd = cmd.split(" ")
+        else:
+            cmd = ["bash", "-c", f"ulimit -v {int((mem_limit_gb + 0.1) * 1024 * 1024)} && {cmd}"]
+        with open(input_file, 'r') as f, subprocess.Popen(cmd, stdin=f, stdout=subprocess.PIPE,
                                                           stderr=subprocess.PIPE) as process:
+            while True:
+                try:
+                    process.wait(0.1)
+                    break
+                except subprocess.TimeoutExpired:
+                    pass
+                stdout += "".join([s.decode('utf-8') for s in process.stdout.readlines()])
 
-            if mem_limit_gb is not None:
-                import psutil
-                mem_limit_kb = mem_limit_gb * 1024 * 1024
-                ps_process = psutil.Process(process.pid)
-                while process.poll() is None:
-                    time.sleep(1)
+                if mem_limit_gb is not None:
+                    import psutil
+                    mem_limit_kb = mem_limit_gb * 1024 * 1024
+                    ps_process = psutil.Process(process.pid)
+
                     if ps_process.memory_info().vms > mem_limit_kb * 1024:
                         process.terminate()
                         raise MemoryError("Process exceeded memory limit")
 
-                    if time.time() - start_time > timeout:
-                        process.terminate()
-                        raise subprocess.TimeoutExpired(process.args, timeout)
-            process.wait()
-            stdout = "".join([s.decode('utf-8') for s in process.stdout.readlines()])
+                if time.time() - start_time > timeout:
+                    process.terminate()
+                    raise subprocess.TimeoutExpired(process.args, timeout)
+
+            stdout += "".join([s.decode('utf-8') for s in process.stdout.readlines()])
             stderr = "".join([s.decode('utf-8') for s in process.stderr.readlines()])
 
             return_code = process.returncode
@@ -167,6 +179,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run a program on files in a specified directory.")
     parser.add_argument("base_path", type=str, help="The base path to the directory containing the test files.")
     parser.add_argument("program", type=str, help="The path to the program to be run.")
+    parser.add_argument("--timelimit", type=int, default=300,
+                        help="The time limit for each run in seconds. Default is 300.")
 
     args = parser.parse_args()
 
@@ -179,12 +193,15 @@ def main():
     for f in files:
         if f.endswith(".gr"):
             path = os.path.join(base_path, f)
-            return_code, time_delta, stdout, stderr, timeout = run_command_with_limit(program, path, 300)
+            return_code, time_delta, stdout, stderr, timeout = run_command_with_limit(program, path, args.timelimit,
+                                                                                      mem_limit_gb=8)
+            
             if return_code == 0 and not timeout:
                 crossing = count_crossings(path, stdout)
                 print(f, time_delta, crossing, sep=",")
             else:
                 print(f, "", "", sep=",")
+            sys.stdout.flush()
 
 
 if __name__ == '__main__':
