@@ -7,7 +7,7 @@
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/pace_graph.hpp"
 
-enum MeanTypeAlgo { average, median };
+enum MeanTypeAlgo { average, median, sum_along_crossing };
 
 Order mean_position_algorithm(PaceGraph &graph, MeanTypeAlgo meanType);
 

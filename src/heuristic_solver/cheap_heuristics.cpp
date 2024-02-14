@@ -20,6 +20,11 @@ Order mean_position_algorithm(PaceGraph &graph, MeanTypeAlgo meanType) {
                 avg = neighbors_of_node[position_middle_node];
             }
             break;
+        case sum_along_crossing:
+            auto crossing_matrix_for_i = graph.crossing_matrix[i];
+            for (int j = 0; j < graph.size_free; ++j) {
+                avg += crossing_matrix_for_i[j];
+            }
         }
 
         average_position.emplace_back(i, avg);
