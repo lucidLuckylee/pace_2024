@@ -3,9 +3,10 @@ import subprocess
 import sys
 import time
 import argparse
+import pace2024_verifier.pace as pace
 
 
-def run_command_with_limit(cmd, input_file, timeout, mem_limit_gb=None):
+def run_command_with_limit(cmd, input_file, output_file, timeout, mem_limit_gb=None):
     """
     Run a command with a time limit and redirecting stdin from a file.
 
@@ -18,23 +19,21 @@ def run_command_with_limit(cmd, input_file, timeout, mem_limit_gb=None):
     """
 
     start_time = time.time()
-
+    status = None
     try:
 
-        stdout = ""
         if mem_limit_gb is None:
             cmd = cmd.split(" ")
         else:
             cmd = ["bash", "-c", f"ulimit -v {int((mem_limit_gb + 0.1) * 1024 * 1024)} && {cmd}"]
-        with open(input_file, 'r') as f, subprocess.Popen(cmd, stdin=f, stdout=subprocess.PIPE,
-                                                          stderr=subprocess.PIPE) as process:
+        with open(input_file, 'r') as f, open(output_file, 'w') as out, subprocess.Popen(cmd, stdin=f, stdout=out,
+                                                                                         stderr=subprocess.PIPE) as process:
             while True:
                 try:
                     process.wait(0.1)
                     break
                 except subprocess.TimeoutExpired:
                     pass
-                stdout += "".join([s.decode('utf-8') for s in process.stdout.readlines()])
 
                 if mem_limit_gb is not None:
                     import psutil
@@ -49,130 +48,100 @@ def run_command_with_limit(cmd, input_file, timeout, mem_limit_gb=None):
                     process.terminate()
                     raise subprocess.TimeoutExpired(process.args, timeout)
 
-            stdout += "".join([s.decode('utf-8') for s in process.stdout.readlines()])
             stderr = "".join([s.decode('utf-8') for s in process.stderr.readlines()])
-
             return_code = process.returncode
 
             end_time = time.time()
-            was_timeout = False
+            status = "ok"
 
     except subprocess.TimeoutExpired:
         # This block will be entered if the command times out
         end_time = time.time()
-        stdout = ''
         stderr = ''
         return_code = ''
-        was_timeout = True
+        status = "timeout"
     except MemoryError as e:
         end_time = time.time()
-        stdout = ''
         stderr = str(e)
         return_code = -1
-        was_timeout = False
+        status = "memory limit"
     except subprocess.CalledProcessError as e:
         # This block will be entered if the command fails
         end_time = time.time()
-        stdout = e.stdout.decode('utf-8') if e.stdout else ''
         stderr = e.stderr.decode('utf-8') if e.stderr else ''
         return_code = e.returncode
-        was_timeout = False
+        status = "error"
 
     except Exception as e:
         # This block will be entered if an unexpected exception occurs
         end_time = time.time()
-        stdout = ''
         stderr = str(e)
         return_code = -1
-        was_timeout = False
+        status = "error"
 
-    return return_code, end_time - start_time, stdout, stderr, was_timeout
-
-
-class Graph:
-    def __init__(self, fixed_size, free_size):
-        self.fixed_size = fixed_size
-        self.free_size = free_size
-        self.edges_fixed = [[] for _ in range(fixed_size)]
-        self.edges_free = [[] for _ in range(free_size)]
-
-    def add_edge(self, a, b):
-        self.edges_fixed[a].append(b)
-        self.edges_free[b - self.fixed_size].append(a)
-
-
-def get_solution(graph: Graph, solution_str: str):
-    current_used_nodes = set()
-    order = []
-    for i, line in enumerate(solution_str.split("\n")):
-        line = line.split("#")[0].strip()
-        if len(line) == 0:
-            continue
-
-        if "Set parameter Username" in line or "Academic license - for non-commercial use only -" in line:
-            continue
-
-        try:
-            vertex = int(line)
-            if vertex < graph.fixed_size or vertex > graph.free_size + graph.fixed_size:
-                print(f"Vertex {vertex} is out of range")
-                return None
-
-            if vertex in current_used_nodes:
-                print(f"Vertex {vertex} is already used")
-                return None
-
-            current_used_nodes.add(vertex)
-            order.append(vertex - 1)
-
-        except ValueError:
-            print(f"Can not parse vertex {i}: ", line)
-            return None
-
-    if len(current_used_nodes) != graph.free_size:
-        print(f"Only {len(current_used_nodes)} nodes are used, but {graph.free_size} are required")
-        return None
-
-    return order
-
-
-def load_graph(input_path):
-    with open(input_path, 'r') as f:
-        line = f.readline()
-        infos = line.split(" ")
-        fixed_size = int(infos[2])
-        free_size = int(infos[3])
-        g = Graph(fixed_size, free_size)
-
-        for line in f.readlines():
-            if len(line.strip()) == 0:
-                continue
-
-            edge = line.split(" ")
-            a = int(edge[0])
-            b = int(edge[1])
-            g.add_edge(a - 1, b - 1)
-    return g
+    return return_code, end_time - start_time, stderr, status
 
 
 def count_crossings(input_path, solution_str):
-    g = load_graph(input_path)
-    order = get_solution(g, solution_str)
-    if order is None:
+    order = pace.read_solution(solution_str)
+    g = pace.read_graph(input_path, order=order)
+    crossings = g.countcrossings_segtree()
+    return crossings
+
+
+def check_if_solution_is_valid(graph_path, solution_path):
+    current_used_nodes = set()
+    order = []
+
+    with open(graph_path, 'r') as f:
+        line = f.readline()
+        info = line.split(" ")
+        fixed_size = int(info[2])
+        free_size = int(info[3])
+
+    with open(solution_path, 'r') as f:
+        for i, line in enumerate(f):
+            line = line.split("#")[0].strip()
+            if len(line) == 0:
+                continue
+
+            try:
+                vertex = int(line)
+                if vertex < fixed_size or vertex > free_size + fixed_size:
+                    print(f"Vertex {vertex} is out of range")
+                    return None
+
+                if vertex in current_used_nodes:
+                    print(f"Vertex {vertex} is already used")
+                    return None
+
+                current_used_nodes.add(vertex)
+                order.append(vertex - 1)
+
+            except ValueError:
+                print(f"Can not parse vertex {i}: ", line)
+                return None
+
+    if len(current_used_nodes) != free_size:
+        print(f"Only {len(current_used_nodes)} nodes are used, but {free_size} are required")
         return None
 
-    crossings = 0
-    for free_i in range(len(order)):
-        for free_j in range(free_i + 1, len(order)):
-            neighbor_i = g.edges_free[order[free_i] - g.fixed_size]
-            neighbor_j = g.edges_free[order[free_j] - g.fixed_size]
 
-            for i in neighbor_i:
-                for j in neighbor_j:
-                    if i > j:
-                        crossings += 1
+def clean_output(output_path):
+    with open(output_path, 'r') as f:
+        lines = f.readlines()
 
-    return crossings
+    with open(output_path, 'w') as f:
+        for line in lines:
+            line = line.split("#")[0].strip()
+            if len(line) == 0:
+                continue
+
+            if "Set parameter Username" in line or "Academic license - for non-commercial use only -" in line:
+                continue
+
+            f.write(line)
+            f.write("\n")
 
 
 def main():
@@ -181,6 +150,8 @@ def main():
     parser.add_argument("program", type=str, help="The path to the program to be run.")
     parser.add_argument("--timelimit", type=int, default=300,
                         help="The time limit for each run in seconds. Default is 300.")
+    parser.add_argument("--memlimit", type=int, default=4,
+                        help="The memory limit for each run in GB. Default is 8.")
 
     args = parser.parse_args()
 
@@ -189,18 +160,22 @@ def main():
 
     files = os.listdir(base_path)
     files = sorted(files, key=lambda x: int(x.split('.')[0]))
-    print("file,time,crossings")
+    print("file,time,status,crossings")
     for f in files:
         if f.endswith(".gr"):
             path = os.path.join(base_path, f)
-            return_code, time_delta, stdout, stderr, timeout = run_command_with_limit(program, path, args.timelimit,
-                                                                                      mem_limit_gb=8)
-            
-            if return_code == 0 and not timeout:
-                crossing = count_crossings(path, stdout)
-                print(f, time_delta, crossing, sep=",")
+            solution_path = "output.txt"
+            return_code, time_delta, stderr, status = run_command_with_limit(program, path, solution_path,
+                                                                             args.timelimit,
+                                                                             mem_limit_gb=args.memlimit)
+
+            if return_code == 0:
+                clean_output(solution_path)
+                check_if_solution_is_valid(path, solution_path)
+                crossing = count_crossings(path, solution_path)
+                print(f, time_delta, status, crossing, sep=",")
             else:
-                print(f, "", "", sep=",")
+                print(f, time_delta, status, "", sep=",")
             sys.stdout.flush()
 
 
