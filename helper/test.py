@@ -52,7 +52,10 @@ def run_command_with_limit(cmd, input_file, output_file, timeout, mem_limit_gb=N
             return_code = process.returncode
 
             end_time = time.time()
-            status = "ok"
+            if return_code == 0:
+                status = "ok"
+            else:
+                status = "Program exited with non zero exit code"
 
     except subprocess.TimeoutExpired:
         # This block will be entered if the command times out
@@ -160,7 +163,7 @@ def main():
 
     files = os.listdir(base_path)
     files = sorted(files, key=lambda x: int(x.split('.')[0]))
-    print("file,time,status,crossings")
+    print("file,exit_code,time,status,crossings")
     for f in files:
         if f.endswith(".gr"):
             path = os.path.join(base_path, f)
@@ -173,9 +176,9 @@ def main():
                 clean_output(solution_path)
                 check_if_solution_is_valid(path, solution_path)
                 crossing = count_crossings(path, solution_path)
-                print(f, time_delta, status, crossing, sep=",")
+                print(f, return_code, time_delta, status, crossing, sep=",")
             else:
-                print(f, time_delta, status, "", sep=",")
+                print(f, return_code, time_delta, status, "", sep=",")
             sys.stdout.flush()
 
 
