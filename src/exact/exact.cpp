@@ -170,15 +170,38 @@ int decide(PaceGraph *g, int k) {
     std::map<std::tuple<int, int>, int>
         cost; // leftT, {y} |-> cost where y \in middleT
     std::map<std::unordered_set<int>, int> opt;
-
-    for (int t : std::ranges::views::iota(0, SIZE_INT_SYS_J)) {
-       /* move over t -> compute cost table and calculate opt_t*/
-       comput_sets_at_t(t);
-       for(auto y : middleT[t]){
+    // Type (1) entries: c(L_t,{y}) for each y \in M_t
+    int type1[2 * g->size_free][g->size_free];
+    for (int i = 0; i < g->size_free; i++) type1[0][i] = 0; // base case
+    for (int t : std::ranges::views::iota(1, SIZE_INT_SYS_J)) {
+       comput_sets_at_t(t); // TODO replace by inductive function
+       /*for(auto y : middleT[t]){
         cost.insert(leftT[t], compute_cost(c, t, y));
-       }
+       }*/
+       std::tuple<int,bool> y = intSysJM1[t];
+       if (get<1>(y)){
+           for (auto v : middleT[t]){
+               if (v != get<0>(y)) type1[t][v] = type1[t - 1][v];
+               else type1[t][v] = 0;
+           }
+        }
+       else{
+            for (auto v : middleT[t])
+                type1[t][v] = type1[t - 1][v] + c[get<0>(y)][v];
+        }
+    }
+    // Type (2) entries: opt(L_t \cup S), for each S \subseteq M_t
+    std::unordered_map<long,int> type2[2 * g->size_free + 1]; // TODO don't use long, use unordered_set or so
+    type2[0].emplace(0,0); // trivial base case
+    for (int t = 1; t <= g->size_free; t++){
+//TODO actually still a lot: The function below, and the main dynamic program.
     }
     return 1;
+
+
+}
+int optcvU(int v, int U) {// TODO computes opt(U), c({v},U),...
+    return 0;
 }
 int test() {
     PaceGraph p = PaceGraph::from_file("../data/website_20.gr");
