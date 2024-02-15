@@ -135,6 +135,49 @@ int decide(PaceGraph *g, int k) {
             }
         }
     }
+
+    std::unordered_set<int> leftT[SIZE_INT_SYS_J];
+    std::unordered_set<int> middleT[SIZE_INT_SYS_J];
+    std::unordered_set<int> rightT[SIZE_INT_SYS_J];
+
+    leftT[0] = std::unordered_set<int>{};
+    middleT[0] = std::unordered_set<int>{};
+    rightT[0] = std::unordered_set<int>{};
+    
+
+    auto comput_sets_at_t = [&leftT, &middleT, &rightT, &intSysJ](int t){
+        int vertex = 0;
+        for (auto [ay, by]: intSysJ){
+            if (ay <= t) {
+                leftT[t].insert(vertex);
+            } else if (ay <= t < by){
+                middleT[t].insert(vertex);
+            } else if (t < ay){
+                rightT[t].insert(vertex);
+            }
+            vertex +=1;
+        }
+    };
+    
+    auto compute_cost = [&leftT](auto &c, int t, int vertex){
+        int cost = 0;
+        for(auto vertex_L : leftT[t]){
+            cost = cost + c[vertex][vertex_L];
+        }
+        return cost;
+    };
+
+    std::map<std::tuple<int, int>, int>
+        cost; // leftT, {y} |-> cost where y \in middleT
+    std::map<std::unordered_set<int>, int> opt;
+
+    for (int t : std::ranges::views::iota(0, SIZE_INT_SYS_J)) {
+       /* move over t -> compute cost table and calculate opt_t*/
+       comput_sets_at_t(t);
+       for(auto y : middleT[t]){
+        cost.insert(leftT[t], compute_cost(c, t, y));
+       }
+    }
     return 1;
 }
 int test() {
