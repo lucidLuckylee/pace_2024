@@ -10,7 +10,7 @@ int local_search(PaceGraph &graph, Order &order) {
     bool found_improvement = true;
 
     // Create a vector with all the positions
-    // This will be used to shuffle the order of the positions in the fixed set
+    // This will be used to shuffle the order of the positions in the free set
     // With this two vertices are not always checked in the same order
     std::vector<int> position_array;
     position_array.reserve(graph.size_free);
