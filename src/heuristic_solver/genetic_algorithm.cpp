@@ -1,5 +1,5 @@
 #include "genetic_algorithm.h"
-#include "cheap_heuristics.h"
+#include "cheap_heuristics.hpp"
 #include "local_search.h"
 #include <iostream>
 

@@ -9,15 +9,18 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DNDEBUG -march=nati
 add_library(PaceGraph src/pace_graph/pace_graph.cpp)
 
 # Add heuristic_solver executable
-add_executable(heuristic_solver src/heuristic_solver/main.cpp
-        src/exact/exact.cpp
-        src/exact/exact.h
-        src/heuristic_solver/local_search.cpp
-        src/heuristic_solver/local_search.h
-        src/heuristic_solver/genetic_algorithm.cpp
-        src/heuristic_solver/genetic_algorithm.h
-        src/heuristic_solver/cheap_heuristics.cpp
-        src/heuristic_solver/cheap_heuristics.h)
+add_executable(
+    heuristic_solver
+    src/heuristic_solver/main.cpp
+    src/exact/exact.cpp
+    src/exact/exact.h
+    src/heuristic_solver/local_search.cpp
+    src/heuristic_solver/local_search.h
+    #src/heuristic_solver/genetic_algorithm.cpp
+    #src/heuristic_solver/genetic_algorithm.h
+    #src/heuristic_solver/cheap_heuristics.cpp
+    src/heuristic_solver/cheap_heuristics.hpp
+    )
 
 
 # Link the executable with the PaceGraph library
