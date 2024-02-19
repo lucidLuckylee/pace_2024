@@ -7,25 +7,38 @@
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/pace_graph.hpp"
 #include "../pace_graph/solver.hpp"
-#include <iostream>
 
 enum MeanTypeAlgo { average, median, sum_along_crossing };
 
 class MeanPositionSolver : Solver {
   public:
     MeanTypeAlgo meanType;
+    std::vector<std::tuple<int, double>> average_position;
 
-    explicit MeanPositionSolver(PaceGraph& graph, MeanTypeAlgo meanType) : Solver(graph){
+    explicit MeanPositionSolver(PaceGraph &graph, MeanTypeAlgo meanType)
+        : Solver(graph) {
         this->meanType = meanType;
     }
 
+    /*  Terminate the current solve function.
+     *  Implement the generation of the resulting Order here
+     *  so the signal_handler can call it.
+     *  For this the Order has to be created from Class member variables.
+     */
     Order terminate() {
-        // TODO: Figure out a way to infer an Order from the current state
-        return Order(6);
+        // The solver is about to return a result so we ignore any SIGTERM
+        // signal now.
+        signal(SIGTERM, SIG_IGN);
+        std::vector<int> order;
+
+        order.reserve(this->average_position.size());
+        for (auto node_with_postion : this->average_position) {
+            order.emplace_back(std::get<0>(node_with_postion));
+        }
+        return Order(order);
     }
 
     Order solve() {
-        std::vector<std::tuple<int, double>> average_position;
         for (int i = 0; i < this->graph->neighbors_free.size(); ++i) {
             auto neighbors_of_node = this->graph->neighbors_free[i];
             double avg = 0;
@@ -48,23 +61,17 @@ class MeanPositionSolver : Solver {
                     avg += crossing_matrix_for_i[j];
                 }
             }
-
-            average_position.emplace_back(i, avg);
+            this->average_position.emplace_back(i, avg);
         }
-        std::sort(average_position.begin(), average_position.end(),
+        
+        std::sort(this->average_position.begin(), this->average_position.end(),
                   [](const std::tuple<int, double> &a,
                      const std::tuple<int, double> &b) {
-                      return std::get<1>(a) <
-                             std::get<1>(
-                                 b); // Compare based on the second element
+                      // Compare based on the second element
+                      return std::get<1>(a) < std::get<1>(b);
                   });
-        std::vector<int> order;
 
-        order.reserve(average_position.size());
-        for (auto node_with_postion : average_position) {
-            order.emplace_back(std::get<0>(node_with_postion));
-        }
-        return Order(order);
+        return this->terminate();
     }
 };
 

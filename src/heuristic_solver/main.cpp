@@ -6,9 +6,10 @@
 
 
 int main() {
+    std::cout << "Reading in graph" << std::endl;
     PaceGraph graph_from_file =
-        PaceGraph::from_file("data/heuristic_public/99.gr");
-        //PaceGraph::from_gr(std::cin);
+        //PaceGraph::from_file("data/heuristic_public/99.gr");
+        PaceGraph::from_gr(std::cin);
     
     MeanPositionSolver* solver = new MeanPositionSolver(graph_from_file, MeanTypeAlgo::median);
     Order sol = solver->solve();
