@@ -138,6 +138,6 @@ int decide(PaceGraph *g, int k) {
     return 1;
 }
 int test() {
-    PaceGraph p = PaceGraph::from_file("../data/website_20.gr");
+    PaceGraph p = PaceGraph::from_file("../data/tiny/website_20.gr");
     return decide(&p, 10);
 }

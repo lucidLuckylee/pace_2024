@@ -6,7 +6,7 @@
 
 int main() {
     PaceGraph graph_from_file =
-        // PaceGraph::from_file("../data/cycle_8_sorted.gr");
+        // PaceGraph::from_file("../data/tiny/cycle_8_sorted.gr");
         PaceGraph::from_gr(std::cin);
 
     Order sol = mean_position_algorithm(graph_from_file, median);

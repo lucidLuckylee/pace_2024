@@ -1,9 +1,23 @@
 import os
 import subprocess
+import resource
 import sys
 import time
 import argparse
 import pace2024_verifier.pace as pace
+
+
+def limit_virtual_memory(mem_limit_gb=None):
+    # The tuple below is of the form (soft limit, hard limit). Limit only
+    # the soft part so that the limit can be increased later (setting also
+    # the hard limit would prevent that).
+    # When the limit cannot be changed, setrlimit() raises ValueError.
+    if mem_limit_gb is None:
+        virtual_memory_limit = resource.RLIM_INFINITY
+    else:
+        virtual_memory_limit = mem_limit_gb * 1024 ** 3
+    resource.setrlimit(resource.RLIMIT_AS,
+                       (virtual_memory_limit, virtual_memory_limit))
 
 
 def run_command_with_limit(cmd, input_file, output_file, timeout, mem_limit_gb=None):
@@ -21,37 +35,16 @@ def run_command_with_limit(cmd, input_file, output_file, timeout, mem_limit_gb=N
     start_time = time.time()
     status = None
     try:
-
-        if mem_limit_gb is None:
-            cmd = cmd.split(" ")
-        else:
-            cmd = ["bash", "-c", f"ulimit -v {int((mem_limit_gb + 0.1) * 1024 * 1024)} && {cmd}"]
+        cmd = cmd.split(" ")
         with open(input_file, 'r') as f, open(output_file, 'w') as out, subprocess.Popen(cmd, stdin=f, stdout=out,
-                                                                                         stderr=subprocess.PIPE) as process:
-            while True:
-                try:
-                    process.wait(0.1)
-                    break
-                except subprocess.TimeoutExpired:
-                    pass
-
-                if mem_limit_gb is not None:
-                    import psutil
-                    mem_limit_kb = mem_limit_gb * 1024 * 1024
-                    ps_process = psutil.Process(process.pid)
-
-                    if ps_process.memory_info().vms > mem_limit_kb * 1024:
-                        process.terminate()
-                        raise MemoryError("Process exceeded memory limit")
-
-                if time.time() - start_time > timeout:
-                    process.terminate()
-                    raise subprocess.TimeoutExpired(process.args, timeout)
-
-            stderr = "".join([s.decode('utf-8') for s in process.stderr.readlines()])
-            return_code = process.returncode
-
+                                                                                         stderr=subprocess.PIPE, preexec_fn=limit_virtual_memory(mem_limit_gb)) as process: 
+            try:
+                return_code = process.wait(timeout)
+            except subprocess.TimeoutExpired:
+                process.terminate()
+                return_code = process.wait()
             end_time = time.time()
+            stderr = process.stderr.read().decode('utf-8')
             if return_code == 0:
                 status = "ok"
             else:
@@ -126,7 +119,8 @@ def check_if_solution_is_valid(graph_path, solution_path):
                 return None
 
     if len(current_used_nodes) != free_size:
-        print(f"Only {len(current_used_nodes)} nodes are used, but {free_size} are required")
+        print(
+            f"Only {len(current_used_nodes)} nodes are used, but {free_size} are required")
         return None
 
 
@@ -148,9 +142,12 @@ def clean_output(output_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run a program on files in a specified directory.")
-    parser.add_argument("base_path", type=str, help="The base path to the directory containing the test files.")
-    parser.add_argument("program", type=str, help="The path to the program to be run.")
+    parser = argparse.ArgumentParser(
+        description="Run a program on files in a specified directory.")
+    parser.add_argument("base_path", type=str,
+                        help="The base path to the directory containing the test files.")
+    parser.add_argument("program", type=str,
+                        help="The path to the program to be run.")
     parser.add_argument("--timelimit", type=int, default=300,
                         help="The time limit for each run in seconds. Default is 300.")
     parser.add_argument("--memlimit", type=int, default=4,
