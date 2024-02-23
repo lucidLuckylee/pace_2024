@@ -18,8 +18,10 @@ add_executable(
     src/heuristic_solver/local_search.h
     #src/heuristic_solver/genetic_algorithm.cpp
     #src/heuristic_solver/genetic_algorithm.h
-    #src/heuristic_solver/cheap_heuristics.cpp
+    src/heuristic_solver/cheap_heuristics.cpp
     src/heuristic_solver/cheap_heuristics.hpp
+    src/pace_graph/solver.cpp
+    src/pace_graph/pace_graph.cpp
     )
 
 
