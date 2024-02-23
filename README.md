@@ -2,7 +2,7 @@
 
 ## Project Structure
 We opted to keep .hpp files in the same folder as their .cpp counterpart.
-The rest of the layout is based on [The Pithfork Layout](https://api.csswg.org/bikeshed/?force=1&url=https://raw.githubusercontent.com/vector-of-bool/pitchfork/develop/data/spec.bs).
+The rest of the layout is based on [The Pitchfork Layout](https://api.csswg.org/bikeshed/?force=1&url=https://raw.githubusercontent.com/vector-of-bool/pitchfork/develop/data/spec.bs).
 
 ## Build
 ```sh
