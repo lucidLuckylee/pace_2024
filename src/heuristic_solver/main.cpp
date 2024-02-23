@@ -1,15 +1,18 @@
 // heuristic_solver/main.cpp
 #include "../pace_graph/order.hpp"
-#include "cheap_heuristics.h"
-#include "genetic_algorithm.h"
+#include "cheap_heuristics.hpp"
 #include <iostream>
+#include <ostream>
+
 
 int main() {
+    std::cout << "Reading in graph" << std::endl;
     PaceGraph graph_from_file =
-        // PaceGraph::from_file("../data/tiny/cycle_8_sorted.gr");
+        //PaceGraph::from_file("data/heuristic_public/99.gr");
         PaceGraph::from_gr(std::cin);
-
-    Order sol = mean_position_algorithm(graph_from_file, median);
+    
+    MeanPositionSolver* solver = new MeanPositionSolver(graph_from_file, MeanTypeAlgo::median);
+    Order sol = solver->solve();
 
     int crossings = sol.count_crossings(graph_from_file);
     std::cout << "# Crossings: " << crossings << std::endl;
