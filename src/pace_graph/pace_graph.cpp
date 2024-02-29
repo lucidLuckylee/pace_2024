@@ -30,37 +30,7 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
         std::sort(neighbors.begin(), neighbors.end());
     }
 
-    crossing_matrix.resize(size_free);
-    crossing_matrix_transposed.resize(size_free);
-    for (int i = 0; i < size_free; i++) {
-        crossing_matrix[i] = new int[size_free];
-        crossing_matrix_transposed[i] = new int[size_free];
-
-        for (int j = 0; j < size_free; j++) {
-            crossing_matrix[i][j] = 0;
-            crossing_matrix_transposed[i][j] = 0;
-        }
-    }
-
-    for (int i = 0; i < size_free; i++) {
-        for (int j = i + 1; j < size_free; j++) {
-            for (int m : neighbors_free[i]) {
-                for (int n : neighbors_free[j]) {
-                    if (m > n) {
-                        crossing_matrix[i][j]++;
-                    } else if (n > m) {
-                        crossing_matrix[j][i]++;
-                    }
-                }
-            }
-        }
-    }
-
-    for (int i = 0; i < size_free; ++i) {
-        for (int j = 0; j < size_free; ++j) {
-            crossing_matrix_transposed[i][j] = crossing_matrix[j][i];
-        }
-    }
+    init_crossing_matrix_if_necessary();
 }
 
 PaceGraph PaceGraph::from_gr(std::istream &gr) {
@@ -131,8 +101,51 @@ std::string PaceGraph::print_crossing_matrix() {
     return result.str();
 }
 
-PaceGraph::~PaceGraph() {
+bool PaceGraph::is_crossing_matrix_initialized() {
+    return !crossing_matrix.empty();
+}
+
+void PaceGraph::init_crossing_matrix_if_necessary() {
+
+    if (is_crossing_matrix_initialized()) {
+        return;
+    }
+
+    crossing_matrix.resize(size_free);
+    crossing_matrix_transposed.resize(size_free);
     for (int i = 0; i < size_free; i++) {
+        crossing_matrix[i] = new int[size_free];
+        crossing_matrix_transposed[i] = new int[size_free];
+
+        for (int j = 0; j < size_free; j++) {
+            crossing_matrix[i][j] = 0;
+            crossing_matrix_transposed[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < size_free; i++) {
+        for (int j = i + 1; j < size_free; j++) {
+            for (int m : neighbors_free[i]) {
+                for (int n : neighbors_free[j]) {
+                    if (m > n) {
+                        crossing_matrix[i][j]++;
+                    } else if (n > m) {
+                        crossing_matrix[j][i]++;
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < size_free; ++i) {
+        for (int j = 0; j < size_free; ++j) {
+            crossing_matrix_transposed[i][j] = crossing_matrix[j][i];
+        }
+    }
+}
+
+PaceGraph::~PaceGraph() {
+    for (int i = 0; i < crossing_matrix.size(); i++) {
         delete[] crossing_matrix[i];
         delete[] crossing_matrix_transposed[i];
     }

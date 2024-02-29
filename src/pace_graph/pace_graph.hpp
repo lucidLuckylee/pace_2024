@@ -63,6 +63,10 @@ class PaceGraph {
 
     static PaceGraph from_file(std::string filePath);
 
+    bool is_crossing_matrix_initialized();
+
+    void init_crossing_matrix_if_necessary();
+
     std::string to_gr();
 
     std::string print_crossing_matrix();
