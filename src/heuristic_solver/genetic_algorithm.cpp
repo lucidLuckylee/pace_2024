@@ -15,6 +15,8 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
     int bestCost = bestOrder.count_crossings(graph);
 
     int start = time(0);
+    LocalSearchParameter parameter;
+    parameter.siftingType = SiftingType::DegreeOrder;
 
     int number_of_iterations = 0;
     while (time(0) - start < time_limit) {
@@ -22,7 +24,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
         Order newOrder(graph.size_free);
         newOrder.permute();
 
-        local_search(graph, newOrder);
+        local_search(graph, newOrder, parameter);
 
         int newCost = newOrder.count_crossings(graph);
         if (newCost < bestCost) {

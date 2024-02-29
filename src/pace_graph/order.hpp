@@ -75,6 +75,32 @@ class Order {
         swap_by_vertices(u, v);
     }
 
+    void move_vertex(int vertex, int new_position) {
+        int old_position = vertex_to_position[vertex];
+
+        // Check if we need to shift vertices forward or backward.
+        if (old_position < new_position) {
+            // Move each vertex one position back, from old_position+1 to
+            // new_position.
+            for (int i = old_position; i < new_position; ++i) {
+                int next_vertex = position_to_vertex[i + 1];
+                position_to_vertex[i] = next_vertex;
+                vertex_to_position[next_vertex] = i;
+            }
+        } else if (old_position > new_position) {
+            // Move each vertex one position forward, from old_position-1 to
+            // new_position.
+            for (int i = old_position; i > new_position; --i) {
+                int prev_vertex = position_to_vertex[i - 1];
+                position_to_vertex[i] = prev_vertex;
+                vertex_to_position[prev_vertex] = i;
+            }
+        }
+        // Place the vertex at its new position.
+        position_to_vertex[new_position] = vertex;
+        vertex_to_position[vertex] = new_position;
+    }
+
     /**
      * Returns the cost change if the vertices at position pos1 and pos2 are
      * swapped, but the swap will not be performed.

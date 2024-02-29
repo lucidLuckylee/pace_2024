@@ -4,10 +4,83 @@
 #include <chrono>
 #include <random>
 
-int local_search(PaceGraph &graph, Order &order) {
+/**
+ * This function is used to move a vertex v to the best position in the order,
+ * when every other vertex is fixed.
+ *
+ * @return the cost change of the move (should be negative or zero)
+ */
+int sifting_node(PaceGraph &graph, Order &order, int v) {
+    int posOfV = order.get_position(v);
+    int bestPositionToInsert = posOfV;
+    int bestCostChange = 0;
+
+    int crossingOld = 0;
+    for (int i = posOfV - 1; i >= 0; i--) {
+        int u = order.get_vertex(i);
+
+        crossingOld -= graph.crossing_matrix[u][v];
+        crossingOld += graph.crossing_matrix_transposed[u][v];
+
+        if (crossingOld < bestCostChange) {
+            bestCostChange = crossingOld;
+            bestPositionToInsert = i;
+        }
+    }
+
+    crossingOld = 0;
+    for (int i = posOfV + 1; i < graph.size_free; ++i) {
+        int u = order.get_vertex(i);
+        crossingOld += graph.crossing_matrix[u][v];
+        crossingOld -= graph.crossing_matrix_transposed[u][v];
+
+        if (crossingOld < bestCostChange) {
+            bestCostChange = crossingOld;
+            bestPositionToInsert = i;
+        }
+    }
+
+    order.move_vertex(v, bestPositionToInsert);
+    return bestCostChange;
+}
+
+int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter) {
+
+    if (parameter.siftingType == SiftingType::None) {
+        return 0;
+    }
+
+    std::vector<int> position_array;
+    position_array.reserve(graph.size_free);
+    for (int i = 0; i < graph.size_free; ++i) {
+        position_array.push_back(i);
+    }
+
+    if (parameter.siftingType == SiftingType::Random) {
+        unsigned seed =
+            std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(position_array.begin(), position_array.end(),
+                     std::default_random_engine(seed));
+    } else if (parameter.siftingType == SiftingType::DegreeOrder) {
+        std::sort(position_array.begin(), position_array.end(),
+                  [&graph](int u, int v) {
+                      return graph.neighbors_free[u].size() <
+                             graph.neighbors_free[v].size();
+                  });
+    }
+
+    int improvement = 0;
+    for (int v = 0; v < graph.size_free; v++) {
+        improvement += sifting_node(graph, order, v);
+    }
+    return improvement;
+}
+
+int local_search(PaceGraph &graph, Order &order,
+                 LocalSearchParameter &parameter) {
     int improvement = 0;
 
-    bool found_improvement = true;
+    improvement += sifting(graph, order, parameter);
 
     // Create a vector with all the positions
     // This will be used to shuffle the order of the positions in the free set
@@ -18,8 +91,13 @@ int local_search(PaceGraph &graph, Order &order) {
         position_array.push_back(i);
     }
 
+    for (int v = 0; v < graph.size_free; v++) {
+        improvement += sifting_node(graph, order, v);
+    }
+
     // Do this while loop, while there is still improvement
-    while (found_improvement) {
+    bool found_improvement = true;
+    /*while (found_improvement) {
         found_improvement = false;
 
         unsigned seed =
@@ -42,7 +120,7 @@ int local_search(PaceGraph &graph, Order &order) {
                 }
             }
         }
-    }
+    }*/
 
     return improvement;
 }
