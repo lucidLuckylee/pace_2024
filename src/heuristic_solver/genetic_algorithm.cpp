@@ -9,6 +9,8 @@
  * @return
  */
 Order genetic_algorithm(PaceGraph &graph, int time_limit) {
+    graph.init_crossing_matrix_if_necessary();
+
     Order bestOrder(graph.size_free);
     int bestCost = bestOrder.count_crossings(graph);
 
@@ -30,7 +32,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
         number_of_iterations++;
     }
 
-    std::cout << "Heuristic finished with: " << number_of_iterations
+    std::cout << "# Heuristic finished with: " << number_of_iterations
               << " iterations" << std::endl;
 
     return bestOrder;

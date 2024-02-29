@@ -29,8 +29,6 @@ PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges) {
     for (auto &neighbors : neighbors_free) {
         std::sort(neighbors.begin(), neighbors.end());
     }
-
-    init_crossing_matrix_if_necessary();
 }
 
 PaceGraph PaceGraph::from_gr(std::istream &gr) {

@@ -37,6 +37,7 @@ Order MeanPositionSolver::solve() {
             }
             break;
         case sum_along_crossing:
+            this->graph->init_crossing_matrix_if_necessary();
             auto crossing_matrix_for_i = this->graph->crossing_matrix[i];
             for (int j = 0; j < this->graph->size_free; ++j) {
                 avg += crossing_matrix_for_i[j];

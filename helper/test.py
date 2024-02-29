@@ -37,7 +37,9 @@ def run_command_with_limit(cmd, input_file, output_file, timeout, mem_limit_gb=N
     try:
         cmd = cmd.split(" ")
         with open(input_file, 'r') as f, open(output_file, 'w') as out, subprocess.Popen(cmd, stdin=f, stdout=out,
-                                                                                         stderr=subprocess.PIPE, preexec_fn=limit_virtual_memory(mem_limit_gb)) as process: 
+                                                                                         stderr=subprocess.PIPE,
+                                                                                         preexec_fn=limit_virtual_memory(
+                                                                                             mem_limit_gb)) as process:
             try:
                 return_code = process.wait(timeout)
             except subprocess.TimeoutExpired:
@@ -159,7 +161,10 @@ def main():
     program = args.program
 
     files = os.listdir(base_path)
-    files = sorted(files, key=lambda x: int(x.split('.')[0]))
+    try:
+        files = sorted(files, key=lambda x: int(x.split('.')[0]))
+    except ValueError:
+        pass
     print("file,exit_code,time,status,crossings")
     for f in files:
         if f.endswith(".gr"):

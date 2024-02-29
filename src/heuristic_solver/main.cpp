@@ -1,6 +1,8 @@
 // heuristic_solver/main.cpp
 #include "../pace_graph/order.hpp"
+#include "../pace_graph/segment_tree.hpp"
 #include "cheap_heuristics.hpp"
+#include "genetic_algorithm.h"
 #include <iostream>
 #include <ostream>
 
@@ -14,7 +16,9 @@ int main() {
         new MeanPositionSolver(graph_from_file, MeanTypeAlgo::median);
     Order sol = solver->solve();
 
-    int crossings = sol.count_crossings(graph_from_file);
+    // Order sol = genetic_algorithm(graph_from_file, 10);
+
+    long crossings = sol.count_crossings(graph_from_file);
     std::cout << "# Crossings: " << crossings << std::endl;
     std::cout << sol.convert_to_real_node_id(graph_from_file);
 

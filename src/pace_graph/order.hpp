@@ -4,6 +4,7 @@
 // #include "pace_graph.hpp"
 
 #include "pace_graph.hpp"
+#include "segment_tree.hpp"
 #include <algorithm>
 #include <iterator>
 #include <numeric>
@@ -110,14 +111,25 @@ class Order {
         return cost_change;
     }
 
-    int count_crossings(const PaceGraph &graph) {
-        int c = 0;
-        for (int i = 0; i < position_to_vertex.size(); i++) {
-            for (int j = i + 1; j < position_to_vertex.size(); j++) {
-                int u = position_to_vertex[i];
-                int v = position_to_vertex[j];
+    long count_crossings(const PaceGraph &graph) {
+        long c = 0;
 
-                c += graph.crossing_matrix[u][v];
+        std::vector<int> arr;
+        arr.assign(graph.size_free, 0);
+
+        SegmentTree segTree(arr);
+
+        for (int i = 0; i < graph.size_fixed; i++) {
+
+            std::vector<int> sorted = graph.neighbors_fixed[i];
+            std::sort(sorted.begin(), sorted.end(), [&](int a, int b) {
+                return vertex_to_position[a] < vertex_to_position[b];
+            });
+
+            for (int v : sorted) {
+                int posOfV = vertex_to_position[v];
+                segTree.updateSingle(posOfV, 1);
+                c += segTree.queryRange(posOfV + 1, graph.size_free);
             }
         }
 
