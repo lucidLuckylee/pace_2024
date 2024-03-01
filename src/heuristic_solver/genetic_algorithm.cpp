@@ -1,6 +1,6 @@
-#include "genetic_algorithm.h"
+#include "genetic_algorithm.hpp"
 #include "cheap_heuristics.hpp"
-#include "local_search.h"
+#include "local_search.hpp"
 #include <iostream>
 
 /**

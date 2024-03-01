@@ -1,5 +1,5 @@
-#ifndef PACE2024_LOCAL_SEARCH_H
-#define PACE2024_LOCAL_SEARCH_H
+#ifndef PACE2024_LOCAL_SEARCH_HPP
+#define PACE2024_LOCAL_SEARCH_HPP
 
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/pace_graph.hpp"
@@ -24,4 +24,4 @@ class LocalSearchParameter {
 int local_search(PaceGraph &graph, Order &order,
                  LocalSearchParameter &parameter);
 
-#endif // PACE2024_LOCAL_SEARCH_H
+#endif // PACE2024_LOCAL_SEARCH_HPP

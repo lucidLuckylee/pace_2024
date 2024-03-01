@@ -17,9 +17,9 @@ add_executable(
         src/exact/exact.cpp
         src/exact/exact.h
         src/heuristic_solver/local_search.cpp
-        src/heuristic_solver/local_search.h
+        src/heuristic_solver/local_search.hpp
         src/heuristic_solver/genetic_algorithm.cpp
-        src/heuristic_solver/genetic_algorithm.h
+        src/heuristic_solver/genetic_algorithm.hpp
         src/heuristic_solver/cheap_heuristics.cpp
         src/heuristic_solver/cheap_heuristics.hpp
         src/pace_graph/solver.cpp

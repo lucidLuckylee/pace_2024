@@ -1,4 +1,4 @@
-#include "local_search.h"
+#include "local_search.hpp"
 
 #include <algorithm>
 #include <chrono>
