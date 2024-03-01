@@ -34,13 +34,11 @@ class PaceGraph {
      */
     std::vector<int *> crossing_matrix;
 
-    /** Saving the numbers of crossing between two vertices i and j \in [0,...,
-     * size_free - 1] in crossing_matrix[j][i] when i comes before j.
-     *
-     * It's the transposed of crossing_matrix, so crossing_matrix[i][j] ==
-     * crossing_matrix_transposed[j][i]
+    /** Saving the diff of crossing between two vertices i and j \in [0,...,
+     * size_free - 1] in crossing_matrix_diff[i][j] = crossing_matrix[i][j] -
+     * crossing_matrix[j][i].
      */
-    std::vector<int *> crossing_matrix_transposed;
+    std::vector<int *> crossing_matrix_diff;
 
     /**
      *

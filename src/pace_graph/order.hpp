@@ -119,19 +119,14 @@ class Order {
         int cost_change = 0;
         // TODO: this can be AVX accelerated
 
-        auto crossing_matrix_u = graph.crossing_matrix[u];
-        auto crossing_matrix_u_transposed = graph.crossing_matrix_transposed[u];
+        auto crossing_matrix_diff_u = graph.crossing_matrix_diff[u];
 
-        auto crossing_matrix_v = graph.crossing_matrix[v];
-        auto crossing_matrix_v_transposed = graph.crossing_matrix_transposed[v];
+        auto crossing_matrix_diff_v = graph.crossing_matrix_diff[v];
 
         for (int pos = pos1; pos < pos2; pos++) {
             int w = position_to_vertex[pos];
-            cost_change -= crossing_matrix_u[w];
-            cost_change += crossing_matrix_u_transposed[w];
-
-            cost_change += crossing_matrix_v[w];
-            cost_change -= crossing_matrix_v_transposed[w];
+            cost_change -= crossing_matrix_diff_u[w];
+            cost_change += crossing_matrix_diff_v[w];
         }
 
         return cost_change;

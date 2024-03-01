@@ -16,11 +16,11 @@ int sifting_node(PaceGraph &graph, Order &order, int v) {
     int bestCostChange = 0;
 
     int crossingOld = 0;
+    auto crossing_matrix_diff = graph.crossing_matrix_diff[v];
     for (int i = posOfV - 1; i >= 0; i--) {
         int u = order.get_vertex(i);
 
-        crossingOld -= graph.crossing_matrix[u][v];
-        crossingOld += graph.crossing_matrix_transposed[u][v];
+        crossingOld += crossing_matrix_diff[u];
 
         if (crossingOld < bestCostChange) {
             bestCostChange = crossingOld;
@@ -31,8 +31,7 @@ int sifting_node(PaceGraph &graph, Order &order, int v) {
     crossingOld = 0;
     for (int i = posOfV + 1; i < graph.size_free; ++i) {
         int u = order.get_vertex(i);
-        crossingOld += graph.crossing_matrix[u][v];
-        crossingOld -= graph.crossing_matrix_transposed[u][v];
+        crossingOld -= crossing_matrix_diff[u];
 
         if (crossingOld < bestCostChange) {
             bestCostChange = crossingOld;
@@ -44,16 +43,11 @@ int sifting_node(PaceGraph &graph, Order &order, int v) {
     return bestCostChange;
 }
 
-int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter) {
+int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
+            std::vector<int> &position_array) {
 
     if (parameter.siftingType == SiftingType::None) {
         return 0;
-    }
-
-    std::vector<int> position_array;
-    position_array.reserve(graph.size_free);
-    for (int i = 0; i < graph.size_free; ++i) {
-        position_array.push_back(i);
     }
 
     if (parameter.siftingType == SiftingType::Random) {
@@ -80,24 +74,25 @@ int local_search(PaceGraph &graph, Order &order,
                  LocalSearchParameter &parameter) {
     int improvement = 0;
 
-    improvement += sifting(graph, order, parameter);
-
-    // Create a vector with all the positions
-    // This will be used to shuffle the order of the positions in the free set
-    // With this two vertices are not always checked in the same order
     std::vector<int> position_array;
     position_array.reserve(graph.size_free);
     for (int i = 0; i < graph.size_free; ++i) {
         position_array.push_back(i);
     }
 
+    improvement += sifting(graph, order, parameter, position_array);
+
+    // Create a vector with all the positions
+    // This will be used to shuffle the order of the positions in the free set
+    // With this two vertices are not always checked in the same order
+
     for (int v = 0; v < graph.size_free; v++) {
         improvement += sifting_node(graph, order, v);
     }
 
     // Do this while loop, while there is still improvement
-    bool found_improvement = true;
-    /*while (found_improvement) {
+    /*bool found_improvement = true;
+    while (found_improvement) {
         found_improvement = false;
 
         unsigned seed =

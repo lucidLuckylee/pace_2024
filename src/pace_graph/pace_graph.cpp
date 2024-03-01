@@ -110,14 +110,14 @@ void PaceGraph::init_crossing_matrix_if_necessary() {
     }
 
     crossing_matrix.resize(size_free);
-    crossing_matrix_transposed.resize(size_free);
+    crossing_matrix_diff.resize(size_free);
     for (int i = 0; i < size_free; i++) {
         crossing_matrix[i] = new int[size_free];
-        crossing_matrix_transposed[i] = new int[size_free];
+        crossing_matrix_diff[i] = new int[size_free];
 
         for (int j = 0; j < size_free; j++) {
             crossing_matrix[i][j] = 0;
-            crossing_matrix_transposed[i][j] = 0;
+            crossing_matrix_diff[i][j] = 0;
         }
     }
 
@@ -137,7 +137,8 @@ void PaceGraph::init_crossing_matrix_if_necessary() {
 
     for (int i = 0; i < size_free; ++i) {
         for (int j = 0; j < size_free; ++j) {
-            crossing_matrix_transposed[i][j] = crossing_matrix[j][i];
+            crossing_matrix_diff[i][j] =
+                crossing_matrix[i][j] - crossing_matrix[j][i];
         }
     }
 }
@@ -145,6 +146,6 @@ void PaceGraph::init_crossing_matrix_if_necessary() {
 PaceGraph::~PaceGraph() {
     for (int i = 0; i < crossing_matrix.size(); i++) {
         delete[] crossing_matrix[i];
-        delete[] crossing_matrix_transposed[i];
+        delete[] crossing_matrix_diff[i];
     }
 }
