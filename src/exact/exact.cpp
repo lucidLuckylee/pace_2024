@@ -15,15 +15,18 @@ int decide(PaceGraph *g, int k) {
 
     std::tuple<int, int> intSysI[g->size_free]; // Interval system I
 
+    //init I with out of range values
     for (auto i = 0; i < g->size_free; i++){
         intSysI[i] = std::make_tuple(g->size_fixed, -1);
     }
 
-    //c++20 (iota)
-    // for (auto i : std::ranges::views::iota(0, g->size_free)) {
-    //     intSysI[i] = std::make_tuple(g->size_fixed, -1);
-    // }
+    /*c++20 (iota)
+    for (auto i : std::ranges::views::iota(0, g->size_free)) {
+         intSysI[i] = std::make_tuple(g->size_fixed, -1);
+     }
+    */
 
+    // Init I
     for (auto vertex = 0; vertex < g->neighbors_free.size(); vertex++){
         for (auto neigh : g->neighbors_free[vertex]) {
             if (std::get<0>(intSysI[vertex]) > neigh)
@@ -33,16 +36,17 @@ int decide(PaceGraph *g, int k) {
         }
     }
 
-    //c++23 (enumerate)
-    // for (auto [v, neighbors] :
-    //      std::ranges::views::enumerate(g->neighbors_free)) {
-    //     for (auto neigh : neighbors) {
-    //         if (std::get<0>(intSysI[v]) > neigh)
-    //             std::get<0>(intSysI[v]) = neigh;
-    //         if (std::get<1>(intSysI[v]) < neigh)
-    //             std::get<1>(intSysI[v]) = neigh;
-    //     }
-    // }
+    /*c++23 (enumerate)
+     for (auto [v, neighbors] :
+          std::ranges::views::enumerate(g->neighbors_free)) {
+         for (auto neigh : neighbors) {
+             if (std::get<0>(intSysI[v]) > neigh)
+                 std::get<0>(intSysI[v]) = neigh;
+             if (std::get<1>(intSysI[v]) < neigh)
+                 std::get<1>(intSysI[v]) = neigh;
+         }
+     } 
+    */
 
     const int SIZE_INT_SYS_J = 2 * g->size_free;
 
@@ -87,6 +91,8 @@ int decide(PaceGraph *g, int k) {
             pX3.pop();
         }
     }
+
+    //Compute Crossing numbers
     int c[g->size_free][g->size_free]; // array containing the crossing numbers
                                        // (only for orientable pairs)
     // we do not initialize the other pairs, and we will not use them
@@ -136,6 +142,8 @@ int decide(PaceGraph *g, int k) {
         }
     }
 
+
+    //Dynamic programming
     std::unordered_set<int> leftT[SIZE_INT_SYS_J];
     std::unordered_set<int> middleT[SIZE_INT_SYS_J];
     std::unordered_set<int> rightT[SIZE_INT_SYS_J];
