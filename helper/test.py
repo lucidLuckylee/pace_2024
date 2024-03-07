@@ -165,6 +165,7 @@ def main():
                         help="The time limit for each run in seconds. Default is 300.")
     parser.add_argument("--memlimit", type=int, default=4,
                         help="The memory limit for each run in GB. Default is 4.")
+    parser.add_argument("-p", "--print", action="store_true", help="Print the result in terminal")
 
     args = parser.parse_args()
     base_path = args.base_path
@@ -176,8 +177,10 @@ def main():
     except ValueError:
         pass
 
-    print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'Crossings':<16}")
-
+    if args.print:
+        print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'Crossings':<16}")
+    else:
+        print("file, exit_code, time, status, crossings")
     for path in paths:
         if path.endswith(".gr"):
             pace_graph_path = os.path.join(base_path, path)
@@ -188,9 +191,16 @@ def main():
                 clean_output(SOLUTION_PATH)
                 check_if_solution_is_valid(pace_graph_path, SOLUTION_PATH)
                 crossing = count_crossings(pace_graph_path, SOLUTION_PATH)
-                print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{crossing:<16}")
+                if args.print:
+                    print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{crossing:<16}")
+                else:
+                    print(path, return_code, time_delta, status.value, crossing, sep=",")
+
             else:
-                print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{'':<16}")
+                if args.print:
+                    print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{'':<16}")
+                else:
+                    print(path, return_code, time_delta, status.value, '', sep=",")
             sys.stdout.flush()
 
 
