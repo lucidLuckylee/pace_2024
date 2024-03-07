@@ -2,7 +2,7 @@
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/segment_tree.hpp"
 #include "cheap_heuristics.hpp"
-#include "genetic_algorithm.h"
+#include "genetic_algorithm.hpp"
 #include <iostream>
 #include <ostream>
 
