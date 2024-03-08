@@ -152,7 +152,7 @@ def main():
                         help="The path to the program to be run.")
     parser.add_argument("--timelimit", type=int, default=300,
                         help="The time limit for each run in seconds. Default is 300.")
-    parser.add_argument("--memlimit", type=int, default=4,
+    parser.add_argument("--memlimit", type=int, default=8,
                         help="The memory limit for each run in GB. Default is 8.")
 
     args = parser.parse_args()
