@@ -181,6 +181,7 @@ class Order {
 
         return result.str();
     }
+    Order clone() { return Order(std::vector(position_to_vertex)); }
 };
 
 #endif // ORDER_HPP
