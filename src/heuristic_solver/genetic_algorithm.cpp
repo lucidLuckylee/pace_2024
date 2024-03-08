@@ -65,8 +65,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
         number_of_iterations++;
     }
 
-    std::cout << "# Heuristic finished with: " << number_of_iterations
-              << " iterations" << std::endl;
+    std::cout << "# Iterations: " << number_of_iterations << std::endl;
 
     return bestOrder;
 }

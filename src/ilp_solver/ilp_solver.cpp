@@ -57,7 +57,7 @@ Order ilpSolver(const PaceGraph &graph) {
     }
     objective->SetMinimization();
     bool is_transitivity;
-
+    int transitivity_constraints = 0;
     do {
         solver->Solve();
         is_transitivity = true;
@@ -81,6 +81,7 @@ Order ilpSolver(const PaceGraph &graph) {
 
                             transitivity_violations.emplace_back(varij, varjk,
                                                                  varik);
+                            transitivity_constraints++;
                             is_transitivity = false;
                         }
                     }
@@ -100,6 +101,9 @@ Order ilpSolver(const PaceGraph &graph) {
         }
 
     } while (!is_transitivity);
+
+    std::cout << "# Transitivity constraints added: "
+              << transitivity_constraints << std::endl;
 
     std::vector<int> solution(graph.size_free);
 
