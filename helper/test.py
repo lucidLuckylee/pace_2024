@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import resource
 import sys
@@ -130,8 +131,14 @@ def clean_output(output_path):
     with open(output_path, 'r') as f:
         lines = f.readlines()
 
+    iterations = ""
+
     with open(output_path, 'w') as f:
         for line in lines:
+            match = re.search(r"#\s*Iterations\s*:\s*(\d+)", line)
+            if match:
+                iterations = str(match.group(1))
+                continue
             line = line.split("#")[0].strip()
             if len(line) == 0:
                 continue
@@ -141,6 +148,7 @@ def clean_output(output_path):
 
             f.write(line)
             f.write("\n")
+    return iterations
 
 
 def main():
@@ -165,7 +173,7 @@ def main():
         files = sorted(files, key=lambda x: int(x.split('.')[0]))
     except ValueError:
         pass
-    print("file,exit_code,time,status,crossings")
+    print("file", "exit_code", "time", "status", "crossings", "iterations", sep=",")
     for f in files:
         if f.endswith(".gr"):
             path = os.path.join(base_path, f)
@@ -175,12 +183,12 @@ def main():
                                                                              mem_limit_gb=args.memlimit)
 
             if return_code == 0:
-                clean_output(solution_path)
+                iterations = clean_output(solution_path)
                 check_if_solution_is_valid(path, solution_path)
                 crossing = count_crossings(path, solution_path)
-                print(f, return_code, time_delta, status, crossing, sep=",")
+                print(f, return_code, time_delta, status, crossing, iterations, sep=",")
             else:
-                print(f, return_code, time_delta, status, "", sep=",")
+                print(f, return_code, time_delta, status, "", "", sep=",")
             sys.stdout.flush()
 
 
