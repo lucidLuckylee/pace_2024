@@ -198,7 +198,7 @@ PaceGraph::splitGraphOn0Splits() {
         result.back().push_back(u + 1);
     }
 
-    for (std::vector<int> induced_verticies : result) {
+    for (std::vector<int> &induced_verticies : result) {
         induced_verticies.erase(
             std::remove_if(
                 induced_verticies.begin(), induced_verticies.end(),
