@@ -98,6 +98,11 @@ def count_crossings(input_path, solution_str):
     return crossings
 
 
+def load_lb_solution(input_path):
+    with open(input_path, 'r') as f:
+        return int(f.readline().strip())
+
+
 def check_if_solution_is_valid(graph_path, solution_path):
     current_used_nodes = set()
     order = []
@@ -141,6 +146,7 @@ def clean_output(output_path):
     with open(output_path, 'r') as output_file:
         lines = output_file.readlines()
 
+    iterations = ""
     with open(output_path, 'w') as output_file:
         for line in lines:
             match = re.search(r"#\s*Iterations\s*:\s*(\d+)", line)
@@ -170,6 +176,9 @@ def main():
                         help="The time limit for each run in seconds. Default is 300.")
     parser.add_argument("--memlimit", type=int, default=4,
                         help="The memory limit for each run in GB. Default is 4.")
+
+    parser.add_argument("--lb", "--lower_bound", action="store_true",
+                        help="Run the program with the lower bound option")
     parser.add_argument("-p", "--print", action="store_true", help="Print the result in terminal")
 
     args = parser.parse_args()
@@ -195,8 +204,11 @@ def main():
 
             if return_code == 0:
                 iterations = clean_output(SOLUTION_PATH)
-                check_if_solution_is_valid(pace_graph_path, SOLUTION_PATH)
-                crossing = count_crossings(pace_graph_path, SOLUTION_PATH)
+                if args.lb:
+                    crossing = load_lb_solution(SOLUTION_PATH)
+                else:
+                    check_if_solution_is_valid(pace_graph_path, SOLUTION_PATH)
+                    crossing = count_crossings(pace_graph_path, SOLUTION_PATH)
                 if args.print:
                     print(
                         f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{crossing:<16}{iterations:<16}")

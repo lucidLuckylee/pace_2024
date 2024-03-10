@@ -26,7 +26,14 @@ add_executable(
         src/pace_graph/pace_graph.cpp
 )
 
+add_executable(
+        lb_solver
+        src/lb/main.cpp
+        src/lb/simple_lb.cpp
+        src/lb/simple_lb.hpp
+)
 
+target_link_libraries(lb_solver PaceGraph)
 # Link the executable with the PaceGraph library
 target_link_libraries(heuristic_solver PaceGraph)
 
