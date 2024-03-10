@@ -4,10 +4,13 @@
 
 int main() {
     PaceGraph graph = PaceGraph::from_gr(std::cin);
-    graph.init_crossing_matrix_if_necessary();
 
-    int lb = simpleLB(graph);
+    auto splittedGraphs = std::get<0>(graph.splitGraphOn0Splits());
 
+    int lb = 0;
+    for (auto &g : splittedGraphs) {
+        lb += simpleLB(g);
+    }
     std::cout << lb << std::endl;
 
     return 0;

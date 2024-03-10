@@ -5,6 +5,7 @@
 #include "simple_lb.hpp"
 
 int simpleLB(PaceGraph &graph) {
+    graph.init_crossing_matrix_if_necessary();
     int lb = 0;
     for (int u = 0; u < graph.size_free; ++u) {
         for (int v = u + 1; v < graph.size_free; v++) {

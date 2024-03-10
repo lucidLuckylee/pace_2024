@@ -176,7 +176,7 @@ class Order {
     std::string convert_to_real_node_id(PaceGraph &graph) {
         std::ostringstream result;
         for (const auto &vertex : position_to_vertex) {
-            result << vertex + 1 + graph.size_fixed << "\n";
+            result << graph.free_real_names[vertex] << "\n";
         }
 
         return result.str();

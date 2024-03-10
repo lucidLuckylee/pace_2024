@@ -23,7 +23,8 @@ add_executable(
         src/heuristic_solver/cheap_heuristics.cpp
         src/heuristic_solver/cheap_heuristics.hpp
         src/pace_graph/solver.cpp
-        src/pace_graph/pace_graph.cpp
+        src/lb/simple_lb.cpp
+        src/lb/simple_lb.hpp
 )
 
 add_executable(
