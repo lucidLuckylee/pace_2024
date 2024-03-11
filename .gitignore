@@ -33,6 +33,7 @@
 
 # Build folder
 build
+build-debug
 # Helper script to compile and run
 run.sh
 
@@ -40,3 +41,5 @@ run.sh
 cmake-build-debug
 cmake-build-release
 
+output.txt
+venv
