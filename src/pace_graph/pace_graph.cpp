@@ -170,7 +170,7 @@ PaceGraph::splitGraphOn0Splits() {
     result.emplace_back();
 
     std::vector<int> isolatedNodes;
-    for (int v = 0; v < size_free - 1; v++) {
+    for (int v = 0; v < size_free; v++) {
         if (neighbors_free[v].empty()) {
             isolatedNodes.push_back(v);
         }
