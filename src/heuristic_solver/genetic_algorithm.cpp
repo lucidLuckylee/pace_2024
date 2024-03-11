@@ -16,7 +16,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
 
     int start = time(0);
     LocalSearchParameter parameter;
-    parameter.siftingType = SiftingType::DegreeOrder;
+    parameter.siftingType = SiftingType::Random;
 
     int number_of_iterations = 0;
     int number_of_iteration_without_improvement = 0;

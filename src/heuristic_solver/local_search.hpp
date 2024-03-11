@@ -8,6 +8,7 @@ enum class SiftingType {
     None,
     Random,
     DegreeOrder,
+    DegreeOrderReverse,
 };
 
 class LocalSearchParameter {
