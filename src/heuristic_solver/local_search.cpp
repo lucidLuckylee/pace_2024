@@ -61,6 +61,12 @@ int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
                       return graph.neighbors_free[u].size() <
                              graph.neighbors_free[v].size();
                   });
+    } else if (parameter.siftingType == SiftingType::DegreeOrderReverse) {
+        std::sort(position_array.begin(), position_array.end(),
+                  [&graph](int u, int v) {
+                      return graph.neighbors_free[u].size() >
+                             graph.neighbors_free[v].size();
+                  });
     }
 
     int improvement = 0;

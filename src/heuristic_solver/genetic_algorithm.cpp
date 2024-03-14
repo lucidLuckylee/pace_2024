@@ -10,14 +10,15 @@
  * @return
  */
 Order genetic_algorithm(PaceGraph &graph, int time_limit_ms) {
-    int lb = simpleLB(graph);
+    SimpleLBParameter lbParameter;
+    int lb = simpleLB(graph, lbParameter);
     graph.init_crossing_matrix_if_necessary();
 
     Order bestOrder(graph.size_free);
     int bestCost = bestOrder.count_crossings(graph);
 
     LocalSearchParameter parameter;
-    parameter.siftingType = SiftingType::DegreeOrder;
+    parameter.siftingType = SiftingType::Random;
 
     int number_of_iterations = 0;
     int number_of_iteration_without_improvement = 0;
