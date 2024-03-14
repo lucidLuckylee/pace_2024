@@ -49,6 +49,11 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit_ms) {
                 newOrder = bestOrder.clone();
                 for (int i = 0; i < graph.size_free - 1; i++) {
 
+                    if (std::chrono::steady_clock::now() - start_time >
+                        std::chrono::milliseconds(time_limit_ms)) {
+                        break;
+                    }
+
                     int u = newOrder.get_vertex(i);
                     int v = newOrder.get_vertex(i + 1);
 
