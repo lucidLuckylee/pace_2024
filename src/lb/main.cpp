@@ -6,7 +6,9 @@ int main() {
     PaceGraph graph = PaceGraph::from_gr(std::cin);
     graph.init_crossing_matrix_if_necessary();
 
-    int lb = simpleLB(graph);
+    SimpleLBParameter parameter;
+
+    int lb = simpleLB(graph, parameter);
 
     std::cout << lb << std::endl;
 
