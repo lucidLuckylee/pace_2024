@@ -9,10 +9,19 @@
 #include <vector>
 
 class PaceGraph {
+  private:
+    static std::unordered_map<int, int> createMap(int limit, int offset) {
+        std::unordered_map<int, int> result;
+        for (int i = 0; i < limit; ++i) {
+            result[i] = i + offset + 1;
+        }
+        return result;
+    }
+
   public:
     /** Number of size_free vertices
-    We name this vertices: [0,..., size_free - 1]
-     */
+            We name this vertices: [0,..., size_free - 1]
+             */
     int size_free;
 
     /** We name this vertices: [0,..., size_fixed - 1]
@@ -40,15 +49,23 @@ class PaceGraph {
      */
     std::vector<int *> crossing_matrix_diff;
 
+    std::unordered_map<int, int> fixed_real_names;
+    std::unordered_map<int, int> free_real_names;
+
+    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges,
+              std::unordered_map<int, int> fixed_real_names,
+              std::unordered_map<int, int> free_real_names);
+
     /**
      *
      * @param a the number of size_fixed vertices
      * @param b the number of size_free vertices
      * @param edges an array of tuples (u, v) representing the edges of the
-     * graph. u must be always in [0,..., a - 1] and v must be always in [0,...,
-     * b - 1]
+     * graph. u must be always in [0,..., a - 1] and v must be always in
+     * [0,..., b - 1]
      */
-    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges);
+    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges)
+        : PaceGraph(a, b, edges, createMap(a, 0), createMap(b, a)) {}
 
     ~PaceGraph();
 
@@ -65,12 +82,16 @@ class PaceGraph {
 
     void init_crossing_matrix_if_necessary();
 
+    PaceGraph induced_subgraphs(std::vector<int> fixed_nodes);
+
     std::string to_gr();
 
     std::string print_crossing_matrix();
 
     int size() { return size_fixed + size_free; }
     int edge_count() const { return neighbors_free.size(); }
+
+    std::tuple<std::vector<PaceGraph>, std::vector<int>> splitGraphOn0Splits();
 };
 
 #endif // PACE_GRAPH_HPP

@@ -78,6 +78,7 @@ int improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter) {
 }
 
 int simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
+    graph.init_crossing_matrix_if_necessary();
     int lb = 0;
 
     for (int u = 0; u < graph.size_free; ++u) {
