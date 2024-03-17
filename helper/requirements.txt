@@ -1,2 +1,4 @@
 psutil
 pace2024-verifier
+pandas
+matplotlib
