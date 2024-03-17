@@ -12,11 +12,11 @@ int improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter) {
 
     for (int u = 0; u < graph.size_free; ++u) {
 
-        for (int v = u; v < graph.size_free; ++v) {
+        for (int v = 0; v < graph.size_free; ++v) {
             if (u == v)
                 continue;
             if (graph.crossing_matrix_diff[u][v] < 0) {
-                for (int w = v; w < graph.size_free; w++) {
+                for (int w = 0; w < graph.size_free; w++) {
                     if (w == u || w == v)
                         continue;
 
