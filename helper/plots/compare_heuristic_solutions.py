@@ -1,41 +1,14 @@
 import os
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import argparse
 
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', None)
+import pandas as pd
+
+from plots.utils import parse_files_to_plot
 
 
-def parse_files_to_plot(unknown_args):
-    file_names = {}
-    last_arg = None
-
-    for arg in unknown_args:
-        if arg.startswith("--"):
-            if last_arg is not None:
-                print(f"Invalid argument {last_arg} does not have a name.")
-                exit(1)
-            arg = arg[2:]
-            last_arg = arg
-        else:
-            if last_arg is None:
-                print(f"Invalid argument {arg} does not have a file.")
-                exit(1)
-            file_names[last_arg] = arg
-            last_arg = None
-
-    if last_arg is not None:
-        print(f"Invalid argument {last_arg} does not have a name.")
-        exit(1)
-
-    return file_names
-
-
-def plot_cactus(solutions_path, file_names, output_file):
-    plt.rcParams.update({'font.size': 22})
-    plt.rc('text', usetex=True)
+def load_exact_solutions_from_path(solutions_path):
     dataframes = {file_name: pd.read_csv(os.path.join(solutions_path, file_name)) for file_name in
                   os.listdir(solutions_path)}
 
@@ -45,8 +18,15 @@ def plot_cactus(solutions_path, file_names, output_file):
     for _, df in dataframes.items():
         merged_df = pd.merge(df, min_crossings, on="file", suffixes=('_df', '_min'))
         df["percentage"] = merged_df["crossings_df"] / merged_df["crossings_min"]
+    return dataframes
 
+
+def plot_cactus(solutions_path, file_names, output_file):
+    plt.rcParams.update({'font.size': 22})
+    plt.rc('text', usetex=True)
     plt.figure(figsize=(16, 10))
+
+    dataframes = load_exact_solutions_from_path(solutions_path)
 
     for file_name, name in file_names.items():
         df = dataframes[file_name]
@@ -66,7 +46,7 @@ def plot_cactus(solutions_path, file_names, output_file):
 
 def main():
     parser = argparse.ArgumentParser(description="Create a cactus plot ")
-    parser.add_argument("solutions", type=str, help="The path to the directory containing the results csv file.")
+    parser.add_argument("solutions", type=str, help="The path to the directory containing the heuristic csv files.")
     parser.add_argument("output", type=str, help="Output file name")
 
     args, unknown_args = parser.parse_known_args()
