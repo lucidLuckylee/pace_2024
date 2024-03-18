@@ -19,7 +19,6 @@ getConflictPairsIterateOverMatrix(PaceGraph &graph) {
             if (graph.crossing_matrix_diff[u][v] < 0) {
                 auto vDiffs = graph.crossing_matrix_diff[v];
                 auto uDiffs = graph.crossing_matrix_diff[u];
-
                 for (int w = 0; w < graph.size_free; w++) {
                     if (w == u || w == v)
                         continue;
