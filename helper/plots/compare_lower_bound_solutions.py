@@ -22,9 +22,10 @@ def plot_cactus(solutions_path_heuristic, solutions_path_lb, file_names, output_
         df["diff"] = merged_df["crossings_min"] - merged_df["crossings_df"]
 
         if df["diff"].min() < 0:
+            print(df[df["diff"] < 0])
             print(f"File {file_name} has larger lb then ub.")
             exit(1)
-
+        print(f"Number of instances directly solved by {name}:", len(df[df["diff"] == 0]))
         plt.plot(df["diff"].sort_values().tolist(), label=name)
 
     plt.xlabel("\#Instance")
