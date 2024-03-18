@@ -132,6 +132,16 @@ getConflictPairs(SimpleLBParameter &parameter, PaceGraph &graph) {
     return conflictPairs;
 }
 
+void fisherYatesShuffle(std::vector<std::tuple<int, int, int>> &conflictPairs,
+                        std::mt19937 &rng) {
+    for (int i = conflictPairs.size() - 1; i > (conflictPairs.size() / 2);
+         --i) {
+        std::uniform_int_distribution<int> dist(0, i);
+        int j = dist(rng);
+        std::swap(conflictPairs[i], conflictPairs[j]);
+    }
+}
+
 long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
                           long currentLB) {
     auto conflictPairs = getConflictPairs(parameter, graph);
@@ -142,9 +152,18 @@ long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
 
     long bestLBImprovement = 0;
 
+    std::random_device rd;
+    std::mt19937 rng(rd());
     for (int _ = 0; _ < parameter.numberOfIterationsForConflictOrder; _++) {
-        std::shuffle(conflictPairs.begin(), conflictPairs.end(),
-                     std::default_random_engine(_));
+        if (parameter.nrOfConflictsToUsePseudoRandom < conflictPairs.size()) {
+            if (_ % 2 == 0) {
+                fisherYatesShuffle(conflictPairs, rng);
+            } else {
+                std::reverse(conflictPairs.begin(), conflictPairs.end());
+            }
+        } else {
+            std::shuffle(conflictPairs.begin(), conflictPairs.end(), rng);
+        }
 
         std::vector<std::vector<int>> potentialMatrix(
             graph.crossing_matrix_diff.size());

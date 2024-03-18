@@ -13,6 +13,8 @@ class SimpleLBParameter {
   public:
     bool usePotentialMatrix = true;
     bool testForceChoiceOfConflicts = false;
+
+    int nrOfConflictsToUsePseudoRandom = 1000000;
     int numberOfIterationsForConflictOrder = 100;
     SearchStrategyForConflicts searchStrategyForConflicts =
         SearchStrategyForConflicts::BMI;
