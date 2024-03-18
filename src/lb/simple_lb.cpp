@@ -6,22 +6,25 @@
 #include <algorithm>
 #include <iostream>
 #include <random>
+#include <x86gprintrin.h>
 
-int improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter) {
+std::vector<std::tuple<int, int, int>>
+getConflictPairsIterateOverMatrix(PaceGraph &graph) {
     std::vector<std::tuple<int, int, int>> conflictPairs;
 
     for (int u = 0; u < graph.size_free; ++u) {
-
-        for (int v = u; v < graph.size_free; ++v) {
+        for (int v = 0; v < graph.size_free; ++v) {
             if (u == v)
                 continue;
             if (graph.crossing_matrix_diff[u][v] < 0) {
-                for (int w = v; w < graph.size_free; w++) {
+                auto vDiffs = graph.crossing_matrix_diff[v];
+                auto uDiffs = graph.crossing_matrix_diff[u];
+
+                for (int w = 0; w < graph.size_free; w++) {
                     if (w == u || w == v)
                         continue;
 
-                    if (graph.crossing_matrix_diff[v][w] < 0 &&
-                        graph.crossing_matrix_diff[u][w] > 0) {
+                    if (vDiffs[w] < 0 && uDiffs[w] > 0) {
                         conflictPairs.emplace_back(u, v, w);
                     }
                 }
@@ -29,11 +32,116 @@ int improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter) {
         }
     }
 
+    return conflictPairs;
+}
+
+std::vector<std::tuple<int, int, int>>
+getConflictPairsIterateOverNeighbors(PaceGraph &graph) {
+    std::vector<std::tuple<int, int, int>> conflictPairs;
+
+    std::vector<std::vector<int>> smaller(graph.size_free);
+
+    for (int i = 0; i < graph.size_free; ++i) {
+        smaller[i] = std::vector<int>();
+        for (int j = 0; j < graph.size_free; ++j) {
+            if (i == j)
+                continue;
+            if (graph.crossing_matrix_diff[i][j] < 0) {
+                smaller[i].push_back(j);
+            }
+        }
+    }
+
+    for (int u = 0; u < graph.size_free; ++u) {
+        for (int v : smaller[u]) {
+            for (int w : smaller[v]) {
+                if (graph.crossing_matrix_diff[u][w] > 0) {
+                    conflictPairs.emplace_back(u, v, w);
+                }
+            }
+        }
+    }
+
+    return conflictPairs;
+}
+
+std::vector<std::tuple<int, int, int>> getConflictPairsBMI(PaceGraph &graph) {
+    std::vector<std::tuple<int, int, int>> conflictPairs;
+
+    std::vector<std::vector<uint64_t>> smaller(graph.size_free);
+    std::vector<std::vector<uint64_t>> larger(graph.size_free);
+
+    for (int i = 0; i < graph.size_free; ++i) {
+        smaller[i] = std::vector<uint64_t>((graph.size_free + 63) / 64);
+        larger[i] = std::vector<uint64_t>((graph.size_free + 63) / 64);
+        for (int j = 0; j < graph.size_free; ++j) {
+            int pos = j / 64;
+            int bit = j % 64;
+            if (graph.crossing_matrix_diff[i][j] < 0) {
+                smaller[i][pos] |= (1L << bit);
+            } else if (graph.crossing_matrix_diff[i][j] > 0) {
+                larger[i][pos] |= (1L << bit);
+            }
+        }
+    }
+
+    for (int u = 0; u < graph.size_free; u++) {
+        auto smaller_u = smaller[u];
+
+        for (int pos1 = 0; pos1 < smaller_u.size(); pos1++) {
+            auto vs = smaller_u[pos1];
+            while (vs) {
+                int bit = __builtin_ctzll(vs);
+                vs = __blsr_u64(vs);
+
+                int v = pos1 * 64 + bit;
+
+                for (int pos2 = 0; pos2 < smaller_u.size(); pos2++) {
+                    auto ws1 = smaller[v][pos2];
+                    auto ws2 = larger[u][pos2];
+
+                    auto ws = ws1 & ws2;
+                    while (ws) {
+                        int bit2 = __builtin_ctzll(ws);
+                        ws = __blsr_u64(ws);
+
+                        int w = pos2 * 64 + bit2;
+                        conflictPairs.emplace_back(u, v, w);
+                    }
+                }
+            }
+        }
+    }
+
+    return conflictPairs;
+}
+
+std::vector<std::tuple<int, int, int>>
+getConflictPairs(SimpleLBParameter &parameter, PaceGraph &graph) {
+    std::vector<std::tuple<int, int, int>> conflictPairs;
+    if (parameter.searchStrategyForConflicts ==
+        SearchStrategyForConflicts::MATRIX) {
+        conflictPairs = getConflictPairsIterateOverMatrix(graph);
+    } else if (parameter.searchStrategyForConflicts ==
+               SearchStrategyForConflicts::NEIGHBORS) {
+        conflictPairs = getConflictPairsIterateOverNeighbors(graph);
+    } else if (parameter.searchStrategyForConflicts ==
+               SearchStrategyForConflicts::BMI) {
+        conflictPairs = getConflictPairsBMI(graph);
+    }
+
+    return conflictPairs;
+}
+
+long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
+                          long currentLB) {
+    auto conflictPairs = getConflictPairs(parameter, graph);
+
     if (conflictPairs.empty()) {
         return 0;
     }
 
-    int bestLBImprovement = 0;
+    long bestLBImprovement = 0;
 
     for (int _ = 0; _ < parameter.numberOfIterationsForConflictOrder; _++) {
         std::shuffle(conflictPairs.begin(), conflictPairs.end(),
@@ -49,14 +157,38 @@ int improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter) {
             }
         }
 
-        int currentLBImprovement = 0;
+        long currentLBImprovement = 0;
 
         for (auto [u, v, w] : conflictPairs) {
             if (potentialMatrix[u][v] < 0 && potentialMatrix[v][w] < 0 &&
                 potentialMatrix[u][w] > 0) {
-                int minValue = std::min(
-                    std::min(-potentialMatrix[u][v], -potentialMatrix[v][w]),
-                    potentialMatrix[u][w]);
+
+                int potential1 = -potentialMatrix[u][v];
+                int potential2 = -potentialMatrix[v][w];
+                int potential3 = potentialMatrix[u][w];
+
+                if (parameter.testForceChoiceOfConflicts) {
+                    long currentDiff =
+                        graph.ub - currentLB - currentLBImprovement;
+
+                    if (potential1 > currentDiff &&
+                        graph.crossing_matrix[v][u] < INF) {
+                        graph.fixNodeOrder(u, v);
+                    }
+
+                    if (potential2 > currentDiff &&
+                        graph.crossing_matrix[v][w] < INF) {
+                        graph.fixNodeOrder(v, w);
+                    }
+
+                    if (potential3 > currentDiff &&
+                        graph.crossing_matrix[u][w] < INF) {
+                        graph.fixNodeOrder(w, u);
+                    }
+                }
+
+                int minValue =
+                    std::min(std::min(potential1, potential2), potential3);
 
                 currentLBImprovement += minValue;
                 potentialMatrix[u][v] += minValue;
@@ -77,9 +209,9 @@ int improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter) {
     return bestLBImprovement;
 }
 
-int simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
+long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
     graph.init_crossing_matrix_if_necessary();
-    int lb = 0;
+    long lb = 0;
 
     for (int u = 0; u < graph.size_free; ++u) {
         for (int v = u + 1; v < graph.size_free; v++) {
@@ -89,7 +221,11 @@ int simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
     }
 
     if (parameter.usePotentialMatrix) {
-        lb += improveWithPotential(graph, parameter);
+        lb += improveWithPotential(graph, parameter, lb);
+    }
+
+    if (graph.lb < lb) {
+        graph.lb = lb;
     }
 
     return lb;

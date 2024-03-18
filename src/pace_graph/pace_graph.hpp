@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#define INF 1000000
+
 class PaceGraph {
   private:
     static std::unordered_map<int, int> createMap(int limit, int offset) {
@@ -19,6 +21,9 @@ class PaceGraph {
     }
 
   public:
+    long lb = 0;
+    long ub = 1000000000;
+
     /** Number of size_free vertices
             We name this vertices: [0,..., size_free - 1]
              */
@@ -87,6 +92,9 @@ class PaceGraph {
     std::string to_gr();
 
     std::string print_crossing_matrix();
+
+    void fixNodeOrder(int beforeNode, int afterNode);
+    void unfixNodeOrder(int beforeNode, int afterNode);
 
     int size() { return size_fixed + size_free; }
     int edge_count() const { return neighbors_free.size(); }

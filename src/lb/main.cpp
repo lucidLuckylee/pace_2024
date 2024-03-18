@@ -8,7 +8,7 @@ int main() {
     auto splittedGraphs = std::get<0>(graph.splitGraphOn0Splits());
     SimpleLBParameter parameter;
 
-    int lb = 0;
+    long lb = 0;
     for (auto &g : splittedGraphs) {
         lb += simpleLB(g, parameter);
     }

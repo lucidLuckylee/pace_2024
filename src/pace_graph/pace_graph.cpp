@@ -253,3 +253,11 @@ PaceGraph PaceGraph::induced_subgraphs(std::vector<int> fixed_nodes) {
     return PaceGraph(fixed_nodes.size(), nodesInB.size(), edges,
                      new_fixed_real_names, new_free_real_names);
 }
+void PaceGraph::fixNodeOrder(int beforeNode, int afterNode) {
+    crossing_matrix[afterNode][beforeNode] += INF;
+    crossing_matrix_diff[afterNode][beforeNode] += INF;
+}
+void PaceGraph::unfixNodeOrder(int beforeNode, int afterNode) {
+    crossing_matrix[afterNode][beforeNode] -= INF;
+    crossing_matrix_diff[afterNode][beforeNode] -= INF;
+}

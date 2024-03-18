@@ -7,12 +7,17 @@
 
 #include "../pace_graph/pace_graph.hpp"
 
+enum class SearchStrategyForConflicts { MATRIX, NEIGHBORS, BMI };
+
 class SimpleLBParameter {
   public:
     bool usePotentialMatrix = true;
+    bool testForceChoiceOfConflicts = false;
     int numberOfIterationsForConflictOrder = 100;
+    SearchStrategyForConflicts searchStrategyForConflicts =
+        SearchStrategyForConflicts::BMI;
 };
 
-int simpleLB(PaceGraph &graph, SimpleLBParameter &parameter);
+long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter);
 
 #endif // PACE2024_SIMPLE_LB_HPP
