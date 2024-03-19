@@ -1,19 +1,24 @@
-#ifndef ORDER_HPP
+#ifndef ORDER_HPP;
 #define ORDER_HPP
 
 // #include "pace_graph.hpp"
 
 #include "pace_graph.hpp"
+#include "relation.hpp"
 #include "segment_tree.hpp"
 #include <algorithm>
 #include <random>
 #include <sstream>
 #include <vector>
 
+const int EXTREME_SWAPPING_COST = 10000;
+
 class Order {
   private:
+    // TODO(Lukas): These vectors should hold unsigned ints.
     std::vector<int> vertex_to_position;
     std::vector<int> position_to_vertex;
+    PartialOrdering partial_order;
 
   public:
     /**
@@ -40,6 +45,8 @@ class Order {
             vertex_to_position[vertex] = i;
         }
     }
+
+    void apply_reduction_rules() {}
 
     void swap_by_vertices(const int v, const int u) {
         int pos1 = vertex_to_position[v];
@@ -101,6 +108,11 @@ class Order {
 
         int u = position_to_vertex[pos1];
         int v = position_to_vertex[pos2];
+        // Vertices already commited to by reduction rules in the partial order
+        // are supposed to be extremely costly to swap
+        if (partial_order.lt(v, u)) {
+            return EXTREME_SWAPPING_COST;
+        }
 
         int cost_change = 0;
         // TODO: this can be AVX accelerated
@@ -142,6 +154,32 @@ class Order {
         }
 
         return crossings;
+    }
+
+    // Reduction rules from
+    // https://www.sciencedirect.com/science/article/pii/S1570866707000469
+    //
+    // TODO(Lukas): Remove isolated vertices from graph
+    // TOOD(Lukas): We need an upper bound for RRlarge rule
+
+    void rr1_rr2(const PaceGraph &graph) {
+        for (int i = 0; i < graph.size_free; i++) {
+            for (int j = i; j < graph.size_free; j++) {
+                // RR1
+                if (graph.crossing_matrix[i] == 0) {
+                    partial_order.set_a_lt_b(i, j);
+                } else if (graph.crossing_matrix[j] == 0) {
+                    partial_order.set_a_lt_b(j, i);
+                } else if (graph.neighbors_free[i] == graph.neighbors_free[j]) {
+                    // RR2
+                    partial_order.set_a_lt_b(i, j);
+                }
+            }
+        }
+    }
+
+    void rrl02(const PaceGraph &graph) {
+
     }
 
     /**
