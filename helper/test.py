@@ -174,8 +174,8 @@ def main():
                         help="The path to the program to be run.")
     parser.add_argument("--timelimit", type=int, default=300,
                         help="The time limit for each run in seconds. Default is 300.")
-    parser.add_argument("--memlimit", type=int, default=4,
-                        help="The memory limit for each run in GB. Default is 4.")
+    parser.add_argument("--memlimit", type=int, default=8,
+                        help="The memory limit for each run in GB. Default is 8.")
 
     parser.add_argument("--lb", "--lower_bound", action="store_true",
                         help="Run the program with the lower bound option")
