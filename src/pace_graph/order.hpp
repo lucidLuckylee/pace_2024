@@ -6,24 +6,10 @@
 #include "pace_graph.hpp"
 #include "segment_tree.hpp"
 #include <algorithm>
-#include <iterator>
-#include <numeric>
 #include <random>
 #include <sstream>
 #include <vector>
 
-/*
- *  This class makes use of templating to be able to swap out the
- *  Container implementation used by it to any that supports iter_swap.
- *  Thus, you can e.g. create an Order with a std::vector or std::list
- *  as Container.
- *
- *  Example:
- *      Order<std::list<int>> test_order(1,4);
- *      Order<std::deque<int>> test_order_2(test_order);
- *      Order<std::vector<int>> test_order_3(std::vector({1,2,3,4}));
- *
- */
 class Order {
   private:
     std::vector<int> vertex_to_position;
@@ -80,7 +66,7 @@ class Order {
 
         // Check if we need to shift vertices forward or backward.
         if (old_position < new_position) {
-            // Move each vertex one position back, from old_position+1 to
+            // Move each vertex one position back, from old_position + 1 to
             // new_position.
             for (int i = old_position; i < new_position; ++i) {
                 int next_vertex = position_to_vertex[i + 1];
@@ -88,7 +74,7 @@ class Order {
                 vertex_to_position[next_vertex] = i;
             }
         } else if (old_position > new_position) {
-            // Move each vertex one position forward, from old_position-1 to
+            // Move each vertex one position forward, from old_position - 1 to
             // new_position.
             for (int i = old_position; i > new_position; --i) {
                 int prev_vertex = position_to_vertex[i - 1];
@@ -133,28 +119,28 @@ class Order {
     }
 
     long count_crossings(const PaceGraph &graph) {
-        long c = 0;
+        long crossings = 0;
 
-        std::vector<int> arr;
-        arr.assign(graph.size_free, 0);
+        std::vector<int> seg_tree_array;
+        seg_tree_array.assign(graph.size_free, 0);
 
-        SegmentTree segTree(arr);
+        SegmentTree segTree(seg_tree_array);
 
         for (int i = 0; i < graph.size_fixed; i++) {
 
-            std::vector<int> sorted = graph.neighbors_fixed[i];
-            std::sort(sorted.begin(), sorted.end(), [&](int a, int b) {
+            std::vector<int> sorted_neighbors = graph.neighbors_fixed[i];
+            std::sort(sorted_neighbors.begin(), sorted_neighbors.end(), [&](int a, int b) {
                 return vertex_to_position[a] < vertex_to_position[b];
             });
 
-            for (int v : sorted) {
+            for (int v : sorted_neighbors) {
                 int posOfV = vertex_to_position[v];
                 segTree.updateSingle(posOfV, 1);
-                c += segTree.queryRange(posOfV + 1, graph.size_free);
+                crossings += segTree.queryRange(posOfV + 1, graph.size_free);
             }
         }
 
-        return c;
+        return crossings;
     }
 
     /**
