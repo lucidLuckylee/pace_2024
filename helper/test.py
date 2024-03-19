@@ -177,8 +177,13 @@ def main():
     parser.add_argument("--memlimit", type=int, default=8,
                         help="The memory limit for each run in GB. Default is 8.")
 
-    parser.add_argument("--lb", "--lower_bound", action="store_true",
-                        help="Run the program with the lower bound option")
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument("--lb", "--lower_bound", action="store_true",
+                       help="Run the program with the lower bound option")
+    group.add_argument("--std", "--standard_out", action="store_true",
+                       help="Print out the standard output of the program and ignores all checks.")
+
     parser.add_argument("-p", "--print", action="store_true", help="Print the result in terminal")
 
     args = parser.parse_args()
@@ -192,9 +197,15 @@ def main():
         pass
 
     if args.print:
-        print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'Crossings':<16}{'Iterations':<16}")
+        if args.std:
+            print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'stdout':<16}")
+        else:
+            print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'Crossings':<16}{'Iterations':<16}")
     else:
-        print("file", "exit_code", "time", "status", "crossings", "iterations", sep=",")
+        if args.std:
+            print("file", "exit_code", "time", "status", "stdout", sep=",")
+        else:
+            print("file", "exit_code", "time", "status", "crossings", "iterations", sep=",")
     for path in paths:
         if path.endswith(".gr"):
             pace_graph_path = os.path.join(base_path, path)
@@ -203,23 +214,36 @@ def main():
             return_code, time_delta, stderr, status = process_result
 
             if return_code == 0:
-                iterations = clean_output(SOLUTION_PATH)
-                if args.lb:
-                    crossing = load_lb_solution(SOLUTION_PATH)
+                if args.std:
+                    stdout = open(SOLUTION_PATH, 'r').read().replace("\n", "\\n")
+                    if args.print:
+                        print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{stdout:<16}")
+                    else:
+                        print(path, return_code, time_delta, status.value, stdout, sep=",")
                 else:
-                    check_if_solution_is_valid(pace_graph_path, SOLUTION_PATH)
-                    crossing = count_crossings(pace_graph_path, SOLUTION_PATH)
-                if args.print:
-                    print(
-                        f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{crossing:<16}{iterations:<16}")
-                else:
-                    print(path, return_code, time_delta, status.value, crossing, iterations, sep=",")
+                    iterations = clean_output(SOLUTION_PATH)
+                    if args.lb:
+                        crossing = load_lb_solution(SOLUTION_PATH)
+                    else:
+                        check_if_solution_is_valid(pace_graph_path, SOLUTION_PATH)
+                        crossing = count_crossings(pace_graph_path, SOLUTION_PATH)
+                    if args.print:
+                        print(
+                            f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{crossing:<16}{iterations:<16}")
+                    else:
+                        print(path, return_code, time_delta, status.value, crossing, iterations, sep=",")
 
             else:
                 if args.print:
-                    print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{'':<16}{'':<16}")
+                    if args.std:
+                        print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{stderr:<16}")
+                    else:
+                        print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{'':<16}{'':<16}")
                 else:
-                    print(path, return_code, time_delta, status.value, '', '', sep=",")
+                    if args.std:
+                        print(path, return_code, time_delta, status.value, stderr, sep=",")
+                    else:
+                        print(path, return_code, time_delta, status.value, '', '', sep=",")
             sys.stdout.flush()
 
 
