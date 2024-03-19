@@ -3,36 +3,92 @@
 
 #include "order.hpp"
 #include "pace_graph.hpp"
-#include <csignal>
+#include "solver.hpp"
+#include <chrono>
 
-class Solver {
+template <typename T> class Solver {
   private:
-    /*
-     * Necessary to access the current solver instance in the signal_handler
-     */
-    static Solver *instance;
+    std::chrono::time_point<std::chrono::steady_clock> start_time;
+    std::chrono::milliseconds time_limit;
 
-    /*
-     * Helper function to drop the int parameter of the signal handler
-     * and output the resulting Order that calls the terminate() function
-     */
-    static void signal_handler(int signal_num);
+    std::chrono::time_point<std::chrono::steady_clock> start_time_for_part;
+    std::chrono::milliseconds time_limit_for_part;
+
+  protected:
+    virtual void finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,
+                        std::vector<T> &results,
+                        std::vector<int> &isolated_nodes) = 0;
+    virtual T run(PaceGraph &graph) = 0;
 
   public:
-    /* Terminate the current solve function. Should implement the generation of
-     * the resulting Order so the signal_handler can call it. For this the Order
-     * has to be created from Class member variables. They should be as
-     * consistent as possible and atomically updated. One can use sigprocmask to
-     * mask the SIGTERM signal.
-     */
-    virtual Order terminate() = 0;
-    virtual Order solve() = 0;
+    Solver(std::chrono::milliseconds limit = std::chrono::milliseconds::max())
+        : start_time(std::chrono::steady_clock::now()),
+          start_time_for_part(std::chrono::steady_clock::now()),
+          time_limit(limit),
+          time_limit_for_part(std::chrono::milliseconds::zero()) {}
 
-    PaceGraph *graph;
+    void solve(PaceGraph &graph) {
+        auto val = graph.splitGraphOn0Splits();
+        auto splittedGraphs = std::get<0>(val);
+        auto isolated_nodes = std::get<1>(val);
 
-    explicit Solver(PaceGraph &graph);
+        std::vector<T> results;
+        for (int i = 0; i < splittedGraphs.size(); i++) {
+            auto g = splittedGraphs[i];
 
-    ~Solver() { std::signal(SIGTERM, SIG_DFL); }
+            start_time_for_part = std::chrono::steady_clock::now();
+
+            auto msLeft = time_limit -
+                          std::chrono::duration_cast<std::chrono::milliseconds>(
+                              start_time_for_part - start_time);
+
+            int sizeForAllUpcomingSegments = 0;
+            for (int j = i; j < splittedGraphs.size(); j++) {
+                sizeForAllUpcomingSegments += splittedGraphs[j].size_free;
+            }
+
+            double percentageForThisSegment =
+                static_cast<double>(g.size_free) / sizeForAllUpcomingSegments;
+
+            double newTimeLimitMs = msLeft.count() * percentageForThisSegment;
+
+            time_limit_for_part =
+                std::chrono::milliseconds(static_cast<int>(newTimeLimitMs));
+            
+            results.push_back(run(g));
+        }
+
+        finish(graph, splittedGraphs, results, isolated_nodes);
+    }
+
+    bool has_time_left() const {
+        return std::chrono::steady_clock::now() - start_time_for_part <
+               time_limit_for_part;
+    }
+};
+
+class SolutionSolver : public Solver<Order> {
+  protected:
+    void finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,
+                std::vector<Order> &results,
+                std::vector<int> &isolated_nodes) override {
+        for (int u : isolated_nodes) {
+            std::cout << graph.free_real_names[u] << std::endl;
+        }
+
+        for (int i = 0; i < subgraphs.size(); ++i) {
+            auto g = subgraphs[i];
+            auto sol = results[i];
+            std::cout << sol.convert_to_real_node_id(g) << std::endl;
+        }
+    }
+
+    Order run(PaceGraph &graph) override = 0;
+
+  public:
+    explicit SolutionSolver(
+        std::chrono::milliseconds limit = std::chrono::milliseconds::max())
+        : Solver<Order>(limit) {}
 };
 
 #endif // SOLVER_HPP
