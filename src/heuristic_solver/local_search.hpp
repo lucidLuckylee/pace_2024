@@ -11,9 +11,15 @@ enum class SiftingType {
     DegreeOrderReverse,
 };
 
+enum class SiftingInsertionType {
+    First,
+    Random,
+};
+
 class LocalSearchParameter {
   public:
     SiftingType siftingType = SiftingType::None;
+    SiftingInsertionType siftingInsertionType = SiftingInsertionType::First;
 };
 
 /**

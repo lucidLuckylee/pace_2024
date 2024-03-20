@@ -10,21 +10,42 @@
  *
  * @return the cost change of the move (should be negative or zero)
  */
-int sifting_node(PaceGraph &graph, Order &order, int v) {
+int sifting_node(PaceGraph &graph, Order &order,
+                 LocalSearchParameter &parameter, int v) {
     int posOfV = order.get_position(v);
     int bestPositionToInsert = posOfV;
     int bestCostChange = 0;
 
     int crossingOld = 0;
     auto crossing_matrix_diff = graph.crossing_matrix_diff[v];
+
+    int foundWithThisCost = 0;
     for (int i = posOfV - 1; i >= 0; i--) {
         int u = order.get_vertex(i);
 
         crossingOld += crossing_matrix_diff[u];
 
-        if (crossingOld < bestCostChange) {
-            bestCostChange = crossingOld;
-            bestPositionToInsert = i;
+        if (crossingOld <= bestCostChange) {
+            bool useSolution = false;
+            if (crossingOld == bestCostChange) {
+                if (parameter.siftingInsertionType ==
+                    SiftingInsertionType::Random) {
+                    foundWithThisCost++;
+                    if (rand() % foundWithThisCost == 0) {
+                        bestPositionToInsert = i;
+                    }
+                } else {
+                    useSolution = true;
+                }
+            } else {
+                foundWithThisCost = 0;
+                useSolution = true;
+            }
+
+            if (useSolution) {
+                bestCostChange = crossingOld;
+                bestPositionToInsert = i;
+            }
         }
     }
 
@@ -33,9 +54,28 @@ int sifting_node(PaceGraph &graph, Order &order, int v) {
         int u = order.get_vertex(i);
         crossingOld -= crossing_matrix_diff[u];
 
-        if (crossingOld < bestCostChange) {
-            bestCostChange = crossingOld;
-            bestPositionToInsert = i;
+        if (crossingOld <= bestCostChange) {
+
+            bool useSolution = false;
+            if (crossingOld == bestCostChange) {
+                if (parameter.siftingInsertionType ==
+                    SiftingInsertionType::Random) {
+                    foundWithThisCost++;
+                    if (rand() % foundWithThisCost == 0) {
+                        bestPositionToInsert = i;
+                    }
+                } else {
+                    useSolution = true;
+                }
+            } else {
+                foundWithThisCost = 0;
+                useSolution = true;
+            }
+
+            if (useSolution) {
+                bestCostChange = crossingOld;
+                bestPositionToInsert = i;
+            }
         }
     }
 
@@ -71,7 +111,7 @@ int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
 
     int improvement = 0;
     for (int v = 0; v < graph.size_free; v++) {
-        improvement += sifting_node(graph, order, v);
+        improvement += sifting_node(graph, order, parameter, v);
     }
     return improvement;
 }
@@ -91,10 +131,6 @@ int local_search(PaceGraph &graph, Order &order,
     // Create a vector with all the positions
     // This will be used to shuffle the order of the positions in the free set
     // With this two vertices are not always checked in the same order
-
-    for (int v = 0; v < graph.size_free; v++) {
-        improvement += sifting_node(graph, order, v);
-    }
 
     // Do this while loop, while there is still improvement
     /*bool found_improvement = true;
