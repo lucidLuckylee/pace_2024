@@ -1,57 +1,79 @@
 #include "cheap_heuristics.hpp"
-#include "../pace_graph/solver.hpp"
 
-MeanPositionSolver::MeanPositionSolver(PaceGraph &graph, MeanTypeAlgo meanType)
-    : Solver(graph) {
-    this->meanType = meanType;
+MeanPositionSolver::MeanPositionSolver(
+    CheapHeuristicsParameter cheapHeuristicsParameter) {
+    this->cheapHeuristicsParameter = cheapHeuristicsParameter;
 }
 
-Order MeanPositionSolver::terminate() {
-    // The solver is about to return a result so we ignore any SIGTERM
-    // signal now.
-    signal(SIGTERM, SIG_IGN);
-    std::vector<int> order;
+Order MeanPositionSolver::solve(PaceGraph &graph) {
 
-    order.reserve(this->average_position.size());
-    for (auto node_with_postion : this->average_position) {
-        order.emplace_back(std::get<0>(node_with_postion));
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(-1, 1);
+
+    Order currentBestOrder = Order(graph.size_free);
+    long bestOrderCost = 1000000000000000000;
+
+    std::vector<double> nodeOffset = std::vector<double>(graph.size_free);
+    std::vector<std::tuple<int, double>> average_position(graph.size_free);
+    for (int i = 0; i < graph.size_free; ++i) {
+        nodeOffset[i] = dis(gen);
     }
-    return Order(order);
-}
-
-Order MeanPositionSolver::solve() {
-    for (int i = 0; i < this->graph->neighbors_free.size(); ++i) {
-        auto neighbors_of_node = this->graph->neighbors_free[i];
-        double avg = 0;
-        switch (this->meanType) {
-        case average:
-            for (auto neighbor : neighbors_of_node) {
-                avg += neighbor;
-            }
-            avg /= neighbors_of_node.size();
-            break;
-        case median:
-            if (neighbors_of_node.size() != 0) {
-                int position_middle_node = neighbors_of_node.size() / 2;
-                avg = neighbors_of_node[position_middle_node];
-            }
-            break;
-        case sum_along_crossing:
-            this->graph->init_crossing_matrix_if_necessary();
-            auto crossing_matrix_for_i = this->graph->crossing_matrix[i];
-            for (int j = 0; j < this->graph->size_free; ++j) {
-                avg += crossing_matrix_for_i[j];
-            }
+ 
+    for (int _ = 0; _ < cheapHeuristicsParameter.jitterIterations; ++_) {
+        std::vector<double> newNodeOffset = std::vector<double>(nodeOffset);
+        for (int j = 0; j < graph.size_free; ++j) {
+            newNodeOffset[j] += dis(gen) / 10;
         }
-        this->average_position.emplace_back(i, avg);
+        for (int i = 0; i < graph.neighbors_free.size(); ++i) {
+            auto neighbors_of_node = graph.neighbors_free[i];
+
+            double avg = 0;
+
+            switch (cheapHeuristicsParameter.meanType) {
+            case average:
+                for (auto neighbor : neighbors_of_node) {
+                    avg += neighbor;
+                }
+                avg /= neighbors_of_node.size();
+                break;
+            case median:
+                if (neighbors_of_node.size() != 0) {
+                    int position_middle_node = neighbors_of_node.size() / 2;
+                    avg = neighbors_of_node[position_middle_node] +
+                          newNodeOffset[i];
+                }
+                break;
+            case sum_along_crossing:
+                graph.init_crossing_matrix_if_necessary();
+                auto crossing_matrix_for_i = graph.crossing_matrix[i];
+                for (int j = 0; j < graph.size_free; ++j) {
+                    avg += crossing_matrix_for_i[j];
+                }
+            }
+            average_position[i] = std::tuple(i, avg);
+        }
+
+        std::sort(average_position.begin(), average_position.end(),
+                  [](const std::tuple<int, double> &a,
+                     const std::tuple<int, double> &b) {
+                      // Compare based on the second element
+                      return std::get<1>(a) < std::get<1>(b);
+                  });
+
+        std::vector<int> orderVector(graph.size_free);
+        for (int i = 0; i < graph.size_free; ++i) {
+            orderVector[i] = std::get<0>(average_position[i]);
+        }
+
+        Order order = Order(orderVector);
+        long cost = order.count_crossings(graph);
+        if (cost <= bestOrderCost) {
+            bestOrderCost = cost;
+            currentBestOrder = order;
+            nodeOffset = newNodeOffset;
+        }
     }
 
-    std::sort(
-        this->average_position.begin(), this->average_position.end(),
-        [](const std::tuple<int, double> &a, const std::tuple<int, double> &b) {
-            // Compare based on the second element
-            return std::get<1>(a) < std::get<1>(b);
-        });
-
-    return this->terminate();
+    return currentBestOrder;
 }

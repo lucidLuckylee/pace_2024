@@ -6,16 +6,20 @@
 
 enum MeanTypeAlgo { average, median, sum_along_crossing };
 
-class MeanPositionSolver : Solver {
+class CheapHeuristicsParameter {
   public:
-    MeanTypeAlgo meanType;
-    std::vector<std::tuple<int, double>> average_position;
+    MeanTypeAlgo meanType = median;
+    int jitterIterations = 1000;
+};
 
-    explicit MeanPositionSolver(PaceGraph &graph, MeanTypeAlgo meanType);
+class MeanPositionSolver {
+  public:
+    CheapHeuristicsParameter cheapHeuristicsParameter;
 
-    Order terminate();
+    explicit MeanPositionSolver(
+        CheapHeuristicsParameter cheapHeuristicsParameter);
 
-    Order solve();
+    Order solve(PaceGraph &graph);
 };
 
 #endif // PACE2024_CHEAP_HEURISTICS_H
