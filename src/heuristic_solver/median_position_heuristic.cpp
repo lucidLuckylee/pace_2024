@@ -1,7 +1,7 @@
 #include "median_position_heuristic.hpp"
 #include "../pace_graph/solver.hpp"
 
-Order MeanPositionSolver::solve(PaceGraph &graph) {
+Order MeanPositionSolver::jittering(PaceGraph &graph) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -13,14 +13,14 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
     std::vector<double> nodeOffset = std::vector<double>(graph.size_free);
     std::vector<std::tuple<int, double>> average_position(graph.size_free);
     for (int i = 0; i < graph.size_free; ++i) {
-        if (cheapHeuristicsParameter.useJittering) {
+        if (meanPositionParameter.useJittering) {
             nodeOffset[i] = dis(gen);
         } else {
             nodeOffset[i] = 0;
         }
     }
 
-    for (int _ = 0; _ < cheapHeuristicsParameter.jitterIterations; ++_) {
+    for (int _ = 0; _ < meanPositionParameter.jitterIterations; ++_) {
         std::vector<double> newNodeOffset = std::vector<double>(nodeOffset);
         for (int j = 0; j < graph.size_free; ++j) {
             newNodeOffset[j] += dis(gen) / 10;
@@ -30,7 +30,7 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
 
             double avg = 0;
 
-            switch (cheapHeuristicsParameter.meanType) {
+            switch (meanPositionParameter.meanType) {
             case average:
                 for (auto neighbor : neighbors_of_node) {
                     avg += neighbor;
@@ -74,8 +74,25 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
             nodeOffset = newNodeOffset;
         }
 
-        if (!cheapHeuristicsParameter.useJittering) {
+        if (!meanPositionParameter.useJittering || !has_time_left()) {
             break;
+        }
+    }
+
+    return currentBestOrder;
+}
+
+Order MeanPositionSolver::solve(PaceGraph &graph) {
+
+    Order currentBestOrder = Order(graph.size_free);
+    long bestOrderCost = 1000000000000000000;
+
+    while (has_time_left()) {
+        Order order = jittering(graph);
+        long cost = order.count_crossings(graph);
+        if (cost <= bestOrderCost) {
+            bestOrderCost = cost;
+            currentBestOrder = order;
         }
     }
 

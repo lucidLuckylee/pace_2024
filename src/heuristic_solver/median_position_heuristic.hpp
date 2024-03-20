@@ -9,7 +9,7 @@
 
 enum MeanTypeAlgo { average, median, sum_along_crossing };
 
-class CheapHeuristicsParameter {
+class MeanPositionParameter {
   public:
     MeanTypeAlgo meanType = median;
     bool useJittering = true;
@@ -17,14 +17,16 @@ class CheapHeuristicsParameter {
 };
 
 class MeanPositionSolver : Heuristic {
-  public:
-    CheapHeuristicsParameter cheapHeuristicsParameter;
+  private:
+    Order jittering(PaceGraph &graph);
 
-    explicit MeanPositionSolver(
-        std::function<bool()> has_time_left,
-        CheapHeuristicsParameter cheapHeuristicsParameter)
+  public:
+    MeanPositionParameter meanPositionParameter;
+
+    explicit MeanPositionSolver(std::function<bool()> has_time_left,
+                                MeanPositionParameter meanPositionParameter)
         : Heuristic(std::move(has_time_left)),
-          cheapHeuristicsParameter(cheapHeuristicsParameter) {}
+          meanPositionParameter(meanPositionParameter) {}
 
     Order solve(PaceGraph &graph) override;
 };
