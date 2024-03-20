@@ -64,7 +64,8 @@ getConflictPairsIterateOverNeighbors(PaceGraph &graph) {
     return conflictPairs;
 }
 
-std::vector<std::tuple<int, int, int>> getConflictPairsBMI(PaceGraph &graph) {
+std::vector<std::tuple<int, int, int>>
+getConflictPairsBMI(PaceGraph &graph, SimpleLBParameter &parameter) {
     std::vector<std::tuple<int, int, int>> conflictPairs;
 
     std::vector<std::vector<uint64_t>> smaller(graph.size_free);
@@ -110,6 +111,10 @@ std::vector<std::tuple<int, int, int>> getConflictPairsBMI(PaceGraph &graph) {
                 }
             }
         }
+ 
+        if (conflictPairs.size() > parameter.maxNrOfConflicts) {
+            break;
+        }
     }
 
     return conflictPairs;
@@ -126,7 +131,7 @@ getConflictPairs(SimpleLBParameter &parameter, PaceGraph &graph) {
         conflictPairs = getConflictPairsIterateOverNeighbors(graph);
     } else if (parameter.searchStrategyForConflicts ==
                SearchStrategyForConflicts::BMI) {
-        conflictPairs = getConflictPairsBMI(graph);
+        conflictPairs = getConflictPairsBMI(graph, parameter);
     }
 
     return conflictPairs;
@@ -146,7 +151,8 @@ long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
                           long currentLB) {
     auto conflictPairs = getConflictPairs(parameter, graph);
 
-    if (conflictPairs.empty()) {
+    if (conflictPairs.empty() ||
+        conflictPairs.size() >= parameter.maxNrOfConflicts) {
         return 0;
     }
 
