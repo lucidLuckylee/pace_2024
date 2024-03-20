@@ -14,11 +14,13 @@ class MeanPositionParameter {
     MeanTypeAlgo meanType = median;
     bool useJittering = true;
     int jitterIterations = 1000;
+    int improveWithSwapping = 1;
 };
 
 class MeanPositionSolver : Heuristic {
   private:
     Order jittering(PaceGraph &graph);
+    void improveOrderWithSwapping(PaceGraph &graph, Order &order);
 
   public:
     MeanPositionParameter meanPositionParameter;

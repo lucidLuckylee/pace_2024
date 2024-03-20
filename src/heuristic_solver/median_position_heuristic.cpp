@@ -82,19 +82,58 @@ Order MeanPositionSolver::jittering(PaceGraph &graph) {
     return currentBestOrder;
 }
 
+void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
+                                                  Order &order) {
+    bool foundSwap = true;
+    while (foundSwap) {
+        foundSwap = false;
+
+        for (int i = 0; i < graph.size_free - 1; ++i) {
+            int u = order.get_vertex(i);
+            int v = order.get_vertex(i + 1);
+
+            int crossing_matrix_u_v = 0;
+            int crossing_matrix_v_u = 0;
+
+            for (int u_N : graph.neighbors_free[u]) {
+                for (int v_N : graph.neighbors_free[v]) {
+                    if (u_N > v_N) {
+                        crossing_matrix_u_v++;
+                    } else if (v_N > u_N) {
+                        crossing_matrix_v_u++;
+                    }
+                }
+            }
+
+            if (crossing_matrix_u_v > crossing_matrix_v_u) {
+                order.swap_by_position(i, i + 1);
+                foundSwap = true;
+            }
+        }
+    }
+}
+
 Order MeanPositionSolver::solve(PaceGraph &graph) {
 
     Order currentBestOrder = Order(graph.size_free);
     long bestOrderCost = 1000000000000000000;
 
+    int iterations = 0;
     while (has_time_left()) {
         Order order = jittering(graph);
+
         long cost = order.count_crossings(graph);
         if (cost <= bestOrderCost) {
             bestOrderCost = cost;
             currentBestOrder = order;
         }
+        iterations++;
+        if (iterations % meanPositionParameter.improveWithSwapping == 0) {
+            improveOrderWithSwapping(graph, currentBestOrder);
+        }
     }
+
+    std::cout << "#Iterations: " << iterations << std::endl;
 
     return currentBestOrder;
 }
