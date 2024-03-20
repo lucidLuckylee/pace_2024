@@ -38,7 +38,7 @@ class PaceGraph {
      */
     std::vector<std::vector<int>> neighbors_free;
 
-    /** Saves the neighbors of a vertex i \in [0,..., size_fixed - 1] in
+    /** Saves the neighbors of a fixed vertex i \in [0,..., size_fixed - 1] in
      * neighbors_fixed[i]. These neighbors are sorted in ascending order.
      */
     std::vector<std::vector<int>> neighbors_fixed;

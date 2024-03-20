@@ -1,9 +1,5 @@
-#include "cheap_heuristics.hpp"
-
-MeanPositionSolver::MeanPositionSolver(
-    CheapHeuristicsParameter cheapHeuristicsParameter) {
-    this->cheapHeuristicsParameter = cheapHeuristicsParameter;
-}
+#include "median_position_heuristic.hpp"
+#include "../pace_graph/solver.hpp"
 
 Order MeanPositionSolver::solve(PaceGraph &graph) {
 
@@ -17,9 +13,13 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
     std::vector<double> nodeOffset = std::vector<double>(graph.size_free);
     std::vector<std::tuple<int, double>> average_position(graph.size_free);
     for (int i = 0; i < graph.size_free; ++i) {
-        nodeOffset[i] = dis(gen);
+        if (cheapHeuristicsParameter.useJittering) {
+            nodeOffset[i] = dis(gen);
+        } else {
+            nodeOffset[i] = 0;
+        }
     }
- 
+
     for (int _ = 0; _ < cheapHeuristicsParameter.jitterIterations; ++_) {
         std::vector<double> newNodeOffset = std::vector<double>(nodeOffset);
         for (int j = 0; j < graph.size_free; ++j) {
@@ -72,6 +72,10 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
             bestOrderCost = cost;
             currentBestOrder = order;
             nodeOffset = newNodeOffset;
+        }
+
+        if (!cheapHeuristicsParameter.useJittering) {
+            break;
         }
     }
 
