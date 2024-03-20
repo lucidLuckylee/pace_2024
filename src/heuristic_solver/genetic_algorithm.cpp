@@ -1,15 +1,10 @@
 #include "genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
-#include "cheap_heuristics.hpp"
 #include "local_search.hpp"
+#include "median_position_heuristic.hpp"
 #include <iostream>
 
-/**
- * @param graph get a
- * @param time_limit
- * @return
- */
-Order genetic_algorithm(PaceGraph &graph, int time_limit_ms) {
+Order GeneticHeuristic::solve(PaceGraph &graph) {
     SimpleLBParameter lbParameter;
     int lb = simpleLB(graph, lbParameter);
     graph.init_crossing_matrix_if_necessary();
@@ -25,11 +20,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit_ms) {
 
     auto start_time = std::chrono::steady_clock::now();
 
-    while (std::chrono::steady_clock::now() - start_time <
-               std::chrono::milliseconds(time_limit_ms) &&
-           lb != bestCost) {
-
-        // Order newOrder = mean_position_algorithm(graph, median);
+    while (has_time_left() && lb != bestCost) {
         Order newOrder(graph.size_free);
         newOrder.permute();
 
@@ -50,8 +41,7 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit_ms) {
                 newOrder = bestOrder.clone();
                 for (int i = 0; i < graph.size_free - 1; i++) {
 
-                    if (std::chrono::steady_clock::now() - start_time >
-                        std::chrono::milliseconds(time_limit_ms)) {
+                    if (!has_time_left()) {
                         break;
                     }
 
