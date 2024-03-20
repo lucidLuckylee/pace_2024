@@ -85,7 +85,7 @@ class PaceGraph {
 
     bool is_crossing_matrix_initialized();
 
-    void init_crossing_matrix_if_necessary();
+    bool init_crossing_matrix_if_necessary();
 
     PaceGraph induced_subgraphs(std::vector<int> fixed_nodes);
 

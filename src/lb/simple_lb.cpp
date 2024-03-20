@@ -228,8 +228,30 @@ long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
 }
 
 long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
-    graph.init_crossing_matrix_if_necessary();
+    bool canInitCrossingMatrix = graph.init_crossing_matrix_if_necessary();
     long lb = 0;
+
+    if (!canInitCrossingMatrix) {
+        for (int u = 0; u < graph.size_free; ++u) {
+            for (int v = u + 1; v < graph.size_free; v++) {
+                int crossing_matrix_u_v = 0;
+                int crossing_matrix_v_u = 0;
+
+                for (int u_N : graph.neighbors_free[u]) {
+                    for (int v_N : graph.neighbors_free[v]) {
+                        if (u_N > v_N) {
+                            crossing_matrix_u_v++;
+                        } else if (v_N > u_N) {
+                            crossing_matrix_v_u++;
+                        }
+                    }
+                }
+
+                lb += std::min(crossing_matrix_u_v, crossing_matrix_v_u);
+            }
+        }
+        return lb;
+    }
 
     for (int u = 0; u < graph.size_free; ++u) {
         for (int v = u + 1; v < graph.size_free; v++) {

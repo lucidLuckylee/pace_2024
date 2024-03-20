@@ -114,10 +114,14 @@ bool PaceGraph::is_crossing_matrix_initialized() {
     return !crossing_matrix.empty();
 }
 
-void PaceGraph::init_crossing_matrix_if_necessary() {
+bool PaceGraph::init_crossing_matrix_if_necessary() {
 
     if (is_crossing_matrix_initialized()) {
-        return;
+        return true;
+    }
+
+    if (size_free > 20000) {
+        return false;
     }
 
     crossing_matrix.resize(size_free);
@@ -152,6 +156,8 @@ void PaceGraph::init_crossing_matrix_if_necessary() {
                 crossing_matrix[i][j] - crossing_matrix[j][i];
         }
     }
+
+    return true;
 }
 
 PaceGraph::~PaceGraph() {
