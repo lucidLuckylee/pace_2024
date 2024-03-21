@@ -1,7 +1,7 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
-#include "../heuristic_solver/median_position_heuristic.hpp"
+#include "../heuristic_solver/mean_position_heuristic.hpp"
 #include "order.hpp"
 #include "pace_graph.hpp"
 #include "solver.hpp"
@@ -37,9 +37,9 @@ template <typename T> class Solver {
         auto isolated_nodes = std::get<1>(val);
 
         if (reorderNodes) {
-            CheapHeuristicsParameter cheapHeuristicsParameter;
-            MeanPositionSolver meanPositionSolver([this]() { return false; },
-                                                  cheapHeuristicsParameter);
+            MeanPositionParameter meanPositionParameter;
+            MeanPositionSolver meanPositionSolver(
+                [this](int it) { return it == 0; }, meanPositionParameter);
 
             for (int i = 0; i < splittedGraphs.size(); ++i) {
                 auto g = splittedGraphs[i];

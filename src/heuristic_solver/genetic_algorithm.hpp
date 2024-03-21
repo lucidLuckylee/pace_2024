@@ -8,7 +8,7 @@
 
 class GeneticHeuristic : public Heuristic {
   public:
-    explicit GeneticHeuristic(std::function<bool()> has_time_left)
+    explicit GeneticHeuristic(std::function<bool(int)> has_time_left)
         : Heuristic(std::move(has_time_left)) {}
     Order solve(PaceGraph &graph) override;
 };
