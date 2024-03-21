@@ -20,7 +20,7 @@ int sifting_node(PaceGraph &graph, Order &order,
     auto crossing_matrix_diff = graph.crossing_matrix_diff[v];
 
     int foundWithThisCost = 0;
-    for (int i = posOfV - 1; i >= 0; i--) {
+    for (int i = posOfV - 1; i >= 0 && crossingOld <= INF; i--) {
         int u = order.get_vertex(i);
 
         crossingOld += crossing_matrix_diff[u];
@@ -50,7 +50,7 @@ int sifting_node(PaceGraph &graph, Order &order,
     }
 
     crossingOld = 0;
-    for (int i = posOfV + 1; i < graph.size_free; ++i) {
+    for (int i = posOfV + 1; i < graph.size_free && crossingOld <= INF; ++i) {
         int u = order.get_vertex(i);
         crossingOld -= crossing_matrix_diff[u];
 
