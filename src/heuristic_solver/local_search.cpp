@@ -126,7 +126,19 @@ int local_search(PaceGraph &graph, Order &order,
         position_array.push_back(i);
     }
 
-    improvement += sifting(graph, order, parameter, position_array);
+    bool improved = true;
+    while (improved) {
+        int i = sifting(graph, order, parameter, position_array);
+        improvement += i;
+
+        if (i == 0) {
+            improved = false;
+        }
+
+        if (!parameter.exhaustiveSifting) {
+            break;
+        }
+    }
 
     return improvement;
 }

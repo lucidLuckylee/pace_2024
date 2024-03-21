@@ -20,6 +20,7 @@ class LocalSearchParameter {
   public:
     SiftingType siftingType = SiftingType::None;
     SiftingInsertionType siftingInsertionType = SiftingInsertionType::First;
+    bool exhaustiveSifting = true;
 };
 
 /**

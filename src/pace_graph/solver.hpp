@@ -107,7 +107,7 @@ class SolutionSolver : public Solver<Order> {
             std::cout << sol.convert_to_real_node_id(g) << std::endl;
             crossings += sol.count_crossings(g);
         }
-        std::cout << "Crossings: " << crossings << std::endl;
+        std::cout << "# Crossings: " << crossings << std::endl;
     }
 
     Order run(PaceGraph &graph) override = 0;
