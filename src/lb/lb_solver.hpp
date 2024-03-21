@@ -6,6 +6,7 @@
 #define PACE2024_LB_SOLVER_HPP
 
 #include "../pace_graph/solver.hpp"
+
 class LBSolver : public Solver<long> {
   protected:
     void finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,

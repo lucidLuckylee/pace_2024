@@ -3,6 +3,7 @@ project(pace2024)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DNDEBUG -march=native")
 
 # Add PaceGraph source file
@@ -10,6 +11,9 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp
         src/pace_graph/segment_tree.cpp
         src/pace_graph/segment_tree.hpp
         src/pace_graph/solver.hpp
+        src/heuristic_solver/heuristic.hpp
+        src/heuristic_solver/mean_position_heuristic.cpp
+        src/heuristic_solver/mean_position_heuristic.hpp
 )
 
 # Add heuristic_solver executable
@@ -22,12 +26,13 @@ add_executable(
         src/heuristic_solver/local_search.hpp
         src/heuristic_solver/genetic_algorithm.cpp
         src/heuristic_solver/genetic_algorithm.hpp
-        src/heuristic_solver/median_position_heuristic.cpp
-        src/heuristic_solver/median_position_heuristic.hpp
+        src/heuristic_solver/mean_position_heuristic.cpp
+        src/heuristic_solver/mean_position_heuristic.hpp
         src/lb/simple_lb.cpp
         src/lb/simple_lb.hpp
         src/heuristic_solver/heuristic_solver.hpp
         src/heuristic_solver/heuristic_solver.cpp
+        src/heuristic_solver/heuristic.hpp
 )
 
 add_executable(

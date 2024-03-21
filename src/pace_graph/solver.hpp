@@ -1,9 +1,9 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
+#include "../heuristic_solver/mean_position_heuristic.hpp"
 #include "order.hpp"
 #include "pace_graph.hpp"
-#include "solver.hpp"
 #include <chrono>
 
 template <typename T> class Solver {
@@ -13,6 +13,8 @@ template <typename T> class Solver {
 
     std::chrono::time_point<std::chrono::steady_clock> start_time_for_part;
     std::chrono::milliseconds time_limit_for_part;
+    bool reorderNodes;
+    bool initUB;
 
   protected:
     virtual void finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,
@@ -21,16 +23,38 @@ template <typename T> class Solver {
     virtual T run(PaceGraph &graph) = 0;
 
   public:
-    Solver(std::chrono::milliseconds limit = std::chrono::milliseconds::max())
+    Solver(std::chrono::milliseconds limit = std::chrono::milliseconds::max(),
+           bool reorderNodes = false, bool initUB = true)
         : start_time(std::chrono::steady_clock::now()),
           start_time_for_part(std::chrono::steady_clock::now()),
           time_limit(limit),
-          time_limit_for_part(std::chrono::milliseconds::zero()) {}
+          time_limit_for_part(std::chrono::milliseconds::zero()),
+          reorderNodes(reorderNodes), initUB(initUB) {}
 
     void solve(PaceGraph &graph) {
         auto val = graph.splitGraphOn0Splits();
         auto splittedGraphs = std::get<0>(val);
         auto isolated_nodes = std::get<1>(val);
+
+        if (reorderNodes || initUB) {
+            MeanPositionParameter meanPositionParameter;
+            MeanPositionSolver meanPositionSolver(
+                [this](int it) { return it == 0; }, meanPositionParameter);
+
+            for (int i = 0; i < splittedGraphs.size(); ++i) {
+                auto g = splittedGraphs[i];
+                auto order = meanPositionSolver.solve(g);
+                long ub = order.count_crossings(g);
+
+                if (reorderNodes) {
+                    splittedGraphs[i] = order.reorderGraph(g);
+                }
+
+                if (initUB) {
+                    splittedGraphs[i].ub = ub;
+                }
+            }
+        }
 
         std::vector<T> results;
         for (int i = 0; i < splittedGraphs.size(); i++) {
@@ -90,8 +114,9 @@ class SolutionSolver : public Solver<Order> {
 
   public:
     explicit SolutionSolver(
-        std::chrono::milliseconds limit = std::chrono::milliseconds::max())
-        : Solver<Order>(limit) {}
+        std::chrono::milliseconds limit = std::chrono::milliseconds::max(),
+        bool reorderNodes = false)
+        : Solver<Order>(limit, reorderNodes) {}
 };
 
 #endif // SOLVER_HPP
