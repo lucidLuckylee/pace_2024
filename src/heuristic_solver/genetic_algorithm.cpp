@@ -23,7 +23,10 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
         Order newOrder(graph.size_free);
         newOrder.permute();
 
-        local_search(graph, newOrder, localSearchParameter);
+        local_search(graph, newOrder, localSearchParameter,
+                     [this, number_of_iterations]() {
+                         return has_time_left(number_of_iterations);
+                     });
 
         int newCost = newOrder.count_crossings(graph);
         if (newCost <= bestCost) {
@@ -51,7 +54,10 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                     // force node order to be different
                     graph.crossing_matrix[u][v] += 100000;
                     graph.crossing_matrix_diff[u][v] += 100000;
-                    local_search(graph, newOrder, localSearchParameter);
+                    local_search(graph, newOrder, localSearchParameter,
+                                 [this, number_of_iterations]() {
+                                     return has_time_left(number_of_iterations);
+                                 });
                     graph.crossing_matrix[u][v] -= 100000;
                     graph.crossing_matrix_diff[u][v] -= 100000;
 

@@ -117,7 +117,8 @@ int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
 }
 
 int local_search(PaceGraph &graph, Order &order,
-                 LocalSearchParameter &parameter) {
+                 LocalSearchParameter &parameter,
+                 const std::function<bool()> &has_time_left) {
     int improvement = 0;
 
     std::vector<int> position_array;
@@ -127,7 +128,7 @@ int local_search(PaceGraph &graph, Order &order,
     }
 
     bool improved = true;
-    while (improved) {
+    while (improved && has_time_left()) {
         int i = sifting(graph, order, parameter, position_array);
         improvement += i;
 
