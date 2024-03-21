@@ -11,6 +11,9 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp
         src/pace_graph/segment_tree.cpp
         src/pace_graph/segment_tree.hpp
         src/pace_graph/solver.hpp
+        src/heuristic_solver/heuristic.hpp
+        src/heuristic_solver/mean_position_heuristic.cpp
+        src/heuristic_solver/mean_position_heuristic.hpp
 )
 
 # Add heuristic_solver executable
@@ -29,6 +32,7 @@ add_executable(
         src/lb/simple_lb.hpp
         src/heuristic_solver/heuristic_solver.hpp
         src/heuristic_solver/heuristic_solver.cpp
+        src/heuristic_solver/heuristic.hpp
 )
 
 add_executable(
@@ -46,13 +50,13 @@ target_link_libraries(heuristic_solver PaceGraph)
 
 option(ENABLE_ILP_SOLVER "Enable ILP Solver Build (Requires ortools)" OFF)
 
-if (ENABLE_ILP_SOLVER)
-    find_package(ortools CONFIG REQUIRED)
+#if (ENABLE_ILP_SOLVER)
+find_package(ortools CONFIG REQUIRED)
 
-    add_executable(ilp_solver src/ilp_solver/main.cpp
-            src/ilp_solver/ilp_solver.cpp
-            src/ilp_solver/ilp_solver.hpp)
+add_executable(ilp_solver src/ilp_solver/main.cpp
+        src/ilp_solver/ilp_solver.cpp
+        src/ilp_solver/ilp_solver.hpp)
 
-    target_link_libraries(ilp_solver PaceGraph)
-    target_link_libraries(ilp_solver ortools::ortools)
-endif ()
+target_link_libraries(ilp_solver PaceGraph)
+target_link_libraries(ilp_solver ortools::ortools)
+#endif ()

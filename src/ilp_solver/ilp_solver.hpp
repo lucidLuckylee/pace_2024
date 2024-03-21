@@ -18,7 +18,7 @@ class ILPSolver : public SolutionSolver {
   public:
     explicit ILPSolver(
         std::chrono::milliseconds limit = std::chrono::milliseconds::max())
-        : SolutionSolver(limit) {}
+        : SolutionSolver(limit, true) {}
 };
 
 #endif // PACE2024_ILP_SOLVER_HPP

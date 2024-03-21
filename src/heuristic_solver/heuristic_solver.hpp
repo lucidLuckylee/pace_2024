@@ -17,14 +17,4 @@ class HeuristicSolver : public SolutionSolver {
         : SolutionSolver(limit) {}
 };
 
-class Heuristic {
-  protected:
-    std::function<bool(int)> has_time_left;
-
-  public:
-    explicit Heuristic(std::function<bool(int)> has_time_left)
-        : has_time_left(std::move(has_time_left)) {}
-    virtual Order solve(PaceGraph &graph) = 0;
-};
-
 #endif // PACE2024_HEURISTIC_SOLVER_HPP
