@@ -19,10 +19,10 @@ class HeuristicSolver : public SolutionSolver {
 
 class Heuristic {
   protected:
-    std::function<bool()> has_time_left;
+    std::function<bool(int)> has_time_left;
 
   public:
-    explicit Heuristic(std::function<bool()> has_time_left)
+    explicit Heuristic(std::function<bool(int)> has_time_left)
         : has_time_left(std::move(has_time_left)) {}
     virtual Order solve(PaceGraph &graph) = 0;
 };

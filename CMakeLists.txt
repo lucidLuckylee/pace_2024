@@ -23,8 +23,8 @@ add_executable(
         src/heuristic_solver/local_search.hpp
         src/heuristic_solver/genetic_algorithm.cpp
         src/heuristic_solver/genetic_algorithm.hpp
-        src/heuristic_solver/median_position_heuristic.cpp
-        src/heuristic_solver/median_position_heuristic.hpp
+        src/heuristic_solver/mean_position_heuristic.cpp
+        src/heuristic_solver/mean_position_heuristic.hpp
         src/lb/simple_lb.cpp
         src/lb/simple_lb.hpp
         src/heuristic_solver/heuristic_solver.hpp

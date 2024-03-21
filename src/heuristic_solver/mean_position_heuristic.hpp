@@ -13,19 +13,19 @@ class MeanPositionParameter {
   public:
     MeanTypeAlgo meanType = median;
     bool useJittering = true;
-    int jitterIterations = 1000;
-    int improveWithSwapping = 1;
+    int jitterIterations = 10;
 };
 
 class MeanPositionSolver : Heuristic {
   private:
-    Order jittering(PaceGraph &graph);
-    void improveOrderWithSwapping(PaceGraph &graph, Order &order);
+    Order jittering(PaceGraph &graph, int iteration);
+    void improveOrderWithSwapping(PaceGraph &graph, Order &order,
+                                  int iteration);
 
   public:
     MeanPositionParameter meanPositionParameter;
 
-    explicit MeanPositionSolver(std::function<bool()> has_time_left,
+    explicit MeanPositionSolver(std::function<bool(int)> has_time_left,
                                 MeanPositionParameter meanPositionParameter)
         : Heuristic(std::move(has_time_left)),
           meanPositionParameter(meanPositionParameter) {}

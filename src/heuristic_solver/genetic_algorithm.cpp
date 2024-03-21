@@ -1,7 +1,7 @@
 #include "genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
 #include "local_search.hpp"
-#include "median_position_heuristic.hpp"
+#include "mean_position_heuristic.hpp"
 #include <iostream>
 
 Order GeneticHeuristic::solve(PaceGraph &graph) {
@@ -20,7 +20,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
 
     auto start_time = std::chrono::steady_clock::now();
 
-    while (has_time_left() && lb != bestCost) {
+    while (has_time_left(number_of_iterations) && lb != bestCost) {
         Order newOrder(graph.size_free);
         newOrder.permute();
 
@@ -41,7 +41,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                 newOrder = bestOrder.clone();
                 for (int i = 0; i < graph.size_free - 1; i++) {
 
-                    if (!has_time_left()) {
+                    if (!has_time_left(number_of_iterations)) {
                         break;
                     }
 

@@ -1,7 +1,7 @@
-#include "median_position_heuristic.hpp"
+#include "mean_position_heuristic.hpp"
 #include "../pace_graph/solver.hpp"
 
-Order MeanPositionSolver::jittering(PaceGraph &graph) {
+Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -74,7 +74,7 @@ Order MeanPositionSolver::jittering(PaceGraph &graph) {
             nodeOffset = newNodeOffset;
         }
 
-        if (!meanPositionParameter.useJittering || !has_time_left()) {
+        if (!meanPositionParameter.useJittering || !has_time_left(iteration)) {
             break;
         }
     }
@@ -83,9 +83,10 @@ Order MeanPositionSolver::jittering(PaceGraph &graph) {
 }
 
 void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
-                                                  Order &order) {
+                                                  Order &order, int iteration) {
     bool foundSwap = true;
-    while (foundSwap) {
+
+    while (foundSwap && has_time_left(iteration)) {
         foundSwap = false;
 
         for (int i = 0; i < graph.size_free - 1; ++i) {
@@ -118,22 +119,20 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
     Order currentBestOrder = Order(graph.size_free);
     long bestOrderCost = 1000000000000000000;
 
-    int iterations = 0;
-    while (has_time_left()) {
-        Order order = jittering(graph);
+    int iteration = 0;
+    while (has_time_left(iteration)) {
+        Order order = jittering(graph, iteration);
+        improveOrderWithSwapping(graph, order, iteration);
 
         long cost = order.count_crossings(graph);
         if (cost <= bestOrderCost) {
             bestOrderCost = cost;
             currentBestOrder = order;
         }
-        iterations++;
-        if (iterations % meanPositionParameter.improveWithSwapping == 0) {
-            improveOrderWithSwapping(graph, currentBestOrder);
-        }
+        iteration++;
     }
 
-    std::cout << "#Iterations: " << iterations << std::endl;
+    std::cout << "#Iterations: " << iteration << std::endl;
 
     return currentBestOrder;
 }
