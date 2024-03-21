@@ -4,8 +4,7 @@
 #include <utility>
 
 #include "../pace_graph/order.hpp"
-#include "../pace_graph/pace_graph.hpp"
-#include "heuristic_solver.hpp"
+#include "heuristic.hpp"
 
 class GeneticHeuristic : public Heuristic {
   public:

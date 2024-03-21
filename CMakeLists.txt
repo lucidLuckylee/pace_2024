@@ -10,6 +10,9 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp
         src/pace_graph/segment_tree.cpp
         src/pace_graph/segment_tree.hpp
         src/pace_graph/solver.hpp
+        src/heuristic_solver/heuristic.hpp
+        src/heuristic_solver/median_position_heuristic.cpp
+        src/heuristic_solver/median_position_heuristic.hpp
 )
 
 # Add heuristic_solver executable
@@ -28,6 +31,7 @@ add_executable(
         src/lb/simple_lb.hpp
         src/heuristic_solver/heuristic_solver.hpp
         src/heuristic_solver/heuristic_solver.cpp
+        src/heuristic_solver/heuristic.hpp
 )
 
 add_executable(

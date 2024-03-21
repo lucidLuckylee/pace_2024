@@ -129,9 +129,10 @@ class Order {
         for (int i = 0; i < graph.size_fixed; i++) {
 
             std::vector<int> sorted_neighbors = graph.neighbors_fixed[i];
-            std::sort(sorted_neighbors.begin(), sorted_neighbors.end(), [&](int a, int b) {
-                return vertex_to_position[a] < vertex_to_position[b];
-            });
+            std::sort(sorted_neighbors.begin(), sorted_neighbors.end(),
+                      [&](int a, int b) {
+                          return vertex_to_position[a] < vertex_to_position[b];
+                      });
 
             for (int v : sorted_neighbors) {
                 int posOfV = vertex_to_position[v];
@@ -168,6 +169,23 @@ class Order {
         return result.str();
     }
     Order clone() { return Order(std::vector(position_to_vertex)); }
+
+    PaceGraph reorderGraph(PaceGraph &graph) {
+        std::vector<std::tuple<int, int>> new_edges;
+        std::unordered_map<int, int> new_free_real_names;
+
+        for (int oldV = 0; oldV < graph.size_free; ++oldV) {
+            int newV = get_position(oldV);
+            new_free_real_names[newV] = graph.free_real_names[oldV];
+
+            for (int u : graph.neighbors_free[oldV]) {
+                new_edges.emplace_back(u, newV);
+            }
+        }
+
+        return {graph.size_fixed, graph.size_free, new_edges,
+                graph.fixed_real_names, new_free_real_names};
+    }
 };
 
 #endif // ORDER_HPP

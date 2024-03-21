@@ -4,8 +4,7 @@
 
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/pace_graph.hpp"
-#include "../pace_graph/solver.hpp"
-#include "heuristic_solver.hpp"
+#include "heuristic.hpp"
 
 enum MeanTypeAlgo { average, median, sum_along_crossing };
 
