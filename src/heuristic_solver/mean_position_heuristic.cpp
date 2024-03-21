@@ -1,5 +1,4 @@
 #include "mean_position_heuristic.hpp"
-#include "../pace_graph/solver.hpp"
 
 Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
 

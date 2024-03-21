@@ -50,13 +50,13 @@ target_link_libraries(heuristic_solver PaceGraph)
 
 option(ENABLE_ILP_SOLVER "Enable ILP Solver Build (Requires ortools)" OFF)
 
-#if (ENABLE_ILP_SOLVER)
-find_package(ortools CONFIG REQUIRED)
+if (ENABLE_ILP_SOLVER)
+    find_package(ortools CONFIG REQUIRED)
 
-add_executable(ilp_solver src/ilp_solver/main.cpp
-        src/ilp_solver/ilp_solver.cpp
-        src/ilp_solver/ilp_solver.hpp)
+    add_executable(ilp_solver src/ilp_solver/main.cpp
+            src/ilp_solver/ilp_solver.cpp
+            src/ilp_solver/ilp_solver.hpp)
 
-target_link_libraries(ilp_solver PaceGraph)
-target_link_libraries(ilp_solver ortools::ortools)
-#endif ()
+    target_link_libraries(ilp_solver PaceGraph)
+    target_link_libraries(ilp_solver ortools::ortools)
+endif ()

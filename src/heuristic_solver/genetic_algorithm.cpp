@@ -1,7 +1,6 @@
 #include "genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
 #include "local_search.hpp"
-#include "mean_position_heuristic.hpp"
 #include <iostream>
 
 Order GeneticHeuristic::solve(PaceGraph &graph) {
