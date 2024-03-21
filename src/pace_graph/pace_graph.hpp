@@ -25,11 +25,11 @@ class PaceGraph {
     long ub = 1000000000;
 
     /** Number of size_free vertices
-            We name this vertices: [0,..., size_free - 1]
+            We name these vertices: [0,..., size_free - 1]
              */
     int size_free;
 
-    /** We name this vertices: [0,..., size_fixed - 1]
+    /** We name these vertices: [0,..., size_fixed - 1]
      */
     int size_fixed;
 

@@ -1,4 +1,4 @@
-#ifndef ORDER_HPP;
+#ifndef ORDER_HPP
 #define ORDER_HPP
 
 // #include "pace_graph.hpp"
@@ -7,6 +7,7 @@
 #include "relation.hpp"
 #include "segment_tree.hpp"
 #include <algorithm>
+#include <iostream>
 #include <random>
 #include <sstream>
 #include <vector>
@@ -18,9 +19,9 @@ class Order {
     // TODO(Lukas): These vectors should hold unsigned ints.
     std::vector<int> vertex_to_position;
     std::vector<int> position_to_vertex;
-    PartialOrdering partial_order;
 
   public:
+    PartialOrdering partial_order;
     /**
      * Creates an Order with a given size. The order will be the identity
      * permutation.
@@ -159,27 +160,118 @@ class Order {
     // Reduction rules from
     // https://www.sciencedirect.com/science/article/pii/S1570866707000469
     //
-    // TODO(Lukas): Remove isolated vertices from graph
-    // TOOD(Lukas): We need an upper bound for RRlarge rule
+    // TOOD(Lukas): We need an upper bound for RRlarge rule -> Median Heuristic?
+    // (No guarantees though)
 
-    void rr1_rr2(const PaceGraph &graph) {
-        for (int i = 0; i < graph.size_free; i++) {
-            for (int j = i; j < graph.size_free; j++) {
+    /*
+     * Applies reduction rules RR1 and RR2 from
+     * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
+     * RR1: For every pair {a, b} with c_{a,b} = 0 commit a < b in
+     * partial_order. RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
+     * commit a < b in partial_order.
+     *
+     * @return Boolean value indicating whether reduction rules were applied.
+     */
+    bool rr1_rr2(const PaceGraph &graph) {
+        bool applied = false;
+        for (int a = 0; a < graph.size_free; a++) {
+            for (int b = a + 1; b < graph.size_free; b++) {
                 // RR1
-                if (graph.crossing_matrix[i] == 0) {
-                    partial_order.set_a_lt_b(i, j);
-                } else if (graph.crossing_matrix[j] == 0) {
-                    partial_order.set_a_lt_b(j, i);
-                } else if (graph.neighbors_free[i] == graph.neighbors_free[j]) {
+                if (graph.crossing_matrix[a][b] == 0) {
+                    bool result = partial_order.set_a_lt_b(a, b);
+                    applied = applied || result;
+                } else if (graph.crossing_matrix[b][a] == 0) {
+                    bool result = partial_order.set_a_lt_b(b, a);
+                    applied = applied || result;
+                } else if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
                     // RR2
-                    partial_order.set_a_lt_b(i, j);
+                    bool result = partial_order.set_a_lt_b(a, b);
+                    applied = applied || result;
                 }
             }
         }
+        return applied;
     }
 
-    void rrl02(const PaceGraph &graph) {
+    /*
+     * Applies reduction rule RR3 from
+     * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
+     * RR3: For every pair {a, b} with c_{a, b} = 2 and c{b, a} = 1 commit b < a
+     * in partial_order.
+     *
+     * @return Boolean value indicating whether the reduction rule was applied.
+     */
+    // TODO: I am not convinced that this one can be applied in our case
+    bool rr3(const PaceGraph &graph) {
+        bool applied = false;
+        for (int a = 0; a < graph.size_free; a++) {
+            for (int b = 0; b < graph.size_free; b++) {
+                if (graph.crossing_matrix[a][b] == 2 &&
+                    graph.crossing_matrix[b][a] == 1) {
+                    applied = partial_order.set_a_lt_b(a, b) || applied;
+                }
+            }
+        }
+        return applied;
+    }
 
+    /*
+     * Applies reduction rule RRLarge from
+     * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
+     * RRLarge: For every pair {a, b} with c_{b, a} > upper_bound commit a < b
+     * in partial_order.
+     *
+     * @return Boolean value indicating whether the reduction rule was applied.
+     */
+    bool rrlarge(const PaceGraph &graph, int upper_bound) {
+        bool applied = false;
+        for (int a = 0; a < graph.size_free; a++) {
+            for (int b = a + 1; a < graph.size_free; b++) {
+                if (graph.crossing_matrix_diff[a][b] > upper_bound) {
+                    applied = partial_order.set_a_lt_b(b, a) || applied;
+                } else if (graph.crossing_matrix_diff[b][a] > upper_bound) {
+                    applied = partial_order.set_a_lt_b(a, b) || applied;
+                }
+            }
+        }
+        return applied;
+    }
+
+    /*
+     * Applies reduction rules RRL01 and RRL02 from
+     * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
+     * RRL01: For every v that is comparable to all other vertices in the order
+     * we delete v from the graph
+     * RRL02: For every pair {v, w} that is not dependent in partial_order we
+     * commit v < w in partial_order
+     * @return Boolean value indicating whether the reduction rules were
+     * applied.
+     */
+    bool rrl01_rrl02(const PaceGraph &graph) {
+        bool applied = false;
+        for (int v = 0; v < graph.size_free; v++) {
+            for (int w = 0; v < graph.size_free; w++) {
+                if (partial_order.incomparable(v, w)) {
+                    // RRL02
+                    for (int c = 0; c < graph.size_free; c++) {
+                        if (partial_order.dependent(v, w, c)) {
+                            goto keep_v;
+                        }
+                    }
+                    // (v,w) is not dependent
+                    if (graph.crossing_matrix[v][w] <=
+                        graph.crossing_matrix[w][v]) {
+                        applied = partial_order.set_a_lt_b(v, w) || applied;
+                    }
+                    goto keep_v;
+                }
+            }
+            // RRL01 -> v is comparable to all elements in the partial order
+            // applied = true;
+            // TODO: Remove v from PaceGraph
+        keep_v:;
+        }
+        return applied;
     }
 
     /**
