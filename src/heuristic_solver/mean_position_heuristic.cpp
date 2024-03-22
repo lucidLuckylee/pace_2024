@@ -92,20 +92,31 @@ void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
             int u = order.get_vertex(i);
             int v = order.get_vertex(i + 1);
 
-            int crossing_matrix_u_v = 0;
             int crossing_matrix_v_u = 0;
+            int crossing_matrix_u_v = 0;
+            int currentVPointer = 0;
+            int currentUPointer = 0;
 
-            for (int u_N : graph.neighbors_free[u]) {
-                for (int v_N : graph.neighbors_free[v]) {
-                    if (u_N > v_N) {
-                        crossing_matrix_u_v++;
-                    } else if (v_N > u_N) {
-                        crossing_matrix_v_u++;
-                    }
+            const auto &u_neighbors = graph.neighbors_free[u];
+            const auto &v_neighbors = graph.neighbors_free[v];
+
+            for (int u_N : u_neighbors) {
+                while (currentVPointer < v_neighbors.size() &&
+                       v_neighbors[currentVPointer] < u_N) {
+                    crossing_matrix_u_v += u_neighbors.size() - currentUPointer;
+                    currentVPointer++;
                 }
+                crossing_matrix_v_u += v_neighbors.size() - currentVPointer;
+                currentUPointer++;
+            }
+
+            while (currentVPointer < v_neighbors.size()) {
+                crossing_matrix_u_v += u_neighbors.size() - currentUPointer;
+                currentVPointer++;
             }
 
             if (crossing_matrix_u_v > crossing_matrix_v_u) {
+
                 order.swap_by_position(i, i + 1);
                 foundSwap = true;
             }
