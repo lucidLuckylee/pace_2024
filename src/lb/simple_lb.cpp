@@ -86,7 +86,7 @@ getConflictPairsBMI(PaceGraph &graph, SimpleLBParameter &parameter) {
     }
 
     for (int u = 0; u < graph.size_free; u++) {
-        auto smaller_u = smaller[u];
+        auto &smaller_u = smaller[u];
 
         for (int pos1 = 0; pos1 < smaller_u.size(); pos1++) {
             auto vs = smaller_u[pos1];
@@ -111,7 +111,6 @@ getConflictPairsBMI(PaceGraph &graph, SimpleLBParameter &parameter) {
                 }
             }
         }
- 
         if (conflictPairs.size() > parameter.maxNrOfConflicts) {
             break;
         }
@@ -240,18 +239,10 @@ long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
     if (!canInitCrossingMatrix) {
         for (int u = 0; u < graph.size_free; ++u) {
             for (int v = u + 1; v < graph.size_free; v++) {
-                int crossing_matrix_u_v = 0;
-                int crossing_matrix_v_u = 0;
-
-                for (int u_N : graph.neighbors_free[u]) {
-                    for (int v_N : graph.neighbors_free[v]) {
-                        if (u_N > v_N) {
-                            crossing_matrix_u_v++;
-                        } else if (v_N > u_N) {
-                            crossing_matrix_v_u++;
-                        }
-                    }
-                }
+                int crossing_matrix_u_v;
+                int crossing_matrix_v_u;
+                std::tie(crossing_matrix_u_v, crossing_matrix_v_u) =
+                    graph.calculatingCrossingMatrixEntries(u, v);
 
                 lb += std::min(crossing_matrix_u_v, crossing_matrix_v_u);
             }
