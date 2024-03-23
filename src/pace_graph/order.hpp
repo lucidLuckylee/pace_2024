@@ -10,6 +10,7 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
 
 const int EXTREME_SWAPPING_COST = 10000;
@@ -167,7 +168,8 @@ class Order {
      * Applies reduction rules RR1 and RR2 from
      * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
      * RR1: For every pair {a, b} with c_{a,b} = 0 commit a < b in
-     * partial_order. RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
+     * partial_order.
+     * RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
      * commit a < b in partial_order.
      *
      * @return Boolean value indicating whether reduction rules were applied.
@@ -178,15 +180,12 @@ class Order {
             for (int b = a + 1; b < graph.size_free; b++) {
                 // RR1
                 if (graph.crossing_matrix[a][b] == 0) {
-                    bool result = partial_order.set_a_lt_b(a, b);
-                    applied = applied || result;
+                    applied = partial_order.set_a_lt_b(a, b) || applied;
                 } else if (graph.crossing_matrix[b][a] == 0) {
-                    bool result = partial_order.set_a_lt_b(b, a);
-                    applied = applied || result;
+                    applied = partial_order.set_a_lt_b(b, a) || applied;
                 } else if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
                     // RR2
-                    bool result = partial_order.set_a_lt_b(a, b);
-                    applied = applied || result;
+                    applied = partial_order.set_a_lt_b(a, b) || applied;
                 }
             }
         }
@@ -202,18 +201,18 @@ class Order {
      * @return Boolean value indicating whether the reduction rule was applied.
      */
     // TODO: I am not convinced that this one can be applied in our case
-    bool rr3(const PaceGraph &graph) {
-        bool applied = false;
-        for (int a = 0; a < graph.size_free; a++) {
-            for (int b = 0; b < graph.size_free; b++) {
-                if (graph.crossing_matrix[a][b] == 2 &&
-                    graph.crossing_matrix[b][a] == 1) {
-                    applied = partial_order.set_a_lt_b(a, b) || applied;
-                }
-            }
-        }
-        return applied;
-    }
+    // bool rr3(const PaceGraph &graph) {
+    //    bool applied = false;
+    //    for (int a = 0; a < graph.size_free; a++) {
+    //        for (int b = 0; b < graph.size_free; b++) {
+    //            if (graph.crossing_matrix[a][b] == 2 &&
+    //                graph.crossing_matrix[b][a] == 1) {
+    //                applied = partial_order.set_a_lt_b(a, b) || applied;
+    //            }
+    //        }
+    //    }
+    //    return applied;
+    //}
 
     /*
      * Applies reduction rule RRLarge from
@@ -240,19 +239,20 @@ class Order {
     /*
      * Applies reduction rules RRL01 and RRL02 from
      * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
-     * RRL01: For every v that is comparable to all other vertices in the order
+     * RRLO1: For every v that is comparable to all other vertices in the order
      * we delete v from the graph
-     * RRL02: For every pair {v, w} that is not dependent in partial_order we
+     * RRLO2: For every pair {v, w} that is not dependent in partial_order we
      * commit v < w in partial_order
      * @return Boolean value indicating whether the reduction rules were
      * applied.
      */
-    bool rrl01_rrl02(const PaceGraph &graph) {
+    bool rrlo1_rrlo2(PaceGraph &graph) {
         bool applied = false;
+        std::unordered_set<int> vertices_to_delete;
         for (int v = 0; v < graph.size_free; v++) {
-            for (int w = 0; v < graph.size_free; w++) {
+            for (int w = 0; w < graph.size_free; w++) {
                 if (partial_order.incomparable(v, w)) {
-                    // RRL02
+                    // RRLO2
                     for (int c = 0; c < graph.size_free; c++) {
                         if (partial_order.dependent(v, w, c)) {
                             goto keep_v;
@@ -266,10 +266,16 @@ class Order {
                     goto keep_v;
                 }
             }
-            // RRL01 -> v is comparable to all elements in the partial order
-            // applied = true;
-            // TODO: Remove v from PaceGraph
+            // RRLO1 -> v is comparable to all elements in the partial order
+            applied = true;
+            vertices_to_delete.insert(v);
         keep_v:;
+        }
+
+        // TODO: Depending on performance and how often we remove vertices we
+        // could batch delete them.
+        for (int vertex : vertices_to_delete) {
+            graph.remove_free_vertex(vertex);
         }
         return applied;
     }
