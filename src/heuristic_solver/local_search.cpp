@@ -10,13 +10,13 @@
  *
  * @return the cost change of the move (should be negative or zero)
  */
-int sifting_node(PaceGraph &graph, Order &order,
-                 LocalSearchParameter &parameter, int v) {
+long sifting_node(PaceGraph &graph, Order &order,
+                  LocalSearchParameter &parameter, int v) {
     int posOfV = order.get_position(v);
     int bestPositionToInsert = posOfV;
-    int bestCostChange = 0;
+    long bestCostChange = 0;
 
-    int crossingOld = 0;
+    long crossingOld = 0;
     auto crossing_matrix_diff = graph.crossing_matrix_diff[v];
 
     int foundWithThisCost = 0;
@@ -83,8 +83,8 @@ int sifting_node(PaceGraph &graph, Order &order,
     return bestCostChange;
 }
 
-int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
-            std::vector<int> &position_array) {
+long sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
+             std::vector<int> &position_array) {
 
     if (parameter.siftingType == SiftingType::None) {
         return 0;
@@ -109,17 +109,17 @@ int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
                   });
     }
 
-    int improvement = 0;
+    long improvement = 0;
     for (int v = 0; v < graph.size_free; v++) {
         improvement += sifting_node(graph, order, parameter, v);
     }
     return improvement;
 }
 
-int local_search(PaceGraph &graph, Order &order,
-                 LocalSearchParameter &parameter,
-                 const std::function<bool()> &has_time_left) {
-    int improvement = 0;
+long local_search(PaceGraph &graph, Order &order,
+                  LocalSearchParameter &parameter,
+                  const std::function<bool()> &has_time_left) {
+    long improvement = 0;
 
     std::vector<int> position_array;
     position_array.reserve(graph.size_free);
@@ -129,7 +129,7 @@ int local_search(PaceGraph &graph, Order &order,
 
     bool improved = true;
     while (improved && has_time_left()) {
-        int i = sifting(graph, order, parameter, position_array);
+        long i = sifting(graph, order, parameter, position_array);
         improvement += i;
 
         if (i == 0) {
