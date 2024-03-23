@@ -55,6 +55,8 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                         continue;
                     }
 
+                    newOrder.swap_by_vertices(u, v);
+
                     // force node order to be different
                     graph.fixNodeOrder(v, u);
                     local_search(graph, newOrder, localSearchParameter,
