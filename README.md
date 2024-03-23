@@ -15,4 +15,7 @@ make
 # Useful as well
 gdb heuristic_solver
 valgrind heuristic_solver
+
+# Run tests
+./test.sh
 ```

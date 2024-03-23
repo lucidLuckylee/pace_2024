@@ -92,18 +92,10 @@ void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
             int u = order.get_vertex(i);
             int v = order.get_vertex(i + 1);
 
-            int crossing_matrix_u_v = 0;
-            int crossing_matrix_v_u = 0;
-
-            for (int u_N : graph.neighbors_free[u]) {
-                for (int v_N : graph.neighbors_free[v]) {
-                    if (u_N > v_N) {
-                        crossing_matrix_u_v++;
-                    } else if (v_N > u_N) {
-                        crossing_matrix_v_u++;
-                    }
-                }
-            }
+            int crossing_matrix_u_v;
+            int crossing_matrix_v_u;
+            std::tie(crossing_matrix_u_v, crossing_matrix_v_u) =
+                graph.calculatingCrossingMatrixEntries(u, v);
 
             if (crossing_matrix_u_v > crossing_matrix_v_u) {
                 order.swap_by_position(i, i + 1);

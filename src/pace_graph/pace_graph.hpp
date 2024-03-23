@@ -25,11 +25,11 @@ class PaceGraph {
     long ub = 1000000000;
 
     /** Number of size_free vertices
-            We name this vertices: [0,..., size_free - 1]
+            We name these vertices: [0,..., size_free - 1]
              */
     int size_free;
 
-    /** We name this vertices: [0,..., size_fixed - 1]
+    /** We name these vertices: [0,..., size_fixed - 1]
      */
     int size_fixed;
 
@@ -100,6 +100,34 @@ class PaceGraph {
     int edge_count() const { return neighbors_free.size(); }
 
     std::tuple<std::vector<PaceGraph>, std::vector<int>> splitGraphOn0Splits();
+
+    std::tuple<int, int> calculatingCrossingMatrixEntries(int u, int v) {
+        int crossing_matrix_u_v = 0;
+        int crossing_matrix_v_u = 0;
+
+        int currentVPointer = 0;
+        int currentUPointer = 0;
+
+        const auto &u_neighbors = neighbors_free[u];
+        const auto &v_neighbors = neighbors_free[v];
+
+        for (int u_N : u_neighbors) {
+            while (currentVPointer < v_neighbors.size() &&
+                   v_neighbors[currentVPointer] < u_N) {
+                crossing_matrix_u_v += u_neighbors.size() - currentUPointer;
+                currentVPointer++;
+            }
+            crossing_matrix_v_u += v_neighbors.size() - currentVPointer;
+            currentUPointer++;
+        }
+
+        while (currentVPointer < v_neighbors.size()) {
+            crossing_matrix_u_v += u_neighbors.size() - currentUPointer;
+            currentVPointer++;
+        }
+
+        return std::make_tuple(crossing_matrix_u_v, crossing_matrix_v_u);
+    }
 };
 
 #endif // PACE_GRAPH_HPP
