@@ -23,7 +23,13 @@ long sifting_node(PaceGraph &graph, Order &order,
     for (int i = posOfV - 1; i >= 0; i--) {
         int u = order.get_vertex(i);
 
-        crossingOld += crossing_matrix_diff[u];
+        int crossingDiff = crossing_matrix_diff[u];
+
+        if (crossingDiff >= INF / 2) {
+            break;
+        }
+
+        crossingOld += crossingDiff;
 
         if (crossingOld <= bestCostChange) {
             bool useSolution = false;
@@ -52,7 +58,13 @@ long sifting_node(PaceGraph &graph, Order &order,
     crossingOld = 0;
     for (int i = posOfV + 1; i < graph.size_free; ++i) {
         int u = order.get_vertex(i);
-        crossingOld -= crossing_matrix_diff[u];
+
+        int crossingDiff = -crossing_matrix_diff[u];
+        if (crossingDiff >= INF / 2) {
+            break;
+        }
+
+        crossingOld += crossingDiff;
 
         if (crossingOld <= bestCostChange) {
 
