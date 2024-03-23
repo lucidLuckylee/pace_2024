@@ -29,8 +29,8 @@ class LocalSearchParameter {
  * @param order current order. It will be modified in place
  * @return the improvement in the cost of the order
  */
-int local_search(PaceGraph &graph, Order &order,
-                 LocalSearchParameter &parameter,
-                 const std::function<bool()> &has_time_left);
+long local_search(PaceGraph &graph, Order &order,
+                  LocalSearchParameter &parameter,
+                  const std::function<bool()> &has_time_left);
 
 #endif // PACE2024_LOCAL_SEARCH_HPP

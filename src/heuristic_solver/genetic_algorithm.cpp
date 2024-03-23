@@ -5,11 +5,11 @@
 
 Order GeneticHeuristic::solve(PaceGraph &graph) {
     SimpleLBParameter lbParameter;
-    int lb = simpleLB(graph, lbParameter);
+    long lb = simpleLB(graph, lbParameter);
     graph.init_crossing_matrix_if_necessary();
 
     Order bestOrder(graph.size_free);
-    int bestCost = bestOrder.count_crossings(graph);
+    long bestCost = bestOrder.count_crossings(graph);
 
     LocalSearchParameter localSearchParameter;
     localSearchParameter.siftingType = SiftingType::Random;
@@ -28,7 +28,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                          return has_time_left(number_of_iterations);
                      });
 
-        int newCost = newOrder.count_crossings(graph);
+        long newCost = newOrder.count_crossings(graph);
         if (newCost <= bestCost) {
             bestOrder = newOrder;
             bestCost = newCost;
@@ -54,6 +54,8 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                     if (graph.crossing_matrix[v][u] >= INF) {
                         continue;
                     }
+
+                    newOrder.swap_by_vertices(u, v);
 
                     // force node order to be different
                     graph.fixNodeOrder(v, u);
