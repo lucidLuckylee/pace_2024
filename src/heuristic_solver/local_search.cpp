@@ -10,32 +10,84 @@
  *
  * @return the cost change of the move (should be negative or zero)
  */
-int sifting_node(PaceGraph &graph, Order &order, int v) {
+long sifting_node(PaceGraph &graph, Order &order,
+                  LocalSearchParameter &parameter, int v) {
     int posOfV = order.get_position(v);
     int bestPositionToInsert = posOfV;
-    int bestCostChange = 0;
+    long bestCostChange = 0;
 
-    int crossingOld = 0;
+    long crossingOld = 0;
     auto crossing_matrix_diff = graph.crossing_matrix_diff[v];
-    for (int i = posOfV - 1; i >= 0; i--) {
+
+    int foundWithThisCost = 0;
+    for (int i = posOfV - 1; i >= 0 && crossingOld <= INF; i--) {
         int u = order.get_vertex(i);
 
-        crossingOld += crossing_matrix_diff[u];
+        int crossingDiff = crossing_matrix_diff[u];
 
-        if (crossingOld < bestCostChange) {
-            bestCostChange = crossingOld;
-            bestPositionToInsert = i;
+        if (crossingDiff >= INF / 2) {
+            break;
+        }
+
+        crossingOld += crossingDiff;
+
+        if (crossingOld <= bestCostChange) {
+            bool useSolution = false;
+            if (crossingOld == bestCostChange) {
+                if (parameter.siftingInsertionType ==
+                    SiftingInsertionType::Random) {
+                    foundWithThisCost++;
+                    if (rand() % foundWithThisCost == 0) {
+                        bestPositionToInsert = i;
+                    }
+                } else {
+                    useSolution = true;
+                }
+            } else {
+                foundWithThisCost = 0;
+                useSolution = true;
+            }
+
+            if (useSolution) {
+                bestCostChange = crossingOld;
+                bestPositionToInsert = i;
+            }
         }
     }
 
     crossingOld = 0;
-    for (int i = posOfV + 1; i < graph.size_free; ++i) {
+    for (int i = posOfV + 1; i < graph.size_free && crossingOld <= INF; ++i) {
         int u = order.get_vertex(i);
-        crossingOld -= crossing_matrix_diff[u];
 
-        if (crossingOld < bestCostChange) {
-            bestCostChange = crossingOld;
-            bestPositionToInsert = i;
+        int crossingDiff = -crossing_matrix_diff[u];
+        if (crossingDiff >= INF / 2) {
+            break;
+        }
+
+        crossingOld += crossingDiff;
+
+        if (crossingOld <= bestCostChange) {
+
+            bool useSolution = false;
+            if (crossingOld == bestCostChange) {
+                if (parameter.siftingInsertionType ==
+                    SiftingInsertionType::Random) {
+                    foundWithThisCost++;
+                    if (rand() % foundWithThisCost == 0) {
+                        bestPositionToInsert = i;
+                    }
+                } else {
+                    useSolution = true;
+                }
+            } else {
+                foundWithThisCost = 0;
+                useSolution = true;
+            }
+
+            if (useSolution) {
+                bestCostChange = crossingOld;
+                bestPositionToInsert = i;
+            }
         }
     }
 
@@ -43,8 +95,8 @@ int sifting_node(PaceGraph &graph, Order &order, int v) {
     return bestCostChange;
 }
 
-int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
-            std::vector<int> &position_array) {
+long sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
+             std::vector<int> &position_array) {
 
     if (parameter.siftingType == SiftingType::None) {
         return 0;
@@ -69,16 +121,17 @@ int sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
                   });
     }
 
-    int improvement = 0;
+    long improvement = 0;
     for (int v = 0; v < graph.size_free; v++) {
-        improvement += sifting_node(graph, order, v);
+        improvement += sifting_node(graph, order, parameter, v);
     }
     return improvement;
 }
 
-int local_search(PaceGraph &graph, Order &order,
-                 LocalSearchParameter &parameter) {
-    int improvement = 0;
+long local_search(PaceGraph &graph, Order &order,
+                  LocalSearchParameter &parameter,
+                  const std::function<bool()> &has_time_left) {
+    long improvement = 0;
 
     std::vector<int> position_array;
     position_array.reserve(graph.size_free);
@@ -86,42 +139,19 @@ int local_search(PaceGraph &graph, Order &order,
         position_array.push_back(i);
     }
 
-    improvement += sifting(graph, order, parameter, position_array);
+    bool improved = true;
+    while (improved && has_time_left()) {
+        long i = sifting(graph, order, parameter, position_array);
+        improvement += i;
 
-    // Create a vector with all the positions
-    // This will be used to shuffle the order of the positions in the free set
-    // With this two vertices are not always checked in the same order
-
-    for (int v = 0; v < graph.size_free; v++) {
-        improvement += sifting_node(graph, order, v);
-    }
-
-    // Do this while loop, while there is still improvement
-    /*bool found_improvement = true;
-    while (found_improvement) {
-        found_improvement = false;
-
-        unsigned seed =
-            std::chrono::system_clock::now().time_since_epoch().count();
-
-        std::shuffle(position_array.begin(), position_array.end(),
-                     std::default_random_engine(seed));
-
-        // Go over every two vertices in the free set
-        for (int pos1 = 0; pos1 < graph.size_free; ++pos1) {
-            for (int pos2 = pos1 + 1; pos2 < graph.size_free; ++pos2) {
-                int cost_change =
-                    order.cost_change_if_swap_position(pos1, pos2, graph);
-
-                // If the swap is beneficial, do it
-                if (cost_change < 0) {
-                    order.swap_by_position(pos1, pos2);
-                    improvement += cost_change;
-                    found_improvement = true;
-                }
-            }
+        if (i == 0) {
+            improved = false;
         }
-    }*/
+
+        if (!parameter.exhaustiveSifting) {
+            break;
+        }
+    }
 
     return improvement;
 }

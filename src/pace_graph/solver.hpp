@@ -100,11 +100,14 @@ class SolutionSolver : public Solver<Order> {
             std::cout << graph.free_real_names[u] << std::endl;
         }
 
+        long crossings = 0;
         for (int i = 0; i < subgraphs.size(); ++i) {
             auto g = subgraphs[i];
             auto sol = results[i];
             std::cout << sol.convert_to_real_node_id(g) << std::endl;
+            crossings += sol.count_crossings(g);
         }
+        std::cout << "# Crossings: " << crossings << std::endl;
     }
 
     Order run(PaceGraph &graph) override = 0;

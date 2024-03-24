@@ -11,9 +11,16 @@ enum class SiftingType {
     DegreeOrderReverse,
 };
 
+enum class SiftingInsertionType {
+    First,
+    Random,
+};
+
 class LocalSearchParameter {
   public:
     SiftingType siftingType = SiftingType::None;
+    SiftingInsertionType siftingInsertionType = SiftingInsertionType::First;
+    bool exhaustiveSifting = true;
 };
 
 /**
@@ -22,7 +29,8 @@ class LocalSearchParameter {
  * @param order current order. It will be modified in place
  * @return the improvement in the cost of the order
  */
-int local_search(PaceGraph &graph, Order &order,
-                 LocalSearchParameter &parameter);
+long local_search(PaceGraph &graph, Order &order,
+                  LocalSearchParameter &parameter,
+                  const std::function<bool()> &has_time_left);
 
 #endif // PACE2024_LOCAL_SEARCH_HPP
