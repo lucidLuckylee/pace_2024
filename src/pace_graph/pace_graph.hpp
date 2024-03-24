@@ -46,6 +46,7 @@ class PaceGraph {
     /** Saving the numbers of crossing between two vertices i and j \in [0,...,
      * size_free - 1] in crossing_matrix[i][j] when i comes before j.
      */
+    // TODO(Lukas): We can trivially save the n entries where j=i and should create an own CrossingMatrix class
     std::vector<int *> crossing_matrix;
 
     /** Saving the diff of crossing between two vertices i and j \in [0,...,
@@ -84,14 +85,20 @@ class PaceGraph {
     static PaceGraph from_file(std::string filePath);
 
     bool is_crossing_matrix_initialized();
-
+    
     bool init_crossing_matrix_if_necessary();
+
+    void init_crossing_matrix_diff();
+
+    void remove_free_vertex(int v);
 
     PaceGraph induced_subgraphs(std::vector<int> fixed_nodes);
 
     std::string to_gr();
 
     std::string print_crossing_matrix();
+
+    std::string print_neighbors_fixed();
 
     void fixNodeOrder(int beforeNode, int afterNode);
     void unfixNodeOrder(int beforeNode, int afterNode);

@@ -47,12 +47,12 @@ class PartialOrdering {
     }
 
     bool incomparable(int a, int b) {
-        return a != b && pairs.find(std::make_pair(a, b)) != pairs.end() &&
-               pairs.find(std::make_pair(b, a)) != pairs.end();
+        return a != b && pairs.find(std::make_pair(a, b)) == pairs.end() &&
+               pairs.find(std::make_pair(b, a)) == pairs.end();
     }
 
     bool dependent(int a, int b, int c) {
-        return incomparable(a, c) || incomparable(b, c);
+        return (incomparable(a, c) || incomparable(b, c)) && a != c && b != c;
     }
 
     void remove(int x, int y) { pairs.erase(std::make_pair(x, y)); }
