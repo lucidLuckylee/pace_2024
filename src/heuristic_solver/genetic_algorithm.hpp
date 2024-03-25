@@ -1,9 +1,26 @@
 #ifndef PACE2024_GENETIC_ALGORITHM_HPP
 #define PACE2024_GENETIC_ALGORITHM_HPP
 
-#include "../pace_graph/order.hpp"
-#include "../pace_graph/pace_graph.hpp"
+#include <utility>
 
-Order genetic_algorithm(PaceGraph &graph, int time_limit);
+#include "../pace_graph/order.hpp"
+#include "heuristic.hpp"
+
+class GeneticHeuristicParameter {
+  public:
+    int forceMoveAllDirectNodesAfterIterationWithNoImprovement = 1000;
+};
+
+class GeneticHeuristic : public Heuristic {
+  public:
+    GeneticHeuristicParameter geneticHeuristicParameter;
+
+    explicit GeneticHeuristic(
+        std::function<bool(int)> has_time_left,
+        GeneticHeuristicParameter geneticHeuristicParameter)
+        : geneticHeuristicParameter(geneticHeuristicParameter),
+          Heuristic(std::move(has_time_left)) {}
+    Order solve(PaceGraph &graph) override;
+};
 
 #endif // PACE2024_GENETIC_ALGORITHM_HPP

@@ -1,10 +1,9 @@
 #include "../pace_graph/order.hpp"
-#include "ilp_solver.hpp"
 #include <iostream>
 
 int main() {
     PaceGraph graph = PaceGraph::from_gr(std::cin);
-    ILPSolver ilpSolver;
-    ilpSolver.solve(graph);
+	// TODO call reduction rules until they are all exhausted and return reduced graph instance
     return 0;
 }
+

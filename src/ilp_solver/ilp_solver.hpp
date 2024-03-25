@@ -7,7 +7,18 @@
 
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/pace_graph.hpp"
+#include "../pace_graph/solver.hpp"
 
-Order ilpSolver(const PaceGraph &graph);
+Order ilpSolver(PaceGraph &graph);
+
+class ILPSolver : public SolutionSolver {
+  protected:
+    Order run(PaceGraph &graph) override { return ilpSolver(graph); }
+
+  public:
+    explicit ILPSolver(
+        std::chrono::milliseconds limit = std::chrono::milliseconds::max())
+        : SolutionSolver(limit, true) {}
+};
 
 #endif // PACE2024_ILP_SOLVER_HPP

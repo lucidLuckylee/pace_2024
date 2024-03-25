@@ -1,33 +1,34 @@
 #include "genetic_algorithm.hpp"
-#include "cheap_heuristics.hpp"
+#include "../lb/simple_lb.hpp"
 #include "local_search.hpp"
 #include <iostream>
 
-/**
- * @param graph get a
- * @param time_limit
- * @return
- */
-Order genetic_algorithm(PaceGraph &graph, int time_limit) {
+Order GeneticHeuristic::solve(PaceGraph &graph) {
+    SimpleLBParameter lbParameter;
+    long lb = simpleLB(graph, lbParameter);
     graph.init_crossing_matrix_if_necessary();
 
     Order bestOrder(graph.size_free);
-    int bestCost = bestOrder.count_crossings(graph);
+    long bestCost = bestOrder.count_crossings(graph);
 
-    int start = time(0);
-    LocalSearchParameter parameter;
-    parameter.siftingType = SiftingType::DegreeOrder;
+    LocalSearchParameter localSearchParameter;
+    localSearchParameter.siftingType = SiftingType::Random;
 
     int number_of_iterations = 0;
     int number_of_iteration_without_improvement = 0;
-    while (time(0) - start < time_limit) {
-        // Order newOrder = mean_position_algorithm(graph, median);
+
+    auto start_time = std::chrono::steady_clock::now();
+
+    while (has_time_left(number_of_iterations) && lb != bestCost) {
         Order newOrder(graph.size_free);
         newOrder.permute();
 
-        local_search(graph, newOrder, parameter);
+        local_search(graph, newOrder, localSearchParameter,
+                     [this, number_of_iterations]() {
+                         return has_time_left(number_of_iterations);
+                     });
 
-        int newCost = newOrder.count_crossings(graph);
+        long newCost = newOrder.count_crossings(graph);
         if (newCost <= bestCost) {
             bestOrder = newOrder;
             bestCost = newCost;
@@ -36,21 +37,33 @@ Order genetic_algorithm(PaceGraph &graph, int time_limit) {
             }
         } else {
             number_of_iteration_without_improvement++;
-
-            if (number_of_iteration_without_improvement > 1000) {
+            if (number_of_iteration_without_improvement >
+                geneticHeuristicParameter
+                    .forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
 
                 newOrder = bestOrder.clone();
                 for (int i = 0; i < graph.size_free - 1; i++) {
 
+                    if (!has_time_left(number_of_iterations)) {
+                        break;
+                    }
+
                     int u = newOrder.get_vertex(i);
                     int v = newOrder.get_vertex(i + 1);
 
+                    if (graph.crossing_matrix[v][u] >= INF) {
+                        continue;
+                    }
+
+                    newOrder.swap_by_vertices(u, v);
+
                     // force node order to be different
-                    graph.crossing_matrix[u][v] += 100000;
-                    graph.crossing_matrix_diff[u][v] += 100000;
-                    local_search(graph, newOrder, parameter);
-                    graph.crossing_matrix[u][v] -= 100000;
-                    graph.crossing_matrix_diff[u][v] -= 100000;
+                    graph.fixNodeOrder(v, u);
+                    local_search(graph, newOrder, localSearchParameter,
+                                 [this, number_of_iterations]() {
+                                     return has_time_left(number_of_iterations);
+                                 });
+                    graph.unfixNodeOrder(v, u);
 
                     newCost = newOrder.count_crossings(graph);
 

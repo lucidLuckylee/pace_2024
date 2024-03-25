@@ -5,7 +5,8 @@
 #include "ilp_solver.hpp"
 #include <ortools/linear_solver/linear_solver.h>
 
-Order ilpSolver(const PaceGraph &graph) {
+Order ilpSolver(PaceGraph &graph) {
+    graph.init_crossing_matrix_if_necessary();
     auto solver_name = "GUROBI";
 
     std::unique_ptr<operations_research::MPSolver> solver(
@@ -38,20 +39,6 @@ Order ilpSolver(const PaceGraph &graph) {
                 auto *symmetry_constraint = solver->MakeRowConstraint(1, 1);
                 symmetry_constraint->SetCoefficient(varij, 1);
                 symmetry_constraint->SetCoefficient(varji, 1);
-
-                /* Add all transitivity constraints at once
-                for (int k = 0; k < graph_from_file.size_free; ++k) {
-                    if (j != k && i != k) {
-                        auto varjk = variable_matrix[j][k];
-                        auto varik = variable_matrix[i][k];
-
-                        auto *transitivity_constraint =
-                            solver->MakeRowConstraint(-solver->infinity(), 1);
-                        transitivity_constraint->SetCoefficient(varij, 1);
-                        transitivity_constraint->SetCoefficient(varjk, 1);
-                        transitivity_constraint->SetCoefficient(varik, -1);
-                    }
-                }*/
             }
         }
     }
