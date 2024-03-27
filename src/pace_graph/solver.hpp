@@ -83,6 +83,12 @@ template <typename T> class Solver {
         }
 
         finish(graph, splittedGraphs, results, isolated_nodes);
+        auto current_time = std::chrono::steady_clock::now();
+        std::cout << "# Time: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(
+                         current_time - start_time)
+                         .count()
+                  << "ms" << std::endl;
     }
 
     bool has_time_left() const {

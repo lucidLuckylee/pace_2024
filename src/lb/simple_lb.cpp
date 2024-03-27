@@ -4,6 +4,7 @@
 
 #include "simple_lb.hpp"
 #include <algorithm>
+#include <bitset>
 #include <iostream>
 #include <random>
 #include <x86gprintrin.h>
@@ -120,6 +121,46 @@ getConflictPairsBMI(PaceGraph &graph, SimpleLBParameter &parameter) {
 }
 
 std::vector<std::tuple<int, int, int>>
+getConflictPairsBitmap(PaceGraph &graph, SimpleLBParameter &parameter) {
+    std::vector<std::tuple<int, int, int>> conflictPairs;
+
+    std::vector<std::bitset<20000>> edges(graph.size_free);
+    std::vector<std::bitset<20000>> notEdges(graph.size_free);
+
+    for (int i = 0; i < graph.size_free; ++i) {
+        for (int j = 0; j < graph.size_free; ++j) {
+            if (graph.crossing_matrix_diff[i][j] < 0) {
+                edges[i][j] = true;
+            } else if (graph.crossing_matrix_diff[i][j] > 0) {
+                notEdges[i][j] = true;
+            }
+        }
+    }
+
+    for (int u = 0; u < graph.size_free; u++) {
+        auto &edgesU = edges[u];
+        auto &notEdgesU = notEdges[u];
+
+        for (int v = edgesU._Find_next(u); v < graph.size_free;
+             v = edgesU._Find_next(v)) {
+            auto &edgesV = edges[v];
+
+            auto ws = notEdgesU & edgesV;
+            for (int w = ws._Find_next(v); w < graph.size_free;
+                 w = ws._Find_next(w)) {
+                conflictPairs.emplace_back(u, v, w);
+            }
+        }
+
+        if (conflictPairs.size() > parameter.maxNrOfConflicts) {
+            break;
+        }
+    }
+
+    return conflictPairs;
+}
+
+std::vector<std::tuple<int, int, int>>
 getConflictPairs(SimpleLBParameter &parameter, PaceGraph &graph) {
     std::vector<std::tuple<int, int, int>> conflictPairs;
     if (parameter.searchStrategyForConflicts ==
@@ -131,6 +172,9 @@ getConflictPairs(SimpleLBParameter &parameter, PaceGraph &graph) {
     } else if (parameter.searchStrategyForConflicts ==
                SearchStrategyForConflicts::BMI) {
         conflictPairs = getConflictPairsBMI(graph, parameter);
+    } else if (parameter.searchStrategyForConflicts ==
+               SearchStrategyForConflicts::BITMAP) {
+        conflictPairs = getConflictPairsBitmap(graph, parameter);
     }
 
     return conflictPairs;

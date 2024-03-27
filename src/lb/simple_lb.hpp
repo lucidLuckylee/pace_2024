@@ -7,7 +7,7 @@
 
 #include "../pace_graph/pace_graph.hpp"
 
-enum class SearchStrategyForConflicts { MATRIX, NEIGHBORS, BMI };
+enum class SearchStrategyForConflicts { MATRIX, NEIGHBORS, BMI, BITMAP };
 
 class SimpleLBParameter {
   public:
@@ -19,7 +19,7 @@ class SimpleLBParameter {
 
     int numberOfIterationsForConflictOrder = 100;
     SearchStrategyForConflicts searchStrategyForConflicts =
-        SearchStrategyForConflicts::BMI;
+        SearchStrategyForConflicts::BITMAP;
 };
 
 long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter);
