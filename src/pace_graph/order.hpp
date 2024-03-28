@@ -8,7 +8,6 @@
 #include "segment_tree.hpp"
 #include <algorithm>
 #include <iostream>
-#include <random>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -48,7 +47,34 @@ class Order {
         }
     }
 
-    void apply_reduction_rules() {}
+    /**
+     * Applies RR1, RR2 and RRLarge exhaustively. Then RRLO1 and RRLO2
+     * exhaustively.
+     * Uses @upper_bound as RRLarge upper_bound.
+     */
+    void apply_reduction_rules(PaceGraph &graph, int upper_bound) {
+        while (rr1_rr2(graph) || rrlarge(graph, upper_bound)) {
+        }
+        while (rrlo1_rrlo2(graph)) {
+        }
+    }
+
+    /**
+     * Applies RR1 and RR2 exhaustively. Then RRLO1 and RRLO2 exhaustively.
+     * Does NOT apply RRLarge.
+     */
+    void apply_reduction_rules(PaceGraph &graph) {
+        int k = 0;
+        while (rr1_rr2(graph)) {
+            std::cerr << "\rCompleted rr1_rr2 iteration " << k << std::flush;
+            k += 1;
+        }
+        std::cerr << "\nExhausted rr1_rr2" << std::endl;
+        //partial_order.transitive_closure();
+        //std::cerr << "Created transitive closure" << std::endl;
+        while (rrlo1_rrlo2(graph)) {
+        }
+    }
 
     void swap_by_vertices(const int v, const int u) {
         int pos1 = vertex_to_position[v];
@@ -248,7 +274,7 @@ class Order {
      */
     bool rrlo1_rrlo2(PaceGraph &graph) {
         bool applied = false;
-        std::unordered_set<int> vertices_to_delete;
+        std::vector<int> vertices_to_delete;
         for (int v = 0; v < graph.size_free; v++) {
             for (int w = 0; w < graph.size_free; w++) {
                 if (partial_order.incomparable(v, w)) {
@@ -268,12 +294,23 @@ class Order {
             }
             // RRLO1 -> v is comparable to all elements in the partial order
             applied = true;
-            vertices_to_delete.insert(v);
+            vertices_to_delete.push_back(v);
         keep_v:;
         }
 
         // TODO: Depending on performance and how often we remove vertices we
         // could batch delete them.
+        // Sort the vector in descending order.
+        // This way the vertex names are not off when we delete a before b
+        // with a < b.
+        std::sort(vertices_to_delete.begin(), vertices_to_delete.end(),
+                  std::greater<int>());
+
+        // Remove duplicate values
+        vertices_to_delete.erase(
+            std::unique(vertices_to_delete.begin(), vertices_to_delete.end()),
+            vertices_to_delete.end());
+        // Delete vertices
         for (int vertex : vertices_to_delete) {
             graph.remove_free_vertex(vertex);
         }

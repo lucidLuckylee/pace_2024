@@ -167,3 +167,34 @@ TEST_CASE("RRLO2 Simple") {
     // 11 < 10
     CHECK(order.partial_order.lt(5, 4));
 }
+
+TEST_CASE("Exhaustively Reduce") {
+    std::string graph_gr = R"(p ocr 4 5 20
+1 5
+1 6
+1 7
+1 8
+1 9
+2 5
+2 6
+2 7
+2 8
+2 9
+3 5
+3 6
+3 7
+3 8
+3 9
+4 5
+4 6
+4 7
+4 8
+4 9)";
+    
+    std::istringstream gr_stream(graph_gr);
+    PaceGraph graph = PaceGraph::from_gr(gr_stream);
+
+    graph.init_crossing_matrix_if_necessary();
+    Order order(graph.size_free);
+
+}

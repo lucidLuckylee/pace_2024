@@ -6,6 +6,7 @@ class PartialOrdering {
   private:
     std::set<std::pair<int, int>> pairs;
 
+  public:
     void transitive_closure() {
         // Flag to indicate whether any new pairs were added in this iteration
         bool added_new_pairs = true;
@@ -28,7 +29,6 @@ class PartialOrdering {
         }
     }
 
-  public:
     /* Adds a pair to the relation
      * @return True if the pair got newly added. False if it already existed.
      */
@@ -38,7 +38,7 @@ class PartialOrdering {
         }
         pairs.insert(std::make_pair(a, b));
         // Add all transitive relations
-        transitive_closure();
+        // transitive_closure();
         return true;
     }
 

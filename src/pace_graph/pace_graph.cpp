@@ -172,10 +172,9 @@ bool PaceGraph::init_crossing_matrix_if_necessary() {
     return true;
 }
 
-
 /*
- * Reserves memory for and initializes the crossing_matrix_diff field from the crossing_matrix.
- * Does nothing when crossing_matrix is not initialized.
+ * Reserves memory for and initializes the crossing_matrix_diff field from the
+ * crossing_matrix. Does nothing when crossing_matrix is not initialized.
  */
 void PaceGraph::init_crossing_matrix_diff() {
     if (is_crossing_matrix_initialized()) {
@@ -229,14 +228,18 @@ void PaceGraph::remove_free_vertex(int v) {
     // Remove v from neighbors_fixed[u] for all u in neighbors_fixed and adjust
     // all neighbors w with w > v.
     for (int u = 0; u < neighbors_fixed.size(); u++) {
+        neighbors_fixed[u].erase(std::remove(neighbors_fixed[u].begin(),
+                                             neighbors_fixed[u].end(), v),
+                                 neighbors_fixed[u].end());
         for (int i = 0; i < neighbors_fixed[u].size(); i++) {
             if (neighbors_fixed[u][i] > v) {
                 neighbors_fixed[u][i] -= 1;
-            } else if (neighbors_fixed[u][i] == v) {
-                neighbors_fixed[u].erase(neighbors_fixed[u].begin() + i);
             }
         }
     }
+
+    // Remove neighbors_free[v]
+    neighbors_free.erase(neighbors_free.begin() + v);
     size_free = size_free - 1;
 }
 

@@ -71,6 +71,10 @@ if (ENABLE_ILP_SOLVER)
         target_link_libraries(ilp_solver ortools::ortools)
 endif ()
 
+# Data Reduction stand-alone target
+add_executable(data_reduction src/data_reduction/main.cpp)
+target_link_libraries(data_reduction PaceGraph)
+
 # Test using doctest framework
 option(ENABLE_TEST "Enable Test Build" OFF)
 
