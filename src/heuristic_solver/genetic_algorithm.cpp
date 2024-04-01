@@ -51,19 +51,19 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                     int u = newOrder.get_vertex(i);
                     int v = newOrder.get_vertex(i + 1);
 
-                    if (graph.crossing_matrix[v][u] >= INF) {
+                    if (graph.crossing.lt(u, v)) {
                         continue;
                     }
 
                     newOrder.swap_by_vertices(u, v);
 
                     // force node order to be different
-                    graph.fixNodeOrder(v, u);
+                    graph.crossing.set_a_lt_b(v, u);
                     local_search(graph, newOrder, localSearchParameter,
                                  [this, number_of_iterations]() {
                                      return has_time_left(number_of_iterations);
                                  });
-                    graph.unfixNodeOrder(v, u);
+                    graph.crossing.unset_a_lt_b(v, u);
 
                     newCost = newOrder.count_crossings(graph);
 

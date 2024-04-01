@@ -1,6 +1,7 @@
 
 #include "lb_solver.hpp"
 #include "simple_lb.hpp"
+#include <iostream>
 long LBSolver::run(PaceGraph &graph) {
     SimpleLBParameter parameter;
     return simpleLB(graph, parameter);

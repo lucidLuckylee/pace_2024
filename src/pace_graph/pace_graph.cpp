@@ -99,22 +99,6 @@ std::string PaceGraph::to_gr() {
     return result.str();
 }
 
-std::string PaceGraph::print_crossing_matrix() {
-    std::ostringstream result;
-
-    if (!is_crossing_matrix_initialized()) {
-        return "Not initialized";
-    }
-
-    for (int i = 0; i < crossing_matrix.size(); i++) {
-        for (int j = 0; j < size_free; j++) {
-            result << crossing_matrix[i][j] << " ";
-        }
-        result << std::endl;
-    }
-    return result.str();
-}
-
 std::string PaceGraph::print_neighbors_fixed() {
     std::ostringstream result;
 
@@ -128,127 +112,13 @@ std::string PaceGraph::print_neighbors_fixed() {
     return result.str();
 }
 
-bool PaceGraph::is_crossing_matrix_initialized() {
-    return !crossing_matrix.empty();
-}
-
-bool PaceGraph::init_crossing_matrix_if_necessary() {
-
-    if (is_crossing_matrix_initialized()) {
-        return true;
-    }
-
-    if (size_free > 20000) {
-        return false;
-    }
-
-    crossing_matrix.resize(size_free);
-    for (int i = 0; i < size_free; i++) {
-        crossing_matrix[i] = new int[size_free];
-
-        for (int j = 0; j < size_free; j++) {
-            crossing_matrix[i][j] = 0;
-        }
-    }
-
-    for (int i = 0; i < size_free; i++) {
-        for (int j = i + 1; j < size_free; j++) {
-            for (int m : neighbors_free[i]) {
-                for (int n : neighbors_free[j]) {
-                    if (m > n) {
-                        crossing_matrix[i][j]++;
-                    } else if (n > m) {
-                        crossing_matrix[j][i]++;
-                    }
-                }
-            }
-        }
-    }
-
-    // TODO: Split this call out (or create a new different init_cross_matrix
-    // without it) so we only call it once after doing all the data reductions
-    init_crossing_matrix_diff();
-
-    return true;
-}
-
-/*
- * Reserves memory for and initializes the crossing_matrix_diff field from the
- * crossing_matrix. Does nothing when crossing_matrix is not initialized.
- */
-void PaceGraph::init_crossing_matrix_diff() {
-    if (is_crossing_matrix_initialized()) {
-        // Reserve memory
-        crossing_matrix_diff.resize(size_free);
-        for (int i = 0; i < size_free; i++) {
-            crossing_matrix_diff[i] = new int[size_free];
-            for (int j = 0; j < size_free; j++) {
-                crossing_matrix_diff[i][j] = 0;
-            }
-        }
-
-        // Calculate entries
-        for (int i = 0; i < size_free; ++i) {
-            for (int j = 0; j < size_free; ++j) {
-                crossing_matrix_diff[i][j] =
-                    crossing_matrix[i][j] - crossing_matrix[j][i];
-            }
-        }
-    }
-}
-
 /*
  * Removes a free vertex v from the free vertex set and sets size_free to
- * size_free - 1. Updates the crossing_matrix, neighbors_fixed and
- * free_real_names but NOT crossing_matrix_diff!
+ * size_free - 1. Updates the matrix, neighbors_fixed and
+ * free_real_names.
  */
-void PaceGraph::remove_free_vertex(int v) {
-    // TODO: Store v so we can later put it back in the order when printing it
-    // out
-
-    // Drop crossing_matrix[v]
-    int *v_entries = crossing_matrix[v];
-    crossing_matrix.erase(crossing_matrix.begin() + v);
-    delete[] v_entries;
-
-    // Adjust real names and crossing_matrix entries that come after v
-    for (int i = v; i < size_free - 1; i++) {
-        free_real_names[i] = free_real_names[i + 1];
-        for (int u = 0; u < crossing_matrix.size(); u++) {
-            // Move all entries after v up one index
-            crossing_matrix[u][i] = crossing_matrix[u][i + 1];
-        }
-    }
-    // NOTE: We do not delete the last cell of crossing_matrix[u] so we are not
-    // freeing up memory yet other than crossing_matrix[v].
-
-    // Shrink free_real_names
-    free_real_names.erase(size_free - 1);
-
-    // Remove v from neighbors_fixed[u] for all u in neighbors_fixed and adjust
-    // all neighbors w with w > v.
-    for (int u = 0; u < neighbors_fixed.size(); u++) {
-        neighbors_fixed[u].erase(std::remove(neighbors_fixed[u].begin(),
-                                             neighbors_fixed[u].end(), v),
-                                 neighbors_fixed[u].end());
-        for (int i = 0; i < neighbors_fixed[u].size(); i++) {
-            if (neighbors_fixed[u][i] > v) {
-                neighbors_fixed[u][i] -= 1;
-            }
-        }
-    }
-
-    // Remove neighbors_free[v]
-    neighbors_free.erase(neighbors_free.begin() + v);
-    size_free = size_free - 1;
-}
-
-PaceGraph::~PaceGraph() {
-    for (int i = 0; i < crossing_matrix.size(); i++) {
-        delete[] crossing_matrix[i];
-        delete[] crossing_matrix_diff[i];
-    }
-}
+void PaceGraph::remove_free_vertices(
+    std::vector<std::tuple<int, int>> vertices) {}
 
 std::tuple<std::vector<PaceGraph>, std::vector<int>>
 PaceGraph::splitGraphOn0Splits() {
@@ -308,7 +178,6 @@ PaceGraph::splitGraphOn0Splits() {
                                                                 isolatedNodes);
 }
 PaceGraph PaceGraph::induced_subgraphs(std::vector<int> fixed_nodes) {
-
     std::set<int> nodesInB;
     std::unordered_map<int, int> new_fixed_real_names;
     std::unordered_map<int, int> new_free_real_names;
@@ -342,13 +211,46 @@ PaceGraph PaceGraph::induced_subgraphs(std::vector<int> fixed_nodes) {
     return PaceGraph(fixed_nodes.size(), nodesInB.size(), edges,
                      new_fixed_real_names, new_free_real_names);
 }
-void PaceGraph::fixNodeOrder(int beforeNode, int afterNode) {
-    crossing_matrix[afterNode][beforeNode] += INF;
-    crossing_matrix_diff[afterNode][beforeNode] += INF;
-    crossing_matrix_diff[beforeNode][afterNode] -= INF;
+
+std::tuple<int, int> PaceGraph::calculatingCrossingNumber(int u, int v) {
+
+    if (crossing.is_initialized()) {
+        return std::make_tuple(crossing.matrix[u][v], crossing.matrix[v][u]);
+    }
+
+    int crossing_entries_u_v = 0;
+    int crossing_entries_v_u = 0;
+
+    int currentVPointer = 0;
+    int currentUPointer = 0;
+
+    const auto &u_neighbors = neighbors_free[u];
+    const auto &v_neighbors = neighbors_free[v];
+
+    for (int u_N : u_neighbors) {
+        while (currentVPointer < v_neighbors.size() &&
+               v_neighbors[currentVPointer] < u_N) {
+            crossing_entries_u_v += u_neighbors.size() - currentUPointer;
+            currentVPointer++;
+        }
+        crossing_entries_v_u += v_neighbors.size() - currentVPointer;
+        currentUPointer++;
+    }
+
+    while (currentVPointer < v_neighbors.size()) {
+        crossing_entries_u_v += u_neighbors.size() - currentUPointer;
+        currentVPointer++;
+    }
+
+    return std::make_tuple(crossing_entries_u_v, crossing_entries_v_u);
 }
-void PaceGraph::unfixNodeOrder(int beforeNode, int afterNode) {
-    crossing_matrix[afterNode][beforeNode] -= INF;
-    crossing_matrix_diff[afterNode][beforeNode] -= INF;
-    crossing_matrix_diff[beforeNode][afterNode] += INF;
+bool PaceGraph::init_crossing_matrix_if_necessary() {
+    if (!crossing.is_initialized()) {
+        if (!crossing.can_initialized(*this)) {
+            return false;
+        }
+        crossing.init_crossing_matrix(*this);
+        return true;
+    }
+    return true;
 }

@@ -1,6 +1,7 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
+#include "../data_reduction/data_reduction_rules.hpp"
 #include "../heuristic_solver/mean_position_heuristic.hpp"
 #include "order.hpp"
 #include "pace_graph.hpp"
@@ -57,10 +58,11 @@ template <typename T> class Solver {
         }
 
         std::vector<T> results;
+
         for (int i = 0; i < splittedGraphs.size(); i++) {
             auto g = splittedGraphs[i];
-
             start_time_for_part = std::chrono::steady_clock::now();
+            apply_reduction_rules(g);
 
             auto msLeft = time_limit -
                           std::chrono::duration_cast<std::chrono::milliseconds>(

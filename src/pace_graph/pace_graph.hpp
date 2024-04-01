@@ -1,14 +1,13 @@
 #ifndef PACE_GRAPH_HPP
 #define PACE_GRAPH_HPP
 
+#include "crossing_matrix.hpp"
 #include <fstream>
 #include <list>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
-
-#define INF 1000000
 
 class PaceGraph {
   private:
@@ -43,20 +42,9 @@ class PaceGraph {
      */
     std::vector<std::vector<int>> neighbors_fixed;
 
-    /** Saving the numbers of crossing between two vertices i and j \in [0,...,
-     * size_free - 1] in crossing_matrix[i][j] when i comes before j.
-     */
-    // TODO(Lukas): We can trivially save the n entries where j=i and should create an own CrossingMatrix class
-    std::vector<int *> crossing_matrix;
-
-    /** Saving the diff of crossing between two vertices i and j \in [0,...,
-     * size_free - 1] in crossing_matrix_diff[i][j] = crossing_matrix[i][j] -
-     * crossing_matrix[j][i].
-     */
-    std::vector<int *> crossing_matrix_diff;
-
     std::unordered_map<int, int> fixed_real_names;
     std::unordered_map<int, int> free_real_names;
+    CrossingMatrix crossing;
 
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges,
               std::unordered_map<int, int> fixed_real_names,
@@ -73,8 +61,6 @@ class PaceGraph {
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges)
         : PaceGraph(a, b, edges, createMap(a, 0), createMap(b, a)) {}
 
-    ~PaceGraph();
-
     /**
      * To read more about the .gr file format, see:
      * https://pacechallenge.org/2024/io/
@@ -84,57 +70,22 @@ class PaceGraph {
 
     static PaceGraph from_file(std::string filePath);
 
-    bool is_crossing_matrix_initialized();
-    
-    bool init_crossing_matrix_if_necessary();
-
-    void init_crossing_matrix_diff();
-
-    void remove_free_vertex(int v);
+    void remove_free_vertices(std::vector<std::tuple<int, int>> vertices);
 
     PaceGraph induced_subgraphs(std::vector<int> fixed_nodes);
 
     std::string to_gr();
 
-    std::string print_crossing_matrix();
-
     std::string print_neighbors_fixed();
-
-    void fixNodeOrder(int beforeNode, int afterNode);
-    void unfixNodeOrder(int beforeNode, int afterNode);
 
     int size() { return size_fixed + size_free; }
     int edge_count() const { return neighbors_free.size(); }
 
     std::tuple<std::vector<PaceGraph>, std::vector<int>> splitGraphOn0Splits();
 
-    std::tuple<int, int> calculatingCrossingMatrixEntries(int u, int v) {
-        int crossing_matrix_u_v = 0;
-        int crossing_matrix_v_u = 0;
+    std::tuple<int, int> calculatingCrossingNumber(int u, int v);
 
-        int currentVPointer = 0;
-        int currentUPointer = 0;
-
-        const auto &u_neighbors = neighbors_free[u];
-        const auto &v_neighbors = neighbors_free[v];
-
-        for (int u_N : u_neighbors) {
-            while (currentVPointer < v_neighbors.size() &&
-                   v_neighbors[currentVPointer] < u_N) {
-                crossing_matrix_u_v += u_neighbors.size() - currentUPointer;
-                currentVPointer++;
-            }
-            crossing_matrix_v_u += v_neighbors.size() - currentVPointer;
-            currentUPointer++;
-        }
-
-        while (currentVPointer < v_neighbors.size()) {
-            crossing_matrix_u_v += u_neighbors.size() - currentUPointer;
-            currentVPointer++;
-        }
-
-        return std::make_tuple(crossing_matrix_u_v, crossing_matrix_v_u);
-    }
+    bool init_crossing_matrix_if_necessary();
 };
 
 #endif // PACE_GRAPH_HPP

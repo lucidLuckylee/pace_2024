@@ -45,7 +45,7 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
                 break;
             case sum_along_crossing:
                 graph.init_crossing_matrix_if_necessary();
-                auto crossing_matrix_for_i = graph.crossing_matrix[i];
+                auto crossing_matrix_for_i = graph.crossing.matrix[i];
                 for (int j = 0; j < graph.size_free; ++j) {
                     avg += crossing_matrix_for_i[j];
                 }
@@ -95,7 +95,7 @@ void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
             int crossing_matrix_u_v;
             int crossing_matrix_v_u;
             std::tie(crossing_matrix_u_v, crossing_matrix_v_u) =
-                graph.calculatingCrossingMatrixEntries(u, v);
+                graph.calculatingCrossingNumber(u, v);
 
             if (crossing_matrix_u_v > crossing_matrix_v_u) {
                 order.swap_by_position(i, i + 1);

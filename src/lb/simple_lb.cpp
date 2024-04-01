@@ -10,117 +10,6 @@
 #include <x86gprintrin.h>
 
 std::vector<std::tuple<int, int, int>>
-getConflictPairsIterateOverMatrix(PaceGraph &graph) {
-    std::vector<std::tuple<int, int, int>> conflictPairs;
-
-    for (int u = 0; u < graph.size_free; ++u) {
-        for (int v = 0; v < graph.size_free; ++v) {
-            if (u == v)
-                continue;
-            if (graph.crossing_matrix_diff[u][v] < 0) {
-                auto vDiffs = graph.crossing_matrix_diff[v];
-                auto uDiffs = graph.crossing_matrix_diff[u];
-                for (int w = 0; w < graph.size_free; w++) {
-                    if (w == u || w == v)
-                        continue;
-
-                    if (vDiffs[w] < 0 && uDiffs[w] > 0) {
-                        conflictPairs.emplace_back(u, v, w);
-                    }
-                }
-            }
-        }
-    }
-
-    return conflictPairs;
-}
-
-std::vector<std::tuple<int, int, int>>
-getConflictPairsIterateOverNeighbors(PaceGraph &graph) {
-    std::vector<std::tuple<int, int, int>> conflictPairs;
-
-    std::vector<std::vector<int>> smaller(graph.size_free);
-
-    for (int i = 0; i < graph.size_free; ++i) {
-        smaller[i] = std::vector<int>();
-        for (int j = 0; j < graph.size_free; ++j) {
-            if (i == j)
-                continue;
-            if (graph.crossing_matrix_diff[i][j] < 0) {
-                smaller[i].push_back(j);
-            }
-        }
-    }
-
-    for (int u = 0; u < graph.size_free; ++u) {
-        for (int v : smaller[u]) {
-            for (int w : smaller[v]) {
-                if (graph.crossing_matrix_diff[u][w] > 0) {
-                    conflictPairs.emplace_back(u, v, w);
-                }
-            }
-        }
-    }
-
-    return conflictPairs;
-}
-
-std::vector<std::tuple<int, int, int>>
-getConflictPairsBMI(PaceGraph &graph, SimpleLBParameter &parameter) {
-    std::vector<std::tuple<int, int, int>> conflictPairs;
-
-    std::vector<std::vector<uint64_t>> smaller(graph.size_free);
-    std::vector<std::vector<uint64_t>> larger(graph.size_free);
-
-    for (int i = 0; i < graph.size_free; ++i) {
-        smaller[i] = std::vector<uint64_t>((graph.size_free + 63) / 64);
-        larger[i] = std::vector<uint64_t>((graph.size_free + 63) / 64);
-        for (int j = 0; j < graph.size_free; ++j) {
-            int pos = j / 64;
-            int bit = j % 64;
-            if (graph.crossing_matrix_diff[i][j] < 0) {
-                smaller[i][pos] |= (1L << bit);
-            } else if (graph.crossing_matrix_diff[i][j] > 0) {
-                larger[i][pos] |= (1L << bit);
-            }
-        }
-    }
-
-    for (int u = 0; u < graph.size_free; u++) {
-        auto &smaller_u = smaller[u];
-
-        for (int pos1 = 0; pos1 < smaller_u.size(); pos1++) {
-            auto vs = smaller_u[pos1];
-            while (vs) {
-                int bit = __builtin_ctzll(vs);
-                vs = __blsr_u64(vs);
-
-                int v = pos1 * 64 + bit;
-
-                for (int pos2 = 0; pos2 < smaller_u.size(); pos2++) {
-                    auto ws1 = smaller[v][pos2];
-                    auto ws2 = larger[u][pos2];
-
-                    auto ws = ws1 & ws2;
-                    while (ws) {
-                        int bit2 = __builtin_ctzll(ws);
-                        ws = __blsr_u64(ws);
-
-                        int w = pos2 * 64 + bit2;
-                        conflictPairs.emplace_back(u, v, w);
-                    }
-                }
-            }
-        }
-        if (conflictPairs.size() > parameter.maxNrOfConflicts) {
-            break;
-        }
-    }
-
-    return conflictPairs;
-}
-
-std::vector<std::tuple<int, int, int>>
 getConflictPairsBitmap(PaceGraph &graph, SimpleLBParameter &parameter) {
     std::vector<std::tuple<int, int, int>> conflictPairs;
 
@@ -129,9 +18,9 @@ getConflictPairsBitmap(PaceGraph &graph, SimpleLBParameter &parameter) {
 
     for (int i = 0; i < graph.size_free; ++i) {
         for (int j = 0; j < graph.size_free; ++j) {
-            if (graph.crossing_matrix_diff[i][j] < 0) {
+            if (graph.crossing.matrix_diff[i][j] < 0) {
                 edges[i][j] = true;
-            } else if (graph.crossing_matrix_diff[i][j] > 0) {
+            } else if (graph.crossing.matrix_diff[i][j] > 0) {
                 notEdges[i][j] = true;
             }
         }
@@ -160,26 +49,6 @@ getConflictPairsBitmap(PaceGraph &graph, SimpleLBParameter &parameter) {
     return conflictPairs;
 }
 
-std::vector<std::tuple<int, int, int>>
-getConflictPairs(SimpleLBParameter &parameter, PaceGraph &graph) {
-    std::vector<std::tuple<int, int, int>> conflictPairs;
-    if (parameter.searchStrategyForConflicts ==
-        SearchStrategyForConflicts::MATRIX) {
-        conflictPairs = getConflictPairsIterateOverMatrix(graph);
-    } else if (parameter.searchStrategyForConflicts ==
-               SearchStrategyForConflicts::NEIGHBORS) {
-        conflictPairs = getConflictPairsIterateOverNeighbors(graph);
-    } else if (parameter.searchStrategyForConflicts ==
-               SearchStrategyForConflicts::BMI) {
-        conflictPairs = getConflictPairsBMI(graph, parameter);
-    } else if (parameter.searchStrategyForConflicts ==
-               SearchStrategyForConflicts::BITMAP) {
-        conflictPairs = getConflictPairsBitmap(graph, parameter);
-    }
-
-    return conflictPairs;
-}
-
 void fisherYatesShuffle(std::vector<std::tuple<int, int, int>> &conflictPairs,
                         std::mt19937 &rng) {
     for (int i = conflictPairs.size() - 1; i > (conflictPairs.size() / 2);
@@ -192,7 +61,7 @@ void fisherYatesShuffle(std::vector<std::tuple<int, int, int>> &conflictPairs,
 
 long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
                           long currentLB) {
-    auto conflictPairs = getConflictPairs(parameter, graph);
+    auto conflictPairs = getConflictPairsBitmap(graph, parameter);
 
     if (conflictPairs.empty() ||
         conflictPairs.size() >= parameter.maxNrOfConflicts) {
@@ -215,12 +84,12 @@ long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
         }
 
         std::vector<std::vector<int>> potentialMatrix(
-            graph.crossing_matrix_diff.size());
+            graph.crossing.matrix_diff.size());
 
-        for (int i = 0; i < graph.crossing_matrix_diff.size(); i++) {
-            potentialMatrix[i].resize(graph.crossing_matrix_diff.size());
-            for (int j = 0; j < graph.crossing_matrix_diff.size(); ++j) {
-                potentialMatrix[i][j] = graph.crossing_matrix_diff[i][j];
+        for (int i = 0; i < graph.crossing.matrix_diff.size(); i++) {
+            potentialMatrix[i].resize(graph.crossing.matrix_diff.size());
+            for (int j = 0; j < graph.crossing.matrix_diff.size(); ++j) {
+                potentialMatrix[i][j] = graph.crossing.matrix_diff[i][j];
             }
         }
 
@@ -238,19 +107,16 @@ long improveWithPotential(PaceGraph &graph, SimpleLBParameter &parameter,
                     long currentDiff =
                         graph.ub - currentLB - currentLBImprovement;
 
-                    if (potential1 > currentDiff &&
-                        graph.crossing_matrix[v][u] < INF) {
-                        graph.fixNodeOrder(u, v);
+                    if (potential1 > currentDiff && !graph.crossing.lt(u, v)) {
+                        graph.crossing.set_a_lt_b(u, v);
                     }
 
-                    if (potential2 > currentDiff &&
-                        graph.crossing_matrix[v][w] < INF) {
-                        graph.fixNodeOrder(v, w);
+                    if (potential2 > currentDiff && !graph.crossing.lt(v, w)) {
+                        graph.crossing.set_a_lt_b(v, w);
                     }
 
-                    if (potential3 > currentDiff &&
-                        graph.crossing_matrix[u][w] < INF) {
-                        graph.fixNodeOrder(w, u);
+                    if (potential3 > currentDiff && !graph.crossing.lt(w, u)) {
+                        graph.crossing.set_a_lt_b(w, u);
                     }
                 }
 
@@ -286,7 +152,7 @@ long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
                 int crossing_matrix_u_v;
                 int crossing_matrix_v_u;
                 std::tie(crossing_matrix_u_v, crossing_matrix_v_u) =
-                    graph.calculatingCrossingMatrixEntries(u, v);
+                    graph.calculatingCrossingNumber(u, v);
 
                 lb += std::min(crossing_matrix_u_v, crossing_matrix_v_u);
             }
@@ -296,8 +162,8 @@ long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter) {
 
     for (int u = 0; u < graph.size_free; ++u) {
         for (int v = u + 1; v < graph.size_free; v++) {
-            lb += std::min(graph.crossing_matrix[u][v],
-                           graph.crossing_matrix[v][u]);
+            lb += std::min(graph.crossing.matrix[u][v],
+                           graph.crossing.matrix[v][u]);
         }
     }
 
