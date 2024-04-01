@@ -53,7 +53,7 @@ class Order {
      * Uses @upper_bound as RRLarge upper_bound.
      */
     void apply_reduction_rules(PaceGraph &graph, int upper_bound) {
-        while (rr1_rr2(graph) || rrlarge(graph, upper_bound)) {
+        while (rr1_rr2(graph) || rrlarge(graph, upper_bound) || rr3(graph)) {
         }
         while (rrlo1_rrlo2(graph)) {
         }
@@ -65,7 +65,7 @@ class Order {
      */
     void apply_reduction_rules(PaceGraph &graph) {
         int k = 0;
-        while (rr1_rr2(graph)) {
+        while (rr1_rr2(graph) || rr3(graph)) {
             std::cerr << "\rCompleted rr1_rr2 iteration " << k << std::flush;
             k += 1;
         }
@@ -227,18 +227,20 @@ class Order {
      * @return Boolean value indicating whether the reduction rule was applied.
      */
     // TODO: I am not convinced that this one can be applied in our case
-    // bool rr3(const PaceGraph &graph) {
-    //    bool applied = false;
-    //    for (int a = 0; a < graph.size_free; a++) {
-    //        for (int b = 0; b < graph.size_free; b++) {
-    //            if (graph.crossing_matrix[a][b] == 2 &&
-    //                graph.crossing_matrix[b][a] == 1) {
-    //                applied = partial_order.set_a_lt_b(a, b) || applied;
-    //            }
-    //        }
-    //    }
-    //    return applied;
-    //}
+     bool rr3(const PaceGraph &graph) {
+       bool applied = false;
+       for (int a = 0; a < graph.size_free; a++) {
+            for (int b = 0; b < graph.size_free; b++) {
+                if (graph.crossing_matrix[a][b] == 1 &&
+                    graph.crossing_matrix[b][a] == 2 &&
+                    graph.neighbors_free[a].size() == 2 &&
+                    graph.neighbors_free[b].size() == 2) {
+                   applied = partial_order.set_a_lt_b(a, b) || applied;
+               }
+           }
+      }
+        return applied;
+    }
 
     /*
      * Applies reduction rule RRLarge from
@@ -359,6 +361,9 @@ class Order {
         return {graph.size_fixed, graph.size_free, new_edges,
                 graph.fixed_real_names, new_free_real_names};
     }
+    /*
+     * restores the order from the last backtracking step
+     */
 };
 
 #endif // ORDER_HPP
