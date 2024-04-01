@@ -247,12 +247,14 @@ void DirectedGraph::unblock(int node) {
 }
 
 WeightedDirectedGraph::WeightedDirectedGraph(CrossingMatrix &crossingMatrix)
-    : DirectedGraph(std::vector<std::vector<int>>(crossingMatrix.n)) {
+    : DirectedGraph(
+          std::vector<std::vector<int>>(crossingMatrix.matrix.size())) {
     weights = std::vector<std::vector<int>>(
-        crossingMatrix.n, std::vector<int>(crossingMatrix.n, 0));
+        crossingMatrix.matrix.size(),
+        std::vector<int>(crossingMatrix.matrix.size(), 0));
 
-    for (int u = 0; u < crossingMatrix.n; ++u) {
-        for (int v = 0; v < crossingMatrix.n; ++v) {
+    for (int u = 0; u < crossingMatrix.matrix.size(); ++u) {
+        for (int v = 0; v < crossingMatrix.matrix.size(); ++v) {
             if (u == v)
                 continue;
             if (crossingMatrix.matrix_diff[u][v] < 0) {

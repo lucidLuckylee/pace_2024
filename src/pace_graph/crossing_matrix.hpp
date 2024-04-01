@@ -15,9 +15,10 @@ class PaceGraph;
 class CrossingMatrix {
 
   public:
-    int n;
-    std::vector<std::vector<int>> matrix;
-    std::vector<std::vector<int>> matrix_diff;
+    std::vector<int *> matrix;
+    std::vector<int *> matrix_diff;
+
+    ~CrossingMatrix();
 
     bool set_a_lt_b(int a, int b);
     void unset_a_lt_b(int a, int b);
@@ -32,7 +33,7 @@ class CrossingMatrix {
     bool can_initialized(PaceGraph &graph);
     bool is_initialized();
 
-    void remove_free_vertices(std::vector<int> vertices);
+    void remove_free_vertices(std::vector<int> &vertices_to_remove);
     void clean();
 };
 

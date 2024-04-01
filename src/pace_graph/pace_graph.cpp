@@ -113,12 +113,64 @@ std::string PaceGraph::print_neighbors_fixed() {
 }
 
 /*
- * Removes a free vertex v from the free vertex set and sets size_free to
- * size_free - 1. Updates the matrix, neighbors_fixed and
- * free_real_names.
+ * Removes vertices from the free vertex set. Updates the crossing matrix,
+ * neighbors_fixed and free_real_names, size_free. It also adds the vertex to a
+ * stack to later be able to get the position of the vertex in the original
+ * graph.
+ * @param vertices a vector of tuples (v, position to be inserted) representing
+ * the vertices to be removed.
  */
 void PaceGraph::remove_free_vertices(
-    std::vector<std::tuple<int, int>> vertices) {}
+    std::vector<std::tuple<int, int>> vertices) {
+
+    std::sort(vertices.begin(), vertices.end(),
+              [](auto a, auto b) { return std::get<1>(a) > std::get<1>(b); });
+
+    for (const auto &[v, position] : vertices) {
+        removed_vertices.emplace(free_real_names[v], position);
+    }
+
+    std::vector<int> vertices_to_remove;
+    for (const auto &vertex : vertices) {
+        auto [v, _] = vertex;
+        vertices_to_remove.push_back(v);
+    }
+
+    std::sort(vertices_to_remove.begin(), vertices_to_remove.end());
+
+    if (crossing.is_initialized()) {
+        crossing.remove_free_vertices(vertices_to_remove);
+    }
+
+    // update vertices naming
+    std::vector<int> mapping(size_free, -1);
+    for (int i = 0, j = 0; i < size_free; i++) {
+        if (j < vertices_to_remove.size() && i == vertices_to_remove[j]) {
+            j++;
+        } else {
+            mapping[i] = i - j;
+            free_real_names[i - j] = free_real_names[i];
+        }
+    }
+
+    for (int i = vertices_to_remove.size() - 1; i >= 0; i--) {
+        neighbors_free.erase(neighbors_free.begin() + vertices_to_remove[i]);
+    }
+
+    // update edges
+    for (auto &edge_list : neighbors_fixed) {
+        edge_list.erase(
+            std::remove_if(edge_list.begin(), edge_list.end(),
+                           [&mapping](int v) { return mapping[v] == -1; }),
+            edge_list.end());
+
+        for (int &v : edge_list) {
+            v = mapping[v];
+        }
+    }
+
+    size_free -= vertices_to_remove.size();
+}
 
 std::tuple<std::vector<PaceGraph>, std::vector<int>>
 PaceGraph::splitGraphOn0Splits() {

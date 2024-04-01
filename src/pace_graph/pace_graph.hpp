@@ -4,6 +4,7 @@
 #include "crossing_matrix.hpp"
 #include <fstream>
 #include <list>
+#include <stack>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -44,6 +45,9 @@ class PaceGraph {
 
     std::unordered_map<int, int> fixed_real_names;
     std::unordered_map<int, int> free_real_names;
+
+    std::stack<std::tuple<int, int>> removed_vertices;
+
     CrossingMatrix crossing;
 
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges,

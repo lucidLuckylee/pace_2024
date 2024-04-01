@@ -22,7 +22,10 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp
         src/pace_graph/crossing_matrix.hpp
         src/pace_graph/directed_graph.cpp
         src/pace_graph/directed_graph.hpp
-        src
+        src/data_reduction/data_reduction_rules.cpp
+        src/data_reduction/data_reduction_rules.hpp
+        src/lb/simple_lb.cpp
+        src/lb/simple_lb.hpp
 )
 
 
