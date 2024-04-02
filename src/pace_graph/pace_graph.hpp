@@ -24,6 +24,8 @@ class PaceGraph {
     long lb = 0;
     long ub = 1000000000;
 
+    long cost_through_deleted_nodes = 0;
+
     /** Number of size_free vertices
             We name these vertices: [0,..., size_free - 1]
              */
@@ -74,7 +76,7 @@ class PaceGraph {
 
     static PaceGraph from_file(std::string filePath);
 
-    void remove_free_vertices(std::vector<std::tuple<int, int>> vertices);
+    void remove_free_vertices(std::vector<std::tuple<int, int, int>> vertices);
 
     PaceGraph induced_subgraphs(std::vector<int> fixed_nodes);
 

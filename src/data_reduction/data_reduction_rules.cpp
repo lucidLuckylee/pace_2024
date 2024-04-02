@@ -67,14 +67,16 @@ bool rrlarge(PaceGraph &graph) {
  * applied.
  */
 bool rrlo1(PaceGraph &graph) {
-    std::vector<std::tuple<int, int>> vertices_to_delete;
+    std::vector<std::tuple<int, int, int>> vertices_to_delete;
     for (int v = 0; v < graph.size_free; v++) {
         int posOfV = 0;
         bool canDeleted = true;
+        long costs = 0;
         for (int w = 0; w < graph.size_free; w++) {
             if (graph.crossing.comparable(v, w)) {
                 if (graph.crossing.lt(w, v)) {
                     posOfV++;
+                    costs += graph.crossing.matrix[w][v];
                 }
             } else {
                 canDeleted = false;
@@ -84,7 +86,7 @@ bool rrlo1(PaceGraph &graph) {
 
         if (canDeleted) {
             // RRLO1 -> v is comparable to all elements in the partial order
-            vertices_to_delete.emplace_back(v, posOfV);
+            vertices_to_delete.emplace_back(v, posOfV, costs);
         }
     }
 

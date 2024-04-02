@@ -114,25 +114,27 @@ std::string PaceGraph::print_neighbors_fixed() {
 
 /*
  * Removes vertices from the free vertex set. Updates the crossing matrix,
- * neighbors_fixed and free_real_names, size_free. It also adds the vertex to a
- * stack to later be able to get the position of the vertex in the original
- * graph.
- * @param vertices a vector of tuples (v, position to be inserted) representing
- * the vertices to be removed.
+ * neighbors_fixed and free_real_names, size_free, ub, lb and
+ * cost_through_deleted_nodes. It also adds the vertex to a stack to later be
+ * able to get the position of the vertex in the original graph.
+ * @param vertices to be deleted described by the following tuples (v, position
+ * to be inserted, cost)
  */
 void PaceGraph::remove_free_vertices(
-    std::vector<std::tuple<int, int>> vertices) {
+    std::vector<std::tuple<int, int, int>> vertices) {
 
+    long costs = 0;
     std::sort(vertices.begin(), vertices.end(),
               [](auto a, auto b) { return std::get<1>(a) > std::get<1>(b); });
 
-    for (const auto &[v, position] : vertices) {
+    for (const auto &[v, position, cost] : vertices) {
         removed_vertices.emplace(free_real_names[v], position);
+        costs += cost;
     }
 
     std::vector<int> vertices_to_remove;
     for (const auto &vertex : vertices) {
-        auto [v, _] = vertex;
+        auto [v, _, _2] = vertex;
         vertices_to_remove.push_back(v);
     }
 
@@ -170,6 +172,9 @@ void PaceGraph::remove_free_vertices(
     }
 
     size_free -= vertices_to_remove.size();
+    cost_through_deleted_nodes += costs;
+    ub -= costs;
+    lb = std::max(0L, lb - costs);
 }
 
 std::tuple<std::vector<PaceGraph>, std::vector<int>>

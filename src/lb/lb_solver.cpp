@@ -10,6 +10,11 @@ void LBSolver::finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,
                       std::vector<long> &results,
                       std::vector<int> &isolated_nodes) {
     long lb = 0;
+
+    for (auto &g : subgraphs) {
+        lb += g.cost_through_deleted_nodes;
+    }
+
     for (auto &r : results) {
         lb += r;
     }
