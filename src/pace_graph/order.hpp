@@ -139,7 +139,7 @@ class Order {
 
     PaceGraph reorderGraph(PaceGraph &graph) {
         std::vector<std::tuple<int, int>> new_edges;
-        std::unordered_map<int, int> new_free_real_names;
+        std::vector<int> new_free_real_names(graph.size_free);
 
         for (int oldV = 0; oldV < graph.size_free; ++oldV) {
             int newV = get_position(oldV);

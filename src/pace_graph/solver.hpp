@@ -3,6 +3,7 @@
 
 #include "../data_reduction/data_reduction_rules.hpp"
 #include "../heuristic_solver/mean_position_heuristic.hpp"
+#include "directed_graph.hpp"
 #include "order.hpp"
 #include "pace_graph.hpp"
 #include <chrono>
@@ -33,7 +34,7 @@ template <typename T> class Solver {
           reorderNodes(reorderNodes), initUB(initUB) {}
 
     void solve(PaceGraph &graph) {
-        auto val = graph.splitGraphOn0Splits();
+        auto val = graph.splitGraphs();
         auto splittedGraphs = std::get<0>(val);
         auto isolated_nodes = std::get<1>(val);
 
@@ -58,9 +59,9 @@ template <typename T> class Solver {
         }
 
         std::vector<T> results;
-
         for (int i = 0; i < splittedGraphs.size(); i++) {
             auto &g = splittedGraphs[i];
+
             start_time_for_part = std::chrono::steady_clock::now();
             apply_reduction_rules(g);
 
@@ -109,7 +110,7 @@ class SolutionSolver : public Solver<Order> {
             std::cout << graph.free_real_names[u] << std::endl;
         }
 
-        long crossings = 0;
+        long crossings = graph.cost_through_deleted_nodes;
 
         for (int i = 0; i < subgraphs.size(); ++i) {
             auto &g = subgraphs[i];

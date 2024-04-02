@@ -1,4 +1,5 @@
 #include "pace_graph.hpp"
+#include "directed_graph.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -8,9 +9,9 @@
 #include <stdexcept>
 #include <utility>
 
-PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges,
-                     std::unordered_map<int, int> fixed_real_names,
-                     std::unordered_map<int, int> free_real_names) {
+PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges,
+                     std::vector<int> fixed_real_names,
+                     std::vector<int> free_real_names) {
 
     size_fixed = a;
     size_free = b;
@@ -91,8 +92,7 @@ std::string PaceGraph::to_gr() {
 
     for (int i = 0; i < size_fixed; i++) {
         for (const auto &neighbor : neighbors_fixed[i]) {
-            result << fixed_real_names[i] << " " << free_real_names[neighbor]
-                   << "\n";
+            result << i + 1 << " " << neighbor + size_fixed + 1 << "\n";
         }
     }
 
@@ -177,8 +177,7 @@ void PaceGraph::remove_free_vertices(
     lb = std::max(0L, lb - costs);
 }
 
-std::tuple<std::vector<PaceGraph>, std::vector<int>>
-PaceGraph::splitGraphOn0Splits() {
+std::tuple<std::vector<PaceGraph>, std::vector<int>> PaceGraph::splitGraphs() {
     long current_count = 0;
 
     std::vector<std::vector<int>> result;
@@ -228,45 +227,124 @@ PaceGraph::splitGraphOn0Splits() {
 
     std::vector<PaceGraph> graphs;
     for (const std::vector<int> &induced_vertices : result) {
-        graphs.push_back(induced_subgraphs(induced_vertices));
+        auto g = induced_subgraphs_fixed(induced_vertices);
+        if (g.init_crossing_matrix_if_necessary()) {
+            DirectedGraph dg(g);
+            dg.init_sccs();
+
+            if (dg.sccs.size() == 1) {
+                graphs.push_back(g);
+                continue;
+            }
+
+            auto sccGraph = dg.construct_sccs_graph();
+            sccGraph.topologicalSort();
+            std::reverse(sccGraph.topologicalOrder.begin(),
+                         sccGraph.topologicalOrder.end());
+
+            for (int i = 0; i < sccGraph.topologicalOrder.size(); ++i) {
+                for (int j = i + 1; j < sccGraph.topologicalOrder.size(); ++j) {
+                    for (int u : dg.sccs[sccGraph.topologicalOrder[i]]) {
+                        for (int v : dg.sccs[sccGraph.topologicalOrder[j]]) {
+                            cost_through_deleted_nodes +=
+                                g.crossing.matrix[u][v];
+                        }
+                    }
+                }
+            }
+
+            for (const auto &scc : sccGraph.topologicalOrder) {
+
+                auto &free_vertices = dg.sccs[scc];
+
+                auto induced = g.induced_subgraphs_free(free_vertices);
+                graphs.push_back(induced);
+            }
+
+            g.crossing.clean();
+        } else {
+            graphs.push_back(g);
+        }
     }
 
     return std::tuple<std::vector<PaceGraph>, std::vector<int>>(graphs,
                                                                 isolatedNodes);
 }
-PaceGraph PaceGraph::induced_subgraphs(std::vector<int> fixed_nodes) {
-    std::set<int> nodesInB;
-    std::unordered_map<int, int> new_fixed_real_names;
-    std::unordered_map<int, int> new_free_real_names;
 
-    std::unordered_map<int, int> old_free_to_new_free;
+PaceGraph PaceGraph::induced_subgraphs_free(std::vector<int> free_nodes) {
+    std::vector<bool> is_used = std::vector<bool>(size_fixed, false);
+    for (const auto &v : free_nodes) {
+        for (const auto &u : neighbors_free[v]) {
+            is_used[u] = true;
+        }
+    }
 
+    std::vector<int> old_fixed_to_new_fixed(size_fixed, -1);
+    std::vector<int> new_fixed_real_names;
+
+    int fixedCount = 0;
+    for (int i = 0; i < size_fixed; ++i) {
+        if (is_used[i]) {
+            new_fixed_real_names.push_back(fixed_real_names[i]);
+            old_fixed_to_new_fixed[i] = fixedCount;
+            fixedCount++;
+        }
+    }
+
+    std::vector<int> new_free_real_names(free_nodes.size());
     std::vector<std::tuple<int, int>> edges;
 
+    for (int i = 0; i < free_nodes.size(); i++) {
+        int v = free_nodes[i];
+        new_free_real_names[i] = free_real_names[v];
+        for (int u : neighbors_free[v]) {
+            int new_u = old_fixed_to_new_fixed[u];
+            edges.emplace_back(new_u, i);
+        }
+    }
+
+    return PaceGraph(fixedCount, free_nodes.size(), edges, new_fixed_real_names,
+                     new_free_real_names);
+}
+
+PaceGraph PaceGraph::induced_subgraphs_fixed(std::vector<int> fixed_nodes) {
+
+    std::vector<bool> is_used = std::vector<bool>(size_free, false);
+    for (const auto &v : fixed_nodes) {
+        for (const auto &u : neighbors_fixed[v]) {
+            is_used[u] = true;
+        }
+    }
+
+    std::vector<int> new_free_real_names;
+    std::vector<int> old_free_to_new_free(size_free, -1);
+
     int freeCount = 0;
+    for (int i = 0; i < size_free; ++i) {
+        if (is_used[i]) {
+            new_free_real_names.push_back(free_real_names[i]);
+            old_free_to_new_free[i] = freeCount;
+            freeCount++;
+        }
+    }
+
+    std::vector<int> new_fixed_real_names(fixed_nodes.size());
+    std::vector<std::tuple<int, int>> edges;
+
     for (int i = 0; i < fixed_nodes.size(); i++) {
         int u = fixed_nodes[i];
-        new_fixed_real_names[new_fixed_real_names.size()] = fixed_real_names[u];
+        new_fixed_real_names[i] = fixed_real_names[u];
 
         for (int v : neighbors_fixed[u]) {
-
-            if (old_free_to_new_free.find(v) == new_free_real_names.end()) {
-                new_free_real_names[freeCount] = free_real_names[v];
-
-                old_free_to_new_free[v] = freeCount;
-                freeCount++;
-            }
 
             int new_v = old_free_to_new_free[v];
 
             edges.emplace_back(i, new_v);
-
-            nodesInB.insert(v);
         }
     }
 
-    return PaceGraph(fixed_nodes.size(), nodesInB.size(), edges,
-                     new_fixed_real_names, new_free_real_names);
+    return PaceGraph(fixed_nodes.size(), freeCount, edges, new_fixed_real_names,
+                     new_free_real_names);
 }
 
 std::tuple<int, int> PaceGraph::calculatingCrossingNumber(int u, int v) {

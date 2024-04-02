@@ -77,6 +77,8 @@ bool rrlo1(PaceGraph &graph) {
                 if (graph.crossing.lt(w, v)) {
                     posOfV++;
                     costs += graph.crossing.matrix[w][v];
+                } else {
+                    costs += graph.crossing.matrix[v][w];
                 }
             } else {
                 canDeleted = false;
@@ -110,6 +112,5 @@ void apply_reduction_rules(PaceGraph &graph) {
     }
 
     rrlarge(graph);
-
-    rrlo1(graph);
+    // rrlo1(graph);
 }

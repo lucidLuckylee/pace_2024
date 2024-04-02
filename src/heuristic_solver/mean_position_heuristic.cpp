@@ -123,7 +123,7 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
         iteration++;
     }
 
-    std::cout << "#Iterations: " << iteration << std::endl;
+    // std::cout << "#Iterations: " << iteration << std::endl;
 
     return currentBestOrder;
 }

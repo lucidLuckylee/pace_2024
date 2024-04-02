@@ -12,8 +12,8 @@
 
 class PaceGraph {
   private:
-    static std::unordered_map<int, int> createMap(int limit, int offset) {
-        std::unordered_map<int, int> result;
+    static std::vector<int> createMap(int limit, int offset) {
+        std::vector<int> result(limit);
         for (int i = 0; i < limit; ++i) {
             result[i] = i + offset + 1;
         }
@@ -45,16 +45,16 @@ class PaceGraph {
      */
     std::vector<std::vector<int>> neighbors_fixed;
 
-    std::unordered_map<int, int> fixed_real_names;
-    std::unordered_map<int, int> free_real_names;
+    std::vector<int> fixed_real_names;
+    std::vector<int> free_real_names;
 
     std::stack<std::tuple<int, int>> removed_vertices;
 
     CrossingMatrix crossing;
 
-    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges,
-              std::unordered_map<int, int> fixed_real_names,
-              std::unordered_map<int, int> free_real_names);
+    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges,
+              std::vector<int> fixed_real_names,
+              std::vector<int> free_real_names);
 
     /**
      *
@@ -64,7 +64,7 @@ class PaceGraph {
      * graph. u must be always in [0,..., a - 1] and v must be always in
      * [0,..., b - 1]
      */
-    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> edges)
+    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges)
         : PaceGraph(a, b, edges, createMap(a, 0), createMap(b, a)) {}
 
     /**
@@ -78,7 +78,9 @@ class PaceGraph {
 
     void remove_free_vertices(std::vector<std::tuple<int, int, int>> vertices);
 
-    PaceGraph induced_subgraphs(std::vector<int> fixed_nodes);
+    PaceGraph induced_subgraphs_free(std::vector<int> fixed_nodes);
+
+    PaceGraph induced_subgraphs_fixed(std::vector<int> fixed_nodes);
 
     std::string to_gr();
 
@@ -87,7 +89,7 @@ class PaceGraph {
     int size() { return size_fixed + size_free; }
     int edge_count() const { return neighbors_free.size(); }
 
-    std::tuple<std::vector<PaceGraph>, std::vector<int>> splitGraphOn0Splits();
+    std::tuple<std::vector<PaceGraph>, std::vector<int>> splitGraphs();
 
     std::tuple<int, int> calculatingCrossingNumber(int u, int v);
 

@@ -245,6 +245,21 @@ void DirectedGraph::unblock(int node) {
     }
     B[node].clear();
 }
+DirectedGraph::DirectedGraph(PaceGraph &graph) {
+    neighbors = std::vector<std::vector<int>>(graph.size_free);
+    for (int i = 0; i < graph.size_free; i++) {
+        for (int j = i + 1; j < graph.size_free; j++) {
+            auto [crossing_entries_i_j, crossing_entries_j_i] =
+                graph.calculatingCrossingNumber(i, j);
+
+            if (crossing_entries_i_j < crossing_entries_j_i) {
+                neighbors[i].push_back(j);
+            } else if (crossing_entries_i_j > crossing_entries_j_i) {
+                neighbors[j].push_back(i);
+            }
+        }
+    }
+}
 
 WeightedDirectedGraph::WeightedDirectedGraph(CrossingMatrix &crossingMatrix)
     : DirectedGraph(
