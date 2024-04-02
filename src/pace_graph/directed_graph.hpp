@@ -42,7 +42,7 @@ class DirectedGraph {
     std::vector<std::vector<int>> cycles;
 
     explicit DirectedGraph(std::vector<std::vector<int>> neighbors);
-    explicit DirectedGraph(PaceGraph &graph);
+    static DirectedGraph from_pace_graph(PaceGraph &graph);
     void init_sccs();
     DirectedGraph construct_sccs_graph();
     void init_reachability_matrix_dag();

@@ -245,8 +245,8 @@ void DirectedGraph::unblock(int node) {
     }
     B[node].clear();
 }
-DirectedGraph::DirectedGraph(PaceGraph &graph) {
-    neighbors = std::vector<std::vector<int>>(graph.size_free);
+DirectedGraph DirectedGraph::from_pace_graph(PaceGraph &graph) {
+    std::vector<std::vector<int>> neighbors(graph.size_free);
     for (int i = 0; i < graph.size_free; i++) {
         for (int j = i + 1; j < graph.size_free; j++) {
             auto [crossing_entries_i_j, crossing_entries_j_i] =
@@ -259,6 +259,7 @@ DirectedGraph::DirectedGraph(PaceGraph &graph) {
             }
         }
     }
+    return DirectedGraph(neighbors);
 }
 
 WeightedDirectedGraph::WeightedDirectedGraph(CrossingMatrix &crossingMatrix)

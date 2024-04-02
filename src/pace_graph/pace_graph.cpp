@@ -229,7 +229,7 @@ std::tuple<std::vector<PaceGraph>, std::vector<int>> PaceGraph::splitGraphs() {
     for (const std::vector<int> &induced_vertices : result) {
         auto g = induced_subgraphs_fixed(induced_vertices);
         if (g.init_crossing_matrix_if_necessary()) {
-            DirectedGraph dg(g);
+            auto dg = DirectedGraph::from_pace_graph(g);
             dg.init_sccs();
 
             if (dg.sccs.size() == 1) {

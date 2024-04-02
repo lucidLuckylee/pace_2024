@@ -77,7 +77,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
         }
         number_of_iterations++;
     }
-
+ 
     std::cout << "# Iterations: " << number_of_iterations << std::endl;
 
     return bestOrder;

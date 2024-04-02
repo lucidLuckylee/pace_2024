@@ -1,5 +1,6 @@
 
 #include "../lb/simple_lb.hpp"
+#include "../pace_graph/directed_graph.hpp"
 #include <iostream>
 
 /*
@@ -68,11 +69,21 @@ bool rrlarge(PaceGraph &graph) {
  */
 bool rrlo1(PaceGraph &graph) {
     std::vector<std::tuple<int, int, int>> vertices_to_delete;
+
+    if (graph.size_free <= 1) {
+        return false;
+    }
+
+    std::vector<bool> already_deleted(graph.size_free, false);
+
     for (int v = 0; v < graph.size_free; v++) {
         int posOfV = 0;
         bool canDeleted = true;
         long costs = 0;
         for (int w = 0; w < graph.size_free; w++) {
+            if (already_deleted[w]) {
+                continue;
+            }
             if (graph.crossing.comparable(v, w)) {
                 if (graph.crossing.lt(w, v)) {
                     posOfV++;
@@ -80,6 +91,7 @@ bool rrlo1(PaceGraph &graph) {
                 } else {
                     costs += graph.crossing.matrix[v][w];
                 }
+
             } else {
                 canDeleted = false;
                 break;
@@ -87,6 +99,7 @@ bool rrlo1(PaceGraph &graph) {
         }
 
         if (canDeleted) {
+            already_deleted[v] = true;
             // RRLO1 -> v is comparable to all elements in the partial order
             vertices_to_delete.emplace_back(v, posOfV, costs);
         }
@@ -100,17 +113,41 @@ bool rrlo1(PaceGraph &graph) {
 
     return true;
 }
+bool rrtransitive(PaceGraph &graph) {
 
+    bool applied = false;
+    std::vector<std::vector<int>> adjList(graph.size_free);
+    for (int i = 0; i < graph.size_free; i++) {
+        for (int j = 0; j < graph.size_free; j++) {
+            if (graph.crossing.lt(i, j)) {
+                adjList[i].push_back(j);
+            }
+        }
+    }
+
+    DirectedGraph directedGraph(adjList);
+    directedGraph.init_reachability_matrix_dag();
+    for (int i = 0; i < graph.size_free; i++) {
+        for (int j = 0; j < graph.size_free; j++) {
+            if (i != j && directedGraph.reachabilityMatrix[i][j]) {
+                applied |= graph.crossing.set_a_lt_b(i, j);
+            }
+        }
+    }
+
+    return applied;
+}
 void apply_reduction_rules(PaceGraph &graph) {
     if (!graph.init_crossing_matrix_if_necessary()) {
         return;
     }
     int k = 0;
     while (rr1_rr2(graph)) {
-        std::cerr << "\rCompleted rr1_rr2 iteration " << k << std::endl;
         k += 1;
     }
 
     rrlarge(graph);
-    // rrlo1(graph);
+
+    rrtransitive(graph);
+    rrlo1(graph);
 }
