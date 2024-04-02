@@ -16,6 +16,7 @@ bool ExactSolver::branch(PaceGraph &graph, Order &order, int k, int a, int b){
     order.partial_order.branching_step();
     if (ExactSolver::solve_k(graph, order, k - graph.crossing_matrix[b][a]))
         return true;
+    order.partial_order.restore();
     return false; // no solution from this node
 }
 bool ExactSolver::solve_k(PaceGraph &graph, Order &order, int k){
