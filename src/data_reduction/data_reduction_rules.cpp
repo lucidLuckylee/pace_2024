@@ -47,7 +47,7 @@ bool rrlarge(PaceGraph &graph) {
 
     bool applied = false;
     for (int a = 0; a < graph.size_free; a++) {
-        for (int b = a + 1; a < graph.size_free; b++) {
+        for (int b = a + 1; b < graph.size_free; b++) {
             if (graph.crossing.matrix_diff[a][b] > ub - lb) {
                 applied = graph.crossing.set_a_lt_b(b, a) || applied;
             } else if (graph.crossing.matrix_diff[b][a] > ub - lb) {
@@ -67,7 +67,6 @@ bool rrlarge(PaceGraph &graph) {
  * applied.
  */
 bool rrlo1(PaceGraph &graph) {
-    bool applied = false;
     std::vector<std::tuple<int, int>> vertices_to_delete;
     for (int v = 0; v < graph.size_free; v++) {
         int posOfV = 0;
@@ -85,23 +84,30 @@ bool rrlo1(PaceGraph &graph) {
 
         if (canDeleted) {
             // RRLO1 -> v is comparable to all elements in the partial order
-            applied = true;
             vertices_to_delete.emplace_back(v, posOfV);
         }
     }
 
+    if (vertices_to_delete.empty()) {
+        return false;
+    }
+
     graph.remove_free_vertices(vertices_to_delete);
 
-    return applied;
+    return true;
 }
 
 void apply_reduction_rules(PaceGraph &graph) {
-    if (graph.init_crossing_matrix_if_necessary()) {
+    if (!graph.init_crossing_matrix_if_necessary()) {
         return;
     }
     int k = 0;
     while (rr1_rr2(graph)) {
-        std::cerr << "\rCompleted rr1_rr2 iteration " << k << std::flush;
+        std::cerr << "\rCompleted rr1_rr2 iteration " << k << std::endl;
         k += 1;
     }
+
+    rrlarge(graph);
+
+    rrlo1(graph);
 }

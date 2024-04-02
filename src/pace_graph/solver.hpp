@@ -60,7 +60,7 @@ template <typename T> class Solver {
         std::vector<T> results;
 
         for (int i = 0; i < splittedGraphs.size(); i++) {
-            auto g = splittedGraphs[i];
+            auto &g = splittedGraphs[i];
             start_time_for_part = std::chrono::steady_clock::now();
             apply_reduction_rules(g);
 
@@ -104,18 +104,32 @@ class SolutionSolver : public Solver<Order> {
     void finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,
                 std::vector<Order> &results,
                 std::vector<int> &isolated_nodes) override {
-        for (int u : isolated_nodes) {
+
+        for (const auto &u : isolated_nodes) {
             std::cout << graph.free_real_names[u] << std::endl;
         }
 
-        long crossings = 0;
         for (int i = 0; i < subgraphs.size(); ++i) {
-            auto g = subgraphs[i];
-            auto sol = results[i];
-            std::cout << sol.convert_to_real_node_id(g) << std::endl;
-            crossings += sol.count_crossings(g);
+            auto &g = subgraphs[i];
+            auto &sol = results[i];
+
+            std::vector<int> sub_solution = sol.position_to_vertex;
+
+            for (int j = 0; j < g.size_free; ++j) {
+                sub_solution[j] = g.free_real_names[sub_solution[j]];
+            }
+
+            auto removed_vertices = g.removed_vertices;
+            while (!removed_vertices.empty()) {
+                auto [v, position] = removed_vertices.top();
+                removed_vertices.pop();
+                sub_solution.insert(sub_solution.begin() + position, v);
+            }
+
+            for (const auto &u : sub_solution) {
+                std::cout << u << std::endl;
+            }
         }
-        std::cout << "# Crossings: " << crossings << std::endl;
     }
 
     Order run(PaceGraph &graph) override = 0;

@@ -12,12 +12,12 @@
 #include <vector>
 
 class Order {
-  private:
+
+  public:
     // TODO(Lukas): These vectors should hold unsigned ints.
     std::vector<int> vertex_to_position;
     std::vector<int> position_to_vertex;
 
-  public:
     /**
      * Creates an Order with a given size. The order will be the identity
      * permutation.
@@ -65,6 +65,10 @@ class Order {
 
     long count_crossings(const PaceGraph &graph) {
         long crossings = 0;
+
+        if (graph.size_free == 0) {
+            return 0;
+        }
 
         std::vector<int> seg_tree_array;
         seg_tree_array.assign(graph.size_free, 0);
@@ -129,15 +133,6 @@ class Order {
         for (size_t i = 0; i < position_to_vertex.size(); ++i) {
             vertex_to_position[position_to_vertex[i]] = i;
         }
-    }
-
-    std::string convert_to_real_node_id(PaceGraph &graph) {
-        std::ostringstream result;
-        for (const auto &vertex : position_to_vertex) {
-            result << graph.free_real_names[vertex] << "\n";
-        }
-
-        return result.str();
     }
 
     Order clone() { return Order(std::vector(position_to_vertex)); }
