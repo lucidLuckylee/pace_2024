@@ -137,7 +137,7 @@ class Order {
 
     Order clone() { return Order(std::vector(position_to_vertex)); }
 
-    PaceGraph reorderGraph(PaceGraph &graph) {
+    std::unique_ptr<PaceGraph> reorderGraph(PaceGraph &graph) {
         std::vector<std::tuple<int, int>> new_edges;
         std::vector<int> new_free_real_names(graph.size_free);
 
@@ -150,8 +150,9 @@ class Order {
             }
         }
 
-        return {graph.size_fixed, graph.size_free, new_edges,
-                graph.fixed_real_names, new_free_real_names};
+        return std::make_unique<PaceGraph>(graph.size_fixed, graph.size_free,
+                                           new_edges, graph.fixed_real_names,
+                                           new_free_real_names);
     }
 };
 

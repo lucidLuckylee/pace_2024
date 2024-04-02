@@ -4,6 +4,7 @@
 #include "crossing_matrix.hpp"
 #include <fstream>
 #include <list>
+#include <memory>
 #include <stack>
 #include <string>
 #include <tuple>
@@ -78,9 +79,11 @@ class PaceGraph {
 
     void remove_free_vertices(std::vector<std::tuple<int, int, int>> vertices);
 
-    PaceGraph induced_subgraphs_free(std::vector<int> fixed_nodes);
+    std::unique_ptr<PaceGraph>
+    induced_subgraphs_free(std::vector<int> fixed_nodes);
 
-    PaceGraph induced_subgraphs_fixed(std::vector<int> fixed_nodes);
+    std::unique_ptr<PaceGraph>
+    induced_subgraphs_fixed(std::vector<int> fixed_nodes);
 
     std::string to_gr();
 
@@ -89,7 +92,8 @@ class PaceGraph {
     int size() { return size_fixed + size_free; }
     int edge_count() const { return neighbors_free.size(); }
 
-    std::tuple<std::vector<PaceGraph>, std::vector<int>> splitGraphs();
+    std::tuple<std::vector<std::unique_ptr<PaceGraph>>, std::vector<int>>
+    splitGraphs();
 
     std::tuple<int, int> calculatingCrossingNumber(int u, int v);
 

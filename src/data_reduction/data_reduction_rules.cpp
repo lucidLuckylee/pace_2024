@@ -70,10 +70,6 @@ bool rrlarge(PaceGraph &graph) {
 bool rrlo1(PaceGraph &graph) {
     std::vector<std::tuple<int, int, int>> vertices_to_delete;
 
-    if (graph.size_free <= 1) {
-        return false;
-    }
-
     std::vector<bool> already_deleted(graph.size_free, false);
 
     for (int v = 0; v < graph.size_free; v++) {
