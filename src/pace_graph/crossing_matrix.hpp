@@ -26,6 +26,7 @@ class CrossingMatrix {
     bool incomparable(int a, int b);
 
     bool dependent(int a, int b, int c);
+    bool dependentInPartialOrder(int a, int b);
 
     bool lt(int a, int b);
 
