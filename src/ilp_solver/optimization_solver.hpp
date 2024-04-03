@@ -50,15 +50,14 @@ Order OptimizationSolver<MODEL, VAR, OPT_FUN, MODEL_RESULT>::run(
             variable_matrix[i][j] = createVariable(
                 model, "m_" + std::to_string(i) + "_" + std::to_string(j));
 
-            if (graph.crossing_matrix[i][j] >= INF ||
-                graph.crossing_matrix[j][i] >= INF) {
+            if (graph.crossing.comparable(i, j)) {
 
-                bool isOne = graph.crossing_matrix[j][i] >= INF;
+                bool isOne = graph.crossing.lt(i, j);
 
                 setVariable(model, variable_matrix[i][j], isOne);
             } else {
                 setCoefficient(model, optFun, variable_matrix[i][j],
-                               graph.crossing_matrix[i][j]);
+                               graph.crossing.matrix[i][j]);
             }
         }
     }
@@ -66,8 +65,7 @@ Order OptimizationSolver<MODEL, VAR, OPT_FUN, MODEL_RESULT>::run(
 
     for (int i = 0; i < graph.size_free; ++i) {
         for (int j = i + 1; j < graph.size_free; ++j) {
-            if (graph.crossing_matrix[i][j] >= INF ||
-                graph.crossing_matrix[j][i] >= INF)
+            if (graph.crossing.comparable(i, j))
                 continue;
 
             auto varij = variable_matrix[i][j];
