@@ -63,8 +63,20 @@ class Order {
         swap_by_vertices(u, v);
     }
 
-    long count_crossings(const PaceGraph &graph) {
+    long count_crossings(PaceGraph &graph) {
         long crossings = 0;
+
+        if (graph.crossing.is_initialized()) {
+            for (int i = 0; i < graph.size_free; i++) {
+                for (int j = i + 1; j < graph.size_free; j++) {
+                    int u = position_to_vertex[i];
+                    int v = position_to_vertex[j];
+                    crossings += graph.crossing.matrix[u][v];
+                }
+            }
+
+            return crossings;
+        }
 
         if (graph.size_free == 0) {
             return 0;
