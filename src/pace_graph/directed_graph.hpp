@@ -41,8 +41,9 @@ class DirectedGraph {
     std::vector<int> topologicalOrder;
     std::vector<std::vector<int>> cycles;
 
-    explicit DirectedGraph(std::vector<std::vector<int>> neighbors);
+    explicit DirectedGraph(std::vector<std::vector<int>> &neighbors);
     static DirectedGraph from_pace_graph(PaceGraph &graph);
+    static DirectedGraph dag_from_partial_order(CrossingMatrix &crossing);
     void init_sccs();
     DirectedGraph construct_sccs_graph();
     void init_reachability_matrix_dag();
@@ -53,7 +54,9 @@ class DirectedGraph {
 class WeightedDirectedGraph : public DirectedGraph {
 
   public:
-    explicit WeightedDirectedGraph(CrossingMatrix &crossingMatrix);
+    explicit WeightedDirectedGraph(std::vector<std::vector<int>> &weights,
+                                   std::vector<std::vector<int>> &neighbors);
+    static WeightedDirectedGraph from_matrix(CrossingMatrix &crossing);
     std::vector<std::vector<int>> weights;
 };
 

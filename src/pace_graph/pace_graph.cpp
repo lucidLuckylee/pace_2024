@@ -241,8 +241,6 @@ PaceGraph::splitGraphs() {
 
             auto sccGraph = dg.construct_sccs_graph();
             sccGraph.topologicalSort();
-            std::reverse(sccGraph.topologicalOrder.begin(),
-                         sccGraph.topologicalOrder.end());
 
             for (int i = 0; i < sccGraph.topologicalOrder.size(); ++i) {
                 for (int j = i + 1; j < sccGraph.topologicalOrder.size(); ++j) {

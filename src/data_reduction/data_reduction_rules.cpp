@@ -8,12 +8,9 @@
  * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
  * RR1: For every pair {a, b} with c_{a,b} = 0 commit a < b in
  * partial_order.
- * RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
- * commit a < b in partial_order.
- *
  * @return Boolean value indicating whether reduction rules were applied.
  */
-bool rr1_rr2(PaceGraph &graph) {
+bool rr1(PaceGraph &graph) {
     bool applied = false;
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
@@ -24,11 +21,37 @@ bool rr1_rr2(PaceGraph &graph) {
             } else if (graph.crossing.matrix[b][a] == 0 &&
                        graph.crossing.matrix[a][b] > 0) {
                 applied = graph.crossing.set_a_lt_b(b, a) || applied;
-            } else if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
-                applied = graph.crossing.set_a_lt_b(a, b) || applied;
             }
         }
     }
+    return applied;
+}
+/*
+ * Applies reduction rules RR1 and RR2 from
+ * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
+ * RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
+ * commit a < b in partial_order.
+ *
+ * @return Boolean value indicating whether reduction rules were applied.
+ */
+bool rr2(PaceGraph &graph) {
+
+    bool applied = false;
+    auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
+    dg.topologicalSort();
+
+    for (int a = 0; a < graph.size_free; a++) {
+        for (int b = a + 1; b < graph.size_free; b++) {
+
+            int u = dg.topologicalOrder[a];
+            int v = dg.topologicalOrder[b];
+
+            if (graph.neighbors_free[u] == graph.neighbors_free[v]) {
+                applied = graph.crossing.set_a_lt_b(u, v) || applied;
+            }
+        }
+    }
+
     return applied;
 }
 
@@ -72,6 +95,9 @@ bool rrlo1(PaceGraph &graph) {
 
     std::vector<bool> already_deleted(graph.size_free, false);
 
+    if (graph.size_free <= 2)
+        return false;
+
     for (int v = 0; v < graph.size_free; v++) {
         int posOfV = 0;
         bool canDeleted = true;
@@ -104,7 +130,8 @@ bool rrlo1(PaceGraph &graph) {
     if (vertices_to_delete.empty()) {
         return false;
     }
-
+    auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
+    dg.init_reachability_matrix_dag();
     graph.remove_free_vertices(vertices_to_delete);
 
     return true;
@@ -112,20 +139,12 @@ bool rrlo1(PaceGraph &graph) {
 bool rrtransitive(PaceGraph &graph) {
 
     bool applied = false;
-    std::vector<std::vector<int>> adjList(graph.size_free);
-    for (int i = 0; i < graph.size_free; i++) {
-        for (int j = 0; j < graph.size_free; j++) {
-            if (graph.crossing.lt(i, j)) {
-                adjList[i].push_back(j);
-            }
-        }
-    }
 
-    DirectedGraph directedGraph(adjList);
-    directedGraph.init_reachability_matrix_dag();
+    auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
+    dg.init_reachability_matrix_dag();
     for (int i = 0; i < graph.size_free; i++) {
         for (int j = 0; j < graph.size_free; j++) {
-            if (i != j && directedGraph.reachabilityMatrix[i][j]) {
+            if (dg.reachabilityMatrix[i][j]) {
                 applied |= graph.crossing.set_a_lt_b(i, j);
             }
         }
@@ -137,13 +156,10 @@ void apply_reduction_rules(PaceGraph &graph) {
     if (!graph.init_crossing_matrix_if_necessary()) {
         return;
     }
-    int k = 0;
-    while (rr1_rr2(graph)) {
-        k += 1;
-    }
 
+    rr1(graph);
+    rr2(graph);
     rrlarge(graph);
-
     rrtransitive(graph);
     rrlo1(graph);
 }

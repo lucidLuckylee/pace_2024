@@ -7,7 +7,7 @@
 #include <bitset>
 #include <utility>
 
-DirectedGraph::DirectedGraph(std::vector<std::vector<int>> neighbors)
+DirectedGraph::DirectedGraph(std::vector<std::vector<int>> &neighbors)
     : neighbors(std::move(neighbors)), visited(neighbors.size(), false),
       blocked(neighbors.size(), false), B(neighbors.size()) {
     for (auto &neighbor : neighbors) {
@@ -97,15 +97,15 @@ void DirectedGraph::init_reachability_matrix_dag() {
     reachabilityMatrix = std::vector<std::bitset<20000>>(neighbors.size());
 
     topologicalSort();
+    std::reverse(topologicalOrder.begin(), topologicalOrder.end());
 
-    for (auto u : topologicalOrder) {
-        reachabilityMatrix[u].set(u);
+    for (const auto &u : topologicalOrder) {
 
-        for (auto v : neighbors[u]) {
+        for (const auto &v : neighbors[u]) {
             reachabilityMatrix[u].set(v);
         }
 
-        for (auto v : neighbors[u]) {
+        for (const auto &v : neighbors[u]) {
             reachabilityMatrix[u] |= reachabilityMatrix[v];
         }
     }
@@ -119,6 +119,8 @@ void DirectedGraph::topologicalSort() {
             dfs(i);
         }
     }
+
+    std::reverse(topologicalOrder.begin(), topologicalOrder.end());
 }
 void DirectedGraph::dfs(int v) {
     visited[v] = true;
@@ -245,6 +247,7 @@ void DirectedGraph::unblock(int node) {
     }
     B[node].clear();
 }
+
 DirectedGraph DirectedGraph::from_pace_graph(PaceGraph &graph) {
     std::vector<std::vector<int>> neighbors(graph.size_free);
     for (int i = 0; i < graph.size_free; i++) {
@@ -262,21 +265,41 @@ DirectedGraph DirectedGraph::from_pace_graph(PaceGraph &graph) {
     return DirectedGraph(neighbors);
 }
 
-WeightedDirectedGraph::WeightedDirectedGraph(CrossingMatrix &crossingMatrix)
-    : DirectedGraph(
-          std::vector<std::vector<int>>(crossingMatrix.matrix.size())) {
-    weights = std::vector<std::vector<int>>(
-        crossingMatrix.matrix.size(),
-        std::vector<int>(crossingMatrix.matrix.size(), 0));
+DirectedGraph DirectedGraph::dag_from_partial_order(CrossingMatrix &crossing) {
+    std::vector<std::vector<int>> neighbors(crossing.matrix.size());
 
-    for (int u = 0; u < crossingMatrix.matrix.size(); ++u) {
-        for (int v = 0; v < crossingMatrix.matrix.size(); ++v) {
+    for (int i = 0; i < crossing.matrix.size(); i++) {
+        for (int j = 0; j < crossing.matrix.size(); j++) {
+            if (crossing.lt(i, j)) {
+                neighbors[i].push_back(j);
+            }
+        }
+    }
+
+    return DirectedGraph(neighbors);
+}
+
+WeightedDirectedGraph::WeightedDirectedGraph(
+    std::vector<std::vector<int>> &weights,
+    std::vector<std::vector<int>> &neighbors)
+    : DirectedGraph(neighbors), weights(weights) {}
+
+WeightedDirectedGraph
+WeightedDirectedGraph::from_matrix(CrossingMatrix &crossing) {
+    std::vector<std::vector<int>> weights(
+        crossing.matrix.size(), std::vector<int>(crossing.matrix.size(), 0));
+
+    std::vector<std::vector<int>> neighbors(crossing.matrix.size());
+
+    for (int u = 0; u < crossing.matrix.size(); ++u) {
+        for (int v = 0; v < crossing.matrix.size(); ++v) {
             if (u == v)
                 continue;
-            if (crossingMatrix.matrix_diff[u][v] < 0) {
-                weights[u][v] = -crossingMatrix.matrix_diff[u][v];
+            if (crossing.matrix_diff[u][v] < 0) {
+                weights[u][v] = -crossing.matrix_diff[u][v];
                 neighbors[u].push_back(v);
             }
         }
     }
+    return WeightedDirectedGraph(weights, neighbors);
 }

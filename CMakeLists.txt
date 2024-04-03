@@ -95,6 +95,7 @@ if (ENABLE_TEST)
     set(TEST_FILES
             tests/data_reductions.cpp
             tests/pace_graph.cpp
+            tests/directed_graph.cpp
     )
     add_executable(tests ${HEURISTIC_FILES} ${TEST_FILES} tests/doctest.h)
     target_link_libraries(tests PaceGraph)
