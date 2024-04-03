@@ -103,12 +103,16 @@ bool rrlo1(PaceGraph &graph) {
         bool canDeleted = true;
         long costs = 0;
         for (int w = 0; w < graph.size_free; w++) {
-            if (already_deleted[w]) {
-                continue;
-            }
             if (graph.crossing.comparable(v, w)) {
                 if (graph.crossing.lt(w, v)) {
                     posOfV++;
+                }
+
+                if (already_deleted[w]) {
+                    continue;
+                }
+
+                if (graph.crossing.lt(w, v)) {
                     costs += graph.crossing.matrix[w][v];
                 } else {
                     costs += graph.crossing.matrix[v][w];
@@ -130,8 +134,7 @@ bool rrlo1(PaceGraph &graph) {
     if (vertices_to_delete.empty()) {
         return false;
     }
-    auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
-    dg.init_reachability_matrix_dag();
+
     graph.remove_free_vertices(vertices_to_delete);
 
     return true;
