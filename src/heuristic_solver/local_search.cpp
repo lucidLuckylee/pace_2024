@@ -123,7 +123,7 @@ long sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
 
     long improvement = 0;
     for (int v = 0; v < graph.size_free; v++) {
-        improvement += sifting_node(graph, order, parameter, v);
+        improvement += sifting_node(graph, order, parameter, position_array[v]);
     }
     return improvement;
 }
