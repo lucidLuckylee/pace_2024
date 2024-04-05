@@ -5,6 +5,7 @@
 #include "crossing_matrix.hpp"
 #include "pace_graph.hpp"
 #include <algorithm>
+#include <iostream>
 
 bool CrossingMatrix::set_a_lt_b(int a, int b) {
 
@@ -127,3 +128,12 @@ void CrossingMatrix::clean() {
     matrix_diff.clear();
 }
 CrossingMatrix::~CrossingMatrix() { clean(); }
+
+void CrossingMatrix::print() {
+    for (int i = 0; i < matrix.size(); i++) {
+        for (int j = 0; j < matrix.size(); j++) {
+            std::cout << matrix[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}

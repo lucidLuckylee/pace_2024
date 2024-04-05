@@ -36,6 +36,7 @@ class CrossingMatrix {
 
     void remove_free_vertices(std::vector<int> &vertices_to_remove);
     void clean();
+    void print();
 };
 
 #endif // PACE2024_CROSSING_MATRIX_HPP

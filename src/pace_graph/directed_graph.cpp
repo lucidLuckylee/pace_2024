@@ -5,11 +5,13 @@
 #include "directed_graph.hpp"
 
 #include <bitset>
+#include <queue>
 #include <utility>
 
 DirectedGraph::DirectedGraph(std::vector<std::vector<int>> &neighbors)
     : neighbors(std::move(neighbors)), visited(neighbors.size(), false),
-      blocked(neighbors.size(), false), B(neighbors.size()) {
+      blocked(neighbors.size(), false), B(neighbors.size()),
+      onStack(neighbors.size(), false) {
     for (auto &neighbor : neighbors) {
         std::sort(neighbor.begin(), neighbor.end());
     }
@@ -110,26 +112,40 @@ void DirectedGraph::init_reachability_matrix_dag() {
         }
     }
 }
-void DirectedGraph::topologicalSort() {
+bool DirectedGraph::topologicalSort() {
     topologicalOrder.clear();
     std::fill(visited.begin(), visited.end(), false);
+    std::fill(onStack.begin(), onStack.end(), false);
 
     for (int i = 0; i < neighbors.size(); ++i) {
         if (!visited[i]) {
-            dfs(i);
+            if (hasCycle(i)) {
+                topologicalOrder.clear();
+                return false;
+            }
         }
     }
 
     std::reverse(topologicalOrder.begin(), topologicalOrder.end());
+    return true;
 }
-void DirectedGraph::dfs(int v) {
+bool DirectedGraph::hasCycle(int v) {
     visited[v] = true;
+    onStack[v] = true;
+
     for (int w : neighbors[v]) {
         if (!visited[w]) {
-            dfs(w);
+            if (hasCycle(w)) {
+                return true;
+            }
+        } else if (onStack[w]) {
+            return true;
         }
     }
+
+    onStack[v] = false;
     topologicalOrder.push_back(v);
+    return false;
 }
 
 void DirectedGraph::findElementaryCycles() {
@@ -277,6 +293,37 @@ DirectedGraph DirectedGraph::dag_from_partial_order(CrossingMatrix &crossing) {
     }
 
     return DirectedGraph(neighbors);
+}
+std::vector<int> DirectedGraph::findShortestPath(int start, int end) {
+    std::vector<int> path;
+    std::vector<int> previous(neighbors.size(), -1);
+
+    std::queue<int> q;
+    q.push(start);
+    previous[start] = start;
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        if (u == end) {
+            int current = end;
+            while (current != start) {
+                path.push_back(current);
+                current = previous[current];
+            }
+            path.push_back(start);
+            std::reverse(path.begin(), path.end());
+            return path;
+        }
+
+        for (int v : neighbors[u]) {
+            if (previous[v] == -1) {
+                previous[v] = u;
+                q.push(v);
+            }
+        }
+    }
+
+    return {};
 }
 
 WeightedDirectedGraph::WeightedDirectedGraph(
