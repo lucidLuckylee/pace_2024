@@ -1,4 +1,0 @@
-#ifndef PACE2024_EXACT_H
-#define PACE2024_EXACT_H
-
-#endif // PACE2024_EXACT_H

@@ -90,7 +90,7 @@ template <typename T> class Solver {
 
         finish(graph, splittedGraphs, results, isolated_nodes);
         auto current_time = std::chrono::steady_clock::now();
-        std::cout << "# Time: "
+        std::cerr << "# Time: "
                   << std::chrono::duration_cast<std::chrono::milliseconds>(
                          current_time - start_time)
                          .count()
@@ -140,7 +140,7 @@ class SolutionSolver : public Solver<Order> {
             }
         }
 
-        std::cout << "#Crossings: " << crossings << std::endl;
+        std::cerr << "#Crossings: " << crossings << std::endl;
     }
 
     Order run(PaceGraph &graph) override = 0;

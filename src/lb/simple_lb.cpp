@@ -5,9 +5,7 @@
 #include "simple_lb.hpp"
 #include <algorithm>
 #include <bitset>
-#include <iostream>
 #include <random>
-#include <x86gprintrin.h>
 
 std::vector<std::tuple<int, int, int>>
 getConflictPairsBitmap(PaceGraph &graph, SimpleLBParameter &parameter) {

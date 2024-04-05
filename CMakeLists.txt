@@ -2,13 +2,9 @@ cmake_minimum_required(VERSION 3.12)
 project(pace2024)
 
 set(CMAKE_CXX_STANDARD 17)
-# Set the C and C++ compilers to GCC
-set(CMAKE_C_COMPILER gcc)
-set(CMAKE_CXX_COMPILER g++)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DNDEBUG -march=native")
-add_compile_options(-mbmi2)
 
 # Add PaceGraph source file     
 add_library(PaceGraph src/pace_graph/pace_graph.cpp
@@ -31,8 +27,6 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp
 
 # Add heuristic_solver executable
 set(HEURISTIC_FILES
-        src/exact/exact.cpp
-        src/exact/exact.h
         src/heuristic_solver/local_search.cpp
         src/heuristic_solver/local_search.hpp
         src/heuristic_solver/genetic_algorithm.cpp

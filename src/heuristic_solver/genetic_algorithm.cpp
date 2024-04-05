@@ -5,7 +5,7 @@
 
 Order GeneticHeuristic::solve(PaceGraph &graph) {
     graph.init_crossing_matrix_if_necessary();
-    
+
     SimpleLBParameter lbParameter;
     long lb = simpleLB(graph, lbParameter);
 
@@ -78,8 +78,8 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
         }
         number_of_iterations++;
     }
- 
-    std::cout << "# Iterations: " << number_of_iterations << std::endl;
+
+    std::cerr << "# Iterations: " << number_of_iterations << std::endl;
 
     return bestOrder;
 }
