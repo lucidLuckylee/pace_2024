@@ -38,6 +38,8 @@ set(HEURISTIC_FILES
         src/heuristic_solver/heuristic_solver.hpp
         src/heuristic_solver/heuristic_solver.cpp
         src/heuristic_solver/heuristic.hpp
+        src/heuristic_solver/greedy_insert_solver.cpp
+        src/heuristic_solver/greedy_insert_solver.h
 )
 
 add_executable(

@@ -7,6 +7,7 @@
 #include "segment_tree.hpp"
 #include <algorithm>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
