@@ -28,7 +28,7 @@ class DirectedGraph {
     int currentIndex;
 
     void tarjansDFS(int v);
-    void dfs(int v);
+    bool hasCycle(int v);
 
     bool findCycles(int s, int v, const std::vector<std::vector<int>> &adjList,
                     const std::vector<int> &indexToNode);
@@ -47,8 +47,9 @@ class DirectedGraph {
     void init_sccs();
     DirectedGraph construct_sccs_graph();
     void init_reachability_matrix_dag();
-    void topologicalSort();
+    bool topologicalSort();
     void findElementaryCycles();
+    std::vector<int> findShortestPath(int start, int end);
 };
 
 class WeightedDirectedGraph : public DirectedGraph {

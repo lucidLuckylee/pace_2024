@@ -47,6 +47,14 @@ set(HEURISTIC_FILES
 )
 
 add_executable(
+        feedback_edge_set_solver
+        src/exact/feedback_edge_set_solver.cpp
+        src/exact/feedback_edge_set_solver.hpp
+        src/exact/main.cpp
+        ${HEURISTIC_FILES}
+)
+
+add_executable(
         heuristic_solver
         src/heuristic_solver/main.cpp
         ${HEURISTIC_FILES}
@@ -64,6 +72,7 @@ add_executable(
 target_link_libraries(lb_solver PaceGraph)
 # Link the executable with the PaceGraph library
 target_link_libraries(heuristic_solver PaceGraph)
+target_link_libraries(feedback_edge_set_solver PaceGraph)
 
 option(ENABLE_ILP_SOLVER "Enable ILP Solver Build (Requires ortools)" OFF)
 
