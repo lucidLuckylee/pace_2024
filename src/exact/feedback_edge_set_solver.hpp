@@ -71,7 +71,7 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
 
     std::vector<std::shared_ptr<Edge>> approximateFeedbackEdgeSet(
         DirectedGraph &graph,
-        std::vector<std::vector<std::shared_ptr<Edge>>> &edges);
+        std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order);
 
     void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
