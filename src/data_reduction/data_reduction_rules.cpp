@@ -4,7 +4,7 @@
 #include "../pace_graph/directed_graph.hpp"
 
 /*
- * Applies reduction rules RR1 and RR2 from
+ * Applies reduction rule RR1 from
  * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
  * RR1: For every pair {a, b} with c_{a,b} = 0 commit a < b in
  * partial_order.
@@ -27,7 +27,7 @@ bool rr1(PaceGraph &graph) {
     return applied;
 }
 /*
- * Applies reduction rules RR1 and RR2 from
+ * Applies reduction rule RR2 from
  * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
  * RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
  * commit a < b in partial_order.
@@ -161,7 +161,7 @@ bool rrtransitive(PaceGraph &graph) {
     for (int i = 0; i < graph.size_free; i++) {
         for (int j = 0; j < graph.size_free; j++) {
             if (dg.reachabilityMatrix[i][j]) {
-                applied |= graph.crossing.set_a_lt_b(i, j);
+                applied = graph.crossing.set_a_lt_b(i, j) || applied;
             }
         }
     }
@@ -173,16 +173,19 @@ void apply_reduction_rules(PaceGraph &graph) {
         return;
     }
 
-    while (rr1(graph)) {
-    };
-    while (rr2(graph)) {
-    };
-    while (rrlarge(graph)) {
-    };
-    while (rrtransitive(graph)) {
-    };
+    rr1(graph);
+    rr2(graph);
+    rrlarge(graph);
+    rrtransitive(graph);
     while (rrlo1(graph)) {
+        rrlarge(graph);
+        rrtransitive(graph);
     };
-     while (rrlo2(graph)) {
-     };
+    while (rrlo2(graph)) {
+        rrtransitive(graph);
+        while (rrlo1(graph)) {
+            rrlarge(graph);
+            rrtransitive(graph);
+        };
+    };
 }

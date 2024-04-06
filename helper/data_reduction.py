@@ -1,6 +1,7 @@
 import subprocess
 import argparse
 import os
+import time
 
 
 def run_command(cmd, input_path, output_path):
@@ -39,11 +40,15 @@ def main():
     except ValueError:
         pass
 
+    print("\n")
     for path in paths:
         if path.endswith(".gr"):
             pace_graph_path = os.path.join(input_path, path)
             pace_graph_output_path = os.path.join(output_path, path)
+            start = time.time()
             run_command(program, pace_graph_path, pace_graph_output_path)
+            end = time.time()
+            print(f"\rCompleted {path} in {end - start:.6f} seconds")
 
 
 if __name__ == '__main__':
