@@ -3,6 +3,7 @@
 
 #include "../pace_graph/order.hpp"
 #include "../pace_graph/pace_graph.hpp"
+#include <functional>
 
 enum class SiftingType {
     None,
