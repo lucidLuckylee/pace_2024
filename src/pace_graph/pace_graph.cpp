@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <iostream>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -121,22 +120,18 @@ std::string PaceGraph::print_neighbors_fixed() {
  * @param vertices to be deleted described by the following tuples (v, position
  * to be inserted, cost)
  */
-void PaceGraph::remove_free_vertices(
-    std::vector<std::tuple<int, int, int>> vertices) {
+void PaceGraph::remove_free_vertices(std::vector<DeleteInfo> vertices) {
 
     long costs = 0;
-    std::sort(vertices.begin(), vertices.end(),
-              [](auto a, auto b) { return std::get<1>(a) > std::get<1>(b); });
-
-    for (const auto &[v, position, cost] : vertices) {
-        removed_vertices.emplace(free_real_names[v], position);
-        costs += cost;
-    }
+    std::sort(vertices.begin(), vertices.end(), [](DeleteInfo a, DeleteInfo b) {
+        return a.position > b.position;
+    });
 
     std::vector<int> vertices_to_remove;
-    for (const auto &vertex : vertices) {
-        auto [v, _, _2] = vertex;
-        vertices_to_remove.push_back(v);
+    for (const DeleteInfo delete_info : vertices) {
+        removed_vertices.emplace(free_real_names[delete_info.v], delete_info.position);
+        costs += delete_info.cost;
+        vertices_to_remove.push_back(delete_info.v);
     }
 
     std::sort(vertices_to_remove.begin(), vertices_to_remove.end());

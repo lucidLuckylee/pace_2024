@@ -1,7 +1,7 @@
 
+#include "data_reduction_rules.hpp"
 #include "../lb/simple_lb.hpp"
 #include "../pace_graph/directed_graph.hpp"
-#include <iostream>
 
 /*
  * Applies reduction rules RR1 and RR2 from
@@ -91,7 +91,7 @@ bool rrlarge(PaceGraph &graph) {
  * applied.
  */
 bool rrlo1(PaceGraph &graph) {
-    std::vector<std::tuple<int, int, int>> vertices_to_delete;
+    std::vector<DeleteInfo> vertices_to_delete;
 
     std::vector<bool> already_deleted(graph.size_free, false);
 
@@ -99,35 +99,32 @@ bool rrlo1(PaceGraph &graph) {
         return false;
 
     for (int v = 0; v < graph.size_free; v++) {
-        int posOfV = 0;
-        bool canDeleted = true;
-        long costs = 0;
+        int position = 0;
+        bool delete_v = true;
+        long cost = 0;
         for (int w = 0; w < graph.size_free; w++) {
             if (graph.crossing.comparable(v, w)) {
-                if (graph.crossing.lt(w, v)) {
-                    posOfV++;
-                }
-
                 if (already_deleted[w]) {
                     continue;
                 }
 
                 if (graph.crossing.lt(w, v)) {
-                    costs += graph.crossing.matrix[w][v];
+                    position++;
+                    cost += graph.crossing.matrix[w][v];
                 } else {
-                    costs += graph.crossing.matrix[v][w];
+                    cost += graph.crossing.matrix[v][w];
                 }
 
             } else {
-                canDeleted = false;
+                delete_v = false;
                 break;
             }
         }
 
-        if (canDeleted) {
+        if (delete_v) {
             already_deleted[v] = true;
             // RRLO1 -> v is comparable to all elements in the partial order
-            vertices_to_delete.emplace_back(v, posOfV, costs);
+            vertices_to_delete.emplace_back(v, position, cost);
         }
     }
 
@@ -139,6 +136,11 @@ bool rrlo1(PaceGraph &graph) {
 
     return true;
 }
+
+//bool rrlo2(PaceGraph &graph) {
+//
+//}
+
 bool rrtransitive(PaceGraph &graph) {
 
     bool applied = false;
@@ -160,9 +162,16 @@ void apply_reduction_rules(PaceGraph &graph) {
         return;
     }
 
-    rr1(graph);
-    rr2(graph);
-    rrlarge(graph);
-    rrtransitive(graph);
-    rrlo1(graph);
+    while (rr1(graph)) {
+    };
+    while (rr2(graph)) {
+    };
+    while (rrlarge(graph)) {
+    };
+    while (rrtransitive(graph)) {
+    };
+    while (rrlo1(graph)) {
+    };
+    //while (rrlo2(graph)) {
+    //};
 }
