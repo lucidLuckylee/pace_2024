@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -71,13 +71,13 @@ PaceGraph PaceGraph::from_gr(std::istream &gr) {
     return PaceGraph(a, b, edges);
 }
 
-PaceGraph PaceGraph::from_file(std::string filePath) {
-    std::ifstream grFile(filePath);
+PaceGraph PaceGraph::from_file(std::string file_path) {
+    std::ifstream gr_file(file_path);
     // Check if the file is open
-    if (!grFile.is_open()) {
+    if (!gr_file.is_open()) {
         throw std::runtime_error("Error: Failed to open file.");
     }
-    return PaceGraph::from_gr(grFile);
+    return PaceGraph::from_gr(gr_file);
 }
 
 std::string PaceGraph::to_gr() {
@@ -121,22 +121,18 @@ std::string PaceGraph::print_neighbors_fixed() {
  * @param vertices to be deleted described by the following tuples (v, position
  * to be inserted, cost)
  */
-void PaceGraph::remove_free_vertices(
-    std::vector<std::tuple<int, int, int>> vertices) {
+void PaceGraph::remove_free_vertices(std::vector<DeleteInfo> vertices) {
 
     long costs = 0;
-    std::sort(vertices.begin(), vertices.end(),
-              [](auto a, auto b) { return std::get<1>(a) > std::get<1>(b); });
-
-    for (const auto &[v, position, cost] : vertices) {
-        removed_vertices.emplace(free_real_names[v], position);
-        costs += cost;
-    }
+    std::sort(vertices.begin(), vertices.end(), [](DeleteInfo a, DeleteInfo b) {
+        return a.position > b.position;
+    });
 
     std::vector<int> vertices_to_remove;
-    for (const auto &vertex : vertices) {
-        auto [v, _, _2] = vertex;
-        vertices_to_remove.push_back(v);
+    for (const DeleteInfo delete_info : vertices) {
+        removed_vertices.emplace(free_real_names[delete_info.v], delete_info.position);
+        costs += delete_info.cost;
+        vertices_to_remove.push_back(delete_info.v);
     }
 
     std::sort(vertices_to_remove.begin(), vertices_to_remove.end());

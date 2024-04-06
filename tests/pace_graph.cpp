@@ -17,8 +17,8 @@ TEST_CASE("Remove vertex") {
     std::istringstream gr_stream(graph_gr);
     PaceGraph graph = PaceGraph::from_gr(gr_stream);
     graph.init_crossing_matrix_if_necessary();
-    std::vector<std::tuple<int, int, int>> vertices_to_remove = {{1, 0, 3},
-                                                                 {2, 1, 1}};
+    std::vector<DeleteInfo> vertices_to_remove = {DeleteInfo(1, 0, 3),
+                                                  DeleteInfo(2, 1, 1)};
     graph.remove_free_vertices(vertices_to_remove);
     SUBCASE("Check Graph") {
         CHECK(graph.size_free == 2);

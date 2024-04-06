@@ -2,14 +2,19 @@
 #define PACE_GRAPH_HPP
 
 #include "crossing_matrix.hpp"
-#include <fstream>
-#include <list>
 #include <memory>
 #include <stack>
 #include <string>
 #include <tuple>
-#include <unordered_map>
 #include <vector>
+
+struct DeleteInfo {
+    int v;
+    int position;
+    long cost;
+
+    DeleteInfo(int v, int position, long cost) : v(v), position(position), cost(cost) {};
+};
 
 class PaceGraph {
   private:
@@ -77,7 +82,7 @@ class PaceGraph {
 
     static PaceGraph from_file(std::string filePath);
 
-    void remove_free_vertices(std::vector<std::tuple<int, int, int>> vertices);
+    void remove_free_vertices(std::vector<DeleteInfo> vertices);
 
     std::unique_ptr<PaceGraph>
     induced_subgraphs_free(std::vector<int> fixed_nodes);
