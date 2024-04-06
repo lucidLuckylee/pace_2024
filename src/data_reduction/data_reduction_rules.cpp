@@ -37,14 +37,14 @@ bool rr1(PaceGraph &graph) {
 bool rr2(PaceGraph &graph) {
 
     bool applied = false;
-    //auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
-    //dg.topologicalSort();
+    // auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
+    // dg.topologicalSort();
 
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
 
-            //int u = dg.topologicalOrder[a];
-            //int v = dg.topologicalOrder[b];
+            // int u = dg.topologicalOrder[a];
+            // int v = dg.topologicalOrder[b];
 
             if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
                 applied = graph.crossing.set_a_lt_b(a, b) || applied;
@@ -91,12 +91,10 @@ bool rrlarge(PaceGraph &graph) {
  * applied.
  */
 bool rrlo1(PaceGraph &graph) {
-    std::vector<DeleteInfo> vertices_to_delete;
-
-    std::vector<bool> already_deleted(graph.size_free, false);
-
     if (graph.size_free <= 2)
         return false;
+    std::vector<DeleteInfo> vertices_to_delete;
+    std::vector<bool> already_deleted(graph.size_free, false);
 
     for (int v = 0; v < graph.size_free; v++) {
         int position = 0;
@@ -107,23 +105,20 @@ bool rrlo1(PaceGraph &graph) {
                 if (already_deleted[w]) {
                     continue;
                 }
-
                 if (graph.crossing.lt(w, v)) {
                     position++;
                     cost += graph.crossing.matrix[w][v];
                 } else {
                     cost += graph.crossing.matrix[v][w];
                 }
-
             } else {
                 delete_v = false;
                 break;
             }
         }
-
         if (delete_v) {
-            already_deleted[v] = true;
             // RRLO1 -> v is comparable to all elements in the partial order
+            already_deleted[v] = true;
             vertices_to_delete.emplace_back(v, position, cost);
         }
     }
@@ -131,15 +126,31 @@ bool rrlo1(PaceGraph &graph) {
     if (vertices_to_delete.empty()) {
         return false;
     }
-
     graph.remove_free_vertices(vertices_to_delete);
-
     return true;
 }
 
-//bool rrlo2(PaceGraph &graph) {
-//
-//}
+bool rrlo2(PaceGraph &graph) {
+    bool applied = false;
+    for (int v = 0; v < graph.size_free; v++) {
+        for (int w = 0; w < graph.size_free; w++) {
+            if (graph.crossing.incomparable(v, w)) {
+                for (int c = 0; c < graph.size_free; c++) {
+                    if (graph.crossing.dependent(v, w, c)) {
+                        goto next_w;
+                    }
+                }
+                // (v,w) is not dependent
+                if (graph.crossing.matrix[v][w] <=
+                    graph.crossing.matrix[w][v]) {
+                    applied = graph.crossing.set_a_lt_b(v, w) || applied;
+                }
+            }
+            next_w:;
+        }
+    }
+    return applied;
+}
 
 bool rrtransitive(PaceGraph &graph) {
 
@@ -172,6 +183,6 @@ void apply_reduction_rules(PaceGraph &graph) {
     };
     while (rrlo1(graph)) {
     };
-    //while (rrlo2(graph)) {
-    //};
+     while (rrlo2(graph)) {
+     };
 }

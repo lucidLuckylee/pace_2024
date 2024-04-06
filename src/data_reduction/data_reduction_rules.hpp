@@ -7,7 +7,7 @@ bool rr1(PaceGraph &graph);
 bool rr2(PaceGraph &graph);
 bool rrlarge(PaceGraph &graph);
 bool rrlo1(PaceGraph &graph);
-//bool rrlo2(PaceGraph &graph);
+bool rrlo2(PaceGraph &graph);
 bool rrtransitive(PaceGraph &graph);
 void apply_reduction_rules(PaceGraph &graph);
 
