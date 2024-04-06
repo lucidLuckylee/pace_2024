@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -70,13 +71,13 @@ PaceGraph PaceGraph::from_gr(std::istream &gr) {
     return PaceGraph(a, b, edges);
 }
 
-PaceGraph PaceGraph::from_file(std::string filePath) {
-    std::ifstream grFile(filePath);
+PaceGraph PaceGraph::from_file(std::string file_path) {
+    std::ifstream gr_file(file_path);
     // Check if the file is open
-    if (!grFile.is_open()) {
+    if (!gr_file.is_open()) {
         throw std::runtime_error("Error: Failed to open file.");
     }
-    return PaceGraph::from_gr(grFile);
+    return PaceGraph::from_gr(gr_file);
 }
 
 std::string PaceGraph::to_gr() {

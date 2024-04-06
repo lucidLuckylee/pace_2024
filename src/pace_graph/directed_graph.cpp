@@ -1,12 +1,9 @@
-//
-// Created by jt on 24.03.24.
-//
-
 #include "directed_graph.hpp"
 
 #include <bitset>
 #include <queue>
 #include <utility>
+#include <unordered_map>
 
 DirectedGraph::DirectedGraph(std::vector<std::vector<int>> &neighbors)
     : neighbors(std::move(neighbors)), visited(neighbors.size(), false),
