@@ -44,8 +44,11 @@ class FeedbackEdgeInstance {
     long ub = 0;
 
     long globalUB = 0;
+    Order globalUBOrder;
 
-    explicit FeedbackEdgeInstance(WeightedDirectedGraph &graph) {
+    explicit FeedbackEdgeInstance(WeightedDirectedGraph &graph, Order &order,
+                                  long globalUB)
+        : globalUB(globalUB), globalUBOrder(order) {
         edges.resize(graph.neighbors.size());
         for (int i = 0; i < graph.neighbors.size(); ++i) {
             for (int j = 0; j < graph.neighbors.size(); ++j) {
@@ -73,7 +76,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
         DirectedGraph &graph,
         std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order);
 
-    void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+    void greedyApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+    void globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
     long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
