@@ -35,11 +35,15 @@ class Edge {
 class FeedbackEdgeInstance {
   public:
     std::vector<std::shared_ptr<Circle>> circles;
+
     std::vector<std::vector<std::shared_ptr<Edge>>> edges;
 
     std::unordered_set<std::shared_ptr<Edge>> usedEdges;
     std::vector<std::shared_ptr<Edge>> bestSolution;
+
     long ub = 0;
+
+    long globalUB = 0;
 
     explicit FeedbackEdgeInstance(WeightedDirectedGraph &graph) {
         edges.resize(graph.neighbors.size());
@@ -72,6 +76,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
     void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
     long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+
+    void findGoodCircleOrderForLB(FeedbackEdgeInstance &instance);
 
   protected:
     Order run(PaceGraph &graph) override;

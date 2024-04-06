@@ -364,7 +364,7 @@ std::tuple<int, int> PaceGraph::calculatingCrossingNumber(int u, int v) {
     const auto &u_neighbors = neighbors_free[u];
     const auto &v_neighbors = neighbors_free[v];
 
-    for (int u_N : u_neighbors) {
+    for (const auto &u_N : u_neighbors) {
         while (currentVPointer < v_neighbors.size() &&
                v_neighbors[currentVPointer] < u_N) {
             crossing_entries_u_v += u_neighbors.size() - currentUPointer;
@@ -374,10 +374,8 @@ std::tuple<int, int> PaceGraph::calculatingCrossingNumber(int u, int v) {
         currentUPointer++;
     }
 
-    while (currentVPointer < v_neighbors.size()) {
-        crossing_entries_u_v += u_neighbors.size() - currentUPointer;
-        currentVPointer++;
-    }
+    crossing_entries_u_v += (v_neighbors.size() - currentVPointer) *
+                            (u_neighbors.size() - currentUPointer);
 
     return std::make_tuple(crossing_entries_u_v, crossing_entries_v_u);
 }

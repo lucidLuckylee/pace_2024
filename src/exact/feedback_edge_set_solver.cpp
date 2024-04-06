@@ -114,6 +114,7 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     instance.ub = 0;
     instance.bestSolution.clear();
     approximateFeedbackEdgeSet(instance);
+    findGoodCircleOrderForLB(instance);
     solveFeedbackEdgeSet(instance, 0);
 }
 
@@ -241,11 +242,30 @@ long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
     return lb;
 }
 
-bool FeedbackEdgeInstance::containCircle(Circle &circle) {
-    {
-        return std::any_of(circles.begin(), circles.end(),
-                           [&circle](const std::shared_ptr<Circle> &c) {
-                               return c->edges == circle.edges;
-                           });
+void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
+    FeedbackEdgeInstance &instance) {
+    long bestLB = lbFeedbackEdgeSet(instance);
+    std::vector<std::shared_ptr<Circle>> bestCircles = instance.circles;
+    for (int i = 0; i < 100; i++) {
+
+        unsigned seed =
+            std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(instance.circles.begin(), instance.circles.end(),
+                     std::default_random_engine(seed));
+
+        long lb = lbFeedbackEdgeSet(instance);
+
+        if (lb > bestLB) {
+            bestLB = lb;
+            bestCircles = instance.circles;
+        }
     }
+    instance.circles = std::move(bestCircles);
+}
+
+bool FeedbackEdgeInstance::containCircle(Circle &circle) {
+    return std::any_of(circles.begin(), circles.end(),
+                       [&circle](const std::shared_ptr<Circle> &c) {
+                           return c->edges == circle.edges;
+                       });
 }
