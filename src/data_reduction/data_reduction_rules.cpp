@@ -37,17 +37,17 @@ bool rr1(PaceGraph &graph) {
 bool rr2(PaceGraph &graph) {
 
     bool applied = false;
-    auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
-    dg.topologicalSort();
+    //auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
+    //dg.topologicalSort();
 
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
 
-            int u = dg.topologicalOrder[a];
-            int v = dg.topologicalOrder[b];
+            //int u = dg.topologicalOrder[a];
+            //int v = dg.topologicalOrder[b];
 
-            if (graph.neighbors_free[u] == graph.neighbors_free[v]) {
-                applied = graph.crossing.set_a_lt_b(u, v) || applied;
+            if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
+                applied = graph.crossing.set_a_lt_b(a, b) || applied;
             }
         }
     }
