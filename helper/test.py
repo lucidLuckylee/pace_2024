@@ -154,7 +154,8 @@ def clean_output(output_path):
 
             line = line.split("#")[0].strip()
             if len(line) == 0:
-                continu ee" in line or "Academic license - for non-commercial use only -" in line or "Set parameter Threads to value" in line:
+                continue
+            if "Set parameter Username" in line or "Academic license - for non-commercial use only -" in line or "Set parameter Threads to value" in line:
                 continue
 
             output_file.write(line)
