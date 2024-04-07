@@ -196,7 +196,6 @@ TEST_CASE("Exhaustively Reduce") {
 
     graph.init_crossing_matrix_if_necessary();
     apply_reduction_rules(graph);
-    std::cout << graph.to_gr() << std::endl;
     CHECK(graph.to_gr().compare(
               R"(p ocr 4 0 0
 )") == 0);

@@ -38,15 +38,6 @@ bool CrossingMatrix::dependent(int a, int b, int c) {
     return (incomparable(a, c) || incomparable(b, c)) && a != c && b != c;
 }
 
-bool CrossingMatrix::dependentInPartialOrder(int a, int b) {
-    for (int c = 0; c < matrix.size(); c++) {
-        if (dependent(a, b, c)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void CrossingMatrix::init_crossing_matrix(PaceGraph &graph) {
     matrix.resize(graph.size_free);
     matrix_diff.resize(graph.size_free);
@@ -132,7 +123,7 @@ CrossingMatrix::~CrossingMatrix() { clean(); }
 void CrossingMatrix::print() {
     for (int i = 0; i < matrix.size(); i++) {
         for (int j = 0; j < matrix.size(); j++) {
-            std::cout << matrix[i][j] << " ";
+            std::cout << matrix[i][j] << ", ";
         }
         std::cout << std::endl;
     }
