@@ -44,3 +44,5 @@ cmake-build-release
 output.txt
 venv
 heuristic_solver.tgz
+
+*/.ipynb_checkpoints/

@@ -65,10 +65,16 @@ add_executable(
         src/lb/lb_solver.cpp
 )
 
+add_executable(
+        crossing_matrix
+        src/crossing_matrix/main.cpp
+        ${HEURISTIC_FILES}
+)
 target_link_libraries(lb_solver PaceGraph)
 # Link the executable with the PaceGraph library
 target_link_libraries(heuristic_solver PaceGraph)
 target_link_libraries(feedback_edge_set_solver PaceGraph)
+target_link_libraries(crossing_matrix PaceGraph)
 
 option(ENABLE_ILP_SOLVER "Enable ILP Solver Build (Requires ortools)" OFF)
 
@@ -89,7 +95,11 @@ if (ENABLE_ILP_SOLVER)
 endif ()
 
 # Data Reduction stand-alone target
-add_executable(data_reduction src/data_reduction/main.cpp)
+add_executable(data_reduction
+        src/data_reduction/main.cpp
+        src/heuristic_solver/greedy_insert_solver.cpp
+        src/heuristic_solver/greedy_insert_solver.h
+)
 target_link_libraries(data_reduction PaceGraph)
 
 # Test using doctest framework
