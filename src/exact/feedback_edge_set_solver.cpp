@@ -315,7 +315,28 @@ void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
             bestCircles = instance.circles;
         }
     }
+
     instance.circles = std::move(bestCircles);
+
+    bool foundImprovement = true;
+    while (foundImprovement) {
+        foundImprovement = false;
+
+        for (int i = 0; i < instance.circles.size(); ++i) {
+            for (int j = i + 1; j < instance.circles.size(); j++) {
+                std::swap(instance.circles[i], instance.circles[j]);
+                long lb = lbFeedbackEdgeSet(instance);
+                if (lb >= bestLB) {
+                    if (lb > bestLB) {
+                        foundImprovement = true;
+                        bestLB = lb;
+                    }
+                } else {
+                    std::swap(instance.circles[i], instance.circles[j]);
+                }
+            }
+        }
+    }
 }
 
 bool FeedbackEdgeInstance::containCircle(Circle &circle) {
