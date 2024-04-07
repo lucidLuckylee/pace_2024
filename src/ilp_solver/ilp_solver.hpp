@@ -76,6 +76,13 @@ class ILPSolver
         return model->Solve();
     }
 
+    void setThreadLimit(operations_research::MPSolver *&model,
+                        int limit) override {
+        model->SetNumThreads(limit);
+        model->SetSolverSpecificParametersAsString("Threads " +
+                                                   std::to_string(limit));
+    }
+
   public:
     explicit ILPSolver(
         std::chrono::milliseconds limit = std::chrono::milliseconds::max())

@@ -29,10 +29,12 @@ class OptimizationSolver : public SolutionSolver {
     virtual bool getVariableValue(MODEL &mode, MODEL_RESULT &result,
                                   VAR &var) = 0;
 
+    virtual void setThreadLimit(MODEL &model, int limit) = 0;
+
   public:
     explicit OptimizationSolver(
         std::chrono::milliseconds limit = std::chrono::milliseconds::max())
-        : SolutionSolver(limit, true) {}
+        : SolutionSolver(limit, REORDER_FIXED_NODE_SET) {}
 
     Order run(PaceGraph &graph) override;
 };
@@ -42,6 +44,7 @@ Order OptimizationSolver<MODEL, VAR, OPT_FUN, MODEL_RESULT>::run(
     PaceGraph &graph) {
     std::vector<std::vector<VAR>> variable_matrix(graph.size_free);
     MODEL model = createModel();
+    setThreadLimit(model, 1);
 
     OPT_FUN optFun = createOptFunctions(model);
     for (int i = 0; i < graph.size_free; ++i) {
