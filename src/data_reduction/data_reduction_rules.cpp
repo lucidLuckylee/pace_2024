@@ -91,8 +91,6 @@ bool rrlarge(PaceGraph &graph) {
  * applied.
  */
 bool rrlo1(PaceGraph &graph) {
-    if (graph.size_free <= 2)
-        return false;
     std::vector<DeleteInfo> vertices_to_delete;
     std::vector<bool> already_deleted(graph.size_free, false);
 
@@ -102,11 +100,13 @@ bool rrlo1(PaceGraph &graph) {
         long cost = 0;
         for (int w = 0; w < graph.size_free; w++) {
             if (graph.crossing.comparable(v, w)) {
+                if (graph.crossing.lt(w, v)) {
+                    position++;
+                }
                 if (already_deleted[w]) {
                     continue;
                 }
                 if (graph.crossing.lt(w, v)) {
-                    position++;
                     cost += graph.crossing.matrix[w][v];
                 } else {
                     cost += graph.crossing.matrix[v][w];
