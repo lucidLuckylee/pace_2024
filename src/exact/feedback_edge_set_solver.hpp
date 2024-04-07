@@ -63,6 +63,8 @@ class FeedbackEdgeInstance {
 
 class FeedbackEdgeSetSolver : public SolutionSolver {
   private:
+    long branches;
+
     void
     addCycleMatrixElements(DirectedGraph &graph,
                            std::vector<std::shared_ptr<Edge>> &feedbackEdgeSet,
@@ -80,7 +82,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
     void greedyApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
     void globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
-    long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+    long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
+                           int cycleSearchStart);
 
     void findGoodCircleOrderForLB(FeedbackEdgeInstance &instance);
 

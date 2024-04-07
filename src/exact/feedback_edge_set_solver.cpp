@@ -15,7 +15,7 @@ void Circle::permuteEdges() {
 }
 
 Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
-
+    branches = 0;
     graph.init_crossing_matrix_if_necessary();
 
     WeightedDirectedGraph weightedDirectedGraph =
@@ -51,6 +51,8 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
         solveFeedbackEdgeSet(instance);
 
         if (instance.ub >= instance.globalUB) {
+            std::cerr << "# Branches: " << branches << std::endl;
+
             return instance.globalUBOrder;
         }
 
@@ -70,6 +72,7 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
 
         DirectedGraph G_i = DirectedGraph(new_neighbours);
         if (G_i.topologicalSort()) {
+            std::cerr << "# Branches: " << branches << std::endl;
             std::cerr << "# Iterations: " << iter << std::endl;
             return Order(G_i.topologicalOrder);
         }
@@ -81,11 +84,7 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
 
 void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
                                                  int k, int cycleSearchStart) {
-
-    if (k + lbFeedbackEdgeSet(instance) >= instance.ub) {
-        return;
-    }
-
+    branches++;
     int cycleId = -1;
     for (int i = cycleSearchStart; i < instance.circles.size(); i++) {
         if (instance.circles[i]->covered == 0) {
@@ -110,6 +109,10 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
             instance.ub = weight;
             instance.bestSolution = solution;
         }
+        return;
+    }
+
+    if (k + lbFeedbackEdgeSet(instance, cycleSearchStart) >= instance.ub) {
         return;
     }
 
@@ -138,9 +141,10 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     globalApproximateFeedbackEdgeSet(instance);
     std::cerr << "UB: " << instance.ub;
     findGoodCircleOrderForLB(instance);
-    std::cerr << " LB: " << lbFeedbackEdgeSet(instance);
+    std::cerr << " LB: " << lbFeedbackEdgeSet(instance, 0);
     solveFeedbackEdgeSet(instance, 0, 0);
     std::cerr << " Exact: " << instance.ub << std::endl;
+    std::cerr << "# Branches: " << branches << std::endl;
 }
 
 void FeedbackEdgeSetSolver::addCycleMatrixElements(
@@ -270,7 +274,8 @@ void FeedbackEdgeSetSolver::greedyApproximateFeedbackEdgeSet(
     }
 }
 
-long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
+long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
+                                              int cycleSearchStart) {
     for (auto &e : instance.usedEdges) {
         if (!e->selected) {
             e->potential = e->weight;
@@ -278,7 +283,9 @@ long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
     }
 
     long lb = 0;
-    for (auto &c : instance.circles) {
+    for (int i = cycleSearchStart; i < instance.circles.size(); ++i) {
+        auto &c = instance.circles[i];
+
         if (c->covered == 0) {
             int min = c->edges[0]->potential;
             for (auto &e : c->edges) {
@@ -299,7 +306,7 @@ long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
 
 void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
     FeedbackEdgeInstance &instance) {
-    long bestLB = lbFeedbackEdgeSet(instance);
+    long bestLB = lbFeedbackEdgeSet(instance, 0);
     std::vector<std::shared_ptr<Circle>> bestCircles = instance.circles;
     for (int i = 0; i < 1000; i++) {
 
@@ -308,7 +315,7 @@ void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
         std::shuffle(instance.circles.begin(), instance.circles.end(),
                      std::default_random_engine(seed));
 
-        long lb = lbFeedbackEdgeSet(instance);
+        long lb = lbFeedbackEdgeSet(instance, 0);
 
         if (lb > bestLB) {
             bestLB = lb;
@@ -325,12 +332,10 @@ void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
         for (int i = 0; i < instance.circles.size(); ++i) {
             for (int j = i + 1; j < instance.circles.size(); j++) {
                 std::swap(instance.circles[i], instance.circles[j]);
-                long lb = lbFeedbackEdgeSet(instance);
-                if (lb >= bestLB) {
-                    if (lb > bestLB) {
-                        foundImprovement = true;
-                        bestLB = lb;
-                    }
+                long lb = lbFeedbackEdgeSet(instance, 0);
+                if (lb > bestLB) {
+                    foundImprovement = true;
+                    bestLB = lb;
                 } else {
                     std::swap(instance.circles[i], instance.circles[j]);
                 }
