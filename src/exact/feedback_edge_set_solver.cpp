@@ -80,14 +80,14 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
 }
 
 void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                                                 int k) {
+                                                 int k, int cycleSearchStart) {
 
     if (k + lbFeedbackEdgeSet(instance) >= instance.ub) {
         return;
     }
 
     int cycleId = -1;
-    for (int i = 0; i < instance.circles.size(); i++) {
+    for (int i = cycleSearchStart; i < instance.circles.size(); i++) {
         if (instance.circles[i]->covered == 0) {
             cycleId = i;
             break;
@@ -121,7 +121,7 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
             circle->covered++;
         }
 
-        solveFeedbackEdgeSet(instance, k + edge->weight);
+        solveFeedbackEdgeSet(instance, k + edge->weight, cycleId + 1);
         edge->selected = false;
         for (auto &circle : edge->circles) {
             circle->covered--;
@@ -139,7 +139,7 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     std::cerr << "UB: " << instance.ub;
     findGoodCircleOrderForLB(instance);
     std::cerr << " LB: " << lbFeedbackEdgeSet(instance);
-    solveFeedbackEdgeSet(instance, 0);
+    solveFeedbackEdgeSet(instance, 0, 0);
     std::cerr << " Exact: " << instance.ub << std::endl;
 }
 

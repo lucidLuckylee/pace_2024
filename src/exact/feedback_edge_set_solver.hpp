@@ -70,7 +70,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
 
     void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
-    void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance, int k);
+    void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance, int k,
+                              int cycleSearchStart);
 
     std::vector<std::shared_ptr<Edge>> approximateFeedbackEdgeSet(
         DirectedGraph &graph,
