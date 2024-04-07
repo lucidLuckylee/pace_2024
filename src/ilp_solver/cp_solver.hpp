@@ -69,5 +69,10 @@ class CPSolver
                           operations_research::sat::BoolVar &var) override {
         return operations_research::sat::SolutionBooleanValue(result, var);
     }
+
+    void setThreadLimit(operations_research::sat::CpModelBuilder &model,
+                        int limit) override {
+        std::cerr << "Thread Limit: TODO" << std::endl;
+    }
 };
 #endif // PACE2024_CP_SOLVER_HPP

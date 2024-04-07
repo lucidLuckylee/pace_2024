@@ -8,6 +8,8 @@
 #include "pace_graph.hpp"
 #include <chrono>
 
+enum ReorderType { REORDER_NONE, REORDER_HEURISTIC, REORDER_FIXED_NODE_SET };
+
 template <typename T> class Solver {
   private:
     std::chrono::time_point<std::chrono::steady_clock> start_time;
@@ -15,7 +17,7 @@ template <typename T> class Solver {
 
     std::chrono::time_point<std::chrono::steady_clock> start_time_for_part;
     std::chrono::milliseconds time_limit_for_part;
-    bool reorderNodes;
+    ReorderType reorderNodes;
     bool initUB;
 
   protected:
@@ -27,7 +29,7 @@ template <typename T> class Solver {
 
   public:
     Solver(std::chrono::milliseconds limit = std::chrono::milliseconds::max(),
-           bool reorderNodes = false, bool initUB = true)
+           ReorderType reorderNodes = REORDER_NONE, bool initUB = true)
         : start_time(std::chrono::steady_clock::now()),
           start_time_for_part(std::chrono::steady_clock::now()),
           time_limit(limit),
@@ -41,29 +43,43 @@ template <typename T> class Solver {
             std::move(std::get<0>(val));
         auto isolated_nodes = std::move(std::get<1>(val));
 
-        if (reorderNodes || initUB) {
-            MeanPositionParameter meanPositionParameter;
-            MeanPositionSolver meanPositionSolver(
-                [this](int it) { return it == 0; }, meanPositionParameter);
+        std::vector<T> results;
+        MeanPositionParameter meanPositionParameter;
+        MeanPositionSolver meanPositionSolver(
+            [this](int it) { return it == 0; }, meanPositionParameter);
 
-            for (auto &splittedGraph : splittedGraphs) {
-                auto &g = splittedGraph;
+        for (int i = 0; i < splittedGraphs.size(); i++) {
+            auto &g = splittedGraphs[i];
+
+            if (reorderNodes == REORDER_HEURISTIC || initUB) {
                 auto order = meanPositionSolver.solve(*g);
                 long ub = order.count_crossings(*g);
 
-                if (reorderNodes) {
-                    splittedGraph = order.reorderGraph(*g);
+                if (reorderNodes == REORDER_HEURISTIC) {
+                    g = order.reorderGraph(*g);
                 }
 
                 if (initUB) {
-                    splittedGraph->ub = ub;
+                    g->ub = ub;
                 }
             }
-        }
 
-        std::vector<T> results;
-        for (int i = 0; i < splittedGraphs.size(); i++) {
-            auto &g = splittedGraphs[i];
+            if (reorderNodes == REORDER_FIXED_NODE_SET) {
+                std::vector<int> newNodeOrder;
+
+                std::vector<bool> alreadyUsed(g->size_free, false);
+
+                for (auto &neig : g->neighbors_fixed) {
+                    for (auto &v : neig) {
+                        if (!alreadyUsed[v]) {
+                            newNodeOrder.push_back(v);
+                            alreadyUsed[v] = true;
+                        }
+                    }
+                }
+
+                g = Order(newNodeOrder).reorderGraph(*g);
+            }
 
             start_time_for_part = std::chrono::steady_clock::now();
             apply_reduction_rules(*g);
@@ -148,7 +164,7 @@ class SolutionSolver : public Solver<Order> {
   public:
     explicit SolutionSolver(
         std::chrono::milliseconds limit = std::chrono::milliseconds::max(),
-        bool reorderNodes = false)
+        ReorderType reorderNodes = REORDER_NONE)
         : Solver<Order>(limit, reorderNodes) {}
 };
 

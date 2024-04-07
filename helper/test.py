@@ -154,9 +154,7 @@ def clean_output(output_path):
 
             line = line.split("#")[0].strip()
             if len(line) == 0:
-                continue
-
-            if "Set parameter Username" in line or "Academic license - for non-commercial use only -" in line:
+                continu ee" in line or "Academic license - for non-commercial use only -" in line or "Set parameter Threads to value" in line:
                 continue
 
             output_file.write(line)
@@ -180,7 +178,7 @@ def main():
                         help="The base path to the directory containing the test files.")
     parser.add_argument("program", type=str,
                         help="The path to the program to be run.")
-    parser.add_argument("--timelimit", type=int, default=10,
+    parser.add_argument("--timelimit", type=int, default=300,
                         help="The time limit for each run in seconds. Default is 300.")
     parser.add_argument("--memlimit", type=int, default=8,
                         help="The memory limit for each run in GB. Default is 8.")
