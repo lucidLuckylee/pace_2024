@@ -41,6 +41,7 @@ template <typename T> class Solver {
             val = graph.splitGraphs();
         std::vector<std::unique_ptr<PaceGraph>> splittedGraphs =
             std::move(std::get<0>(val));
+
         auto isolated_nodes = std::move(std::get<1>(val));
 
         std::vector<T> results;
@@ -48,9 +49,32 @@ template <typename T> class Solver {
         MeanPositionSolver meanPositionSolver(
             [this](int it) { return it == 0; }, meanPositionParameter);
 
+        // solve all nodes with <= 2 free nodes directly
+        for (const auto &g : splittedGraphs) {
+            if (g->size_free <= 2) {
+                if (g->size_free == 1) {
+                    g->remove_free_vertices({{0, 0, 0}});
+                } else if (g->size_free == 2) {
+                    auto [cost_1_2, cost_2_1] =
+                        g->calculatingCrossingNumber(0, 1);
+
+                    if (cost_1_2 < cost_2_1) {
+                        g->remove_free_vertices({{0, 0, cost_1_2}});
+                        g->remove_free_vertices({{1, 1, 0}});
+                    } else {
+                        g->remove_free_vertices({{1, 0, cost_2_1}});
+                        g->remove_free_vertices({{0, 1, 0}});
+                    }
+                }
+            }
+        }
+
         for (int i = 0; i < splittedGraphs.size(); i++) {
             auto &g = splittedGraphs[i];
-
+            if (g->size_free == 0) {
+                results.push_back(run(*g));
+                continue;
+            }
             if (reorderNodes == REORDER_HEURISTIC || initUB) {
                 auto order = meanPositionSolver.solve(*g);
                 long ub = order.count_crossings(*g);
