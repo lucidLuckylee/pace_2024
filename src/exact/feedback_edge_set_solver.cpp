@@ -2,6 +2,7 @@
 #include "feedback_edge_set_solver.hpp"
 #include "../heuristic_solver/genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
+#include "feedback_edge_set_heuristic.hpp"
 
 void Circle::permuteEdges() {
     if (!edges.empty()) {
@@ -41,8 +42,8 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
 
     solveFeedbackEdgeSet(instance);
 
-    auto fesInit = approximateFeedbackEdgeSet(weightedDirectedGraph,
-                                              instance.edges, goodOrder);
+    auto fesInit = approximateFeedbackEdgeSetFromSolution(
+        weightedDirectedGraph, instance.edges, goodOrder);
     addCycleMatrixElements(weightedDirectedGraph, fesInit, instance);
 
     int iter = 0;
@@ -77,7 +78,8 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
             return Order(G_i.topologicalOrder);
         }
 
-        auto fas = approximateFeedbackEdgeSet(G_i, instance.edges, goodOrder);
+        auto fas = approximateFeedbackEdgeSetFromSolution(G_i, instance.edges,
+                                                          goodOrder);
         addCycleMatrixElements(G_i, fas, instance);
     }
 }
@@ -136,15 +138,16 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     FeedbackEdgeInstance &instance) {
     instance.ub = 100000000;
     instance.bestSolution.clear();
+    long oldBranches = branches;
 
-    greedyApproximateFeedbackEdgeSet(instance);
-    globalApproximateFeedbackEdgeSet(instance);
+    approximateFeedbackEdgeSet(instance);
     std::cerr << "UB: " << instance.ub;
     findGoodCircleOrderForLB(instance);
     std::cerr << " LB: " << lbFeedbackEdgeSet(instance, 0);
     solveFeedbackEdgeSet(instance, 0, 0);
-    std::cerr << " Exact: " << instance.ub << std::endl;
-    std::cerr << "# Branches: " << branches << std::endl;
+    std::cerr << " Exact: " << instance.ub
+              << " Global UB: " << instance.globalUB
+              << " Branches: " << branches - oldBranches << std::endl;
 }
 
 void FeedbackEdgeSetSolver::addCycleMatrixElements(
@@ -183,7 +186,7 @@ void FeedbackEdgeSetSolver::addCycleMatrixElements(
 }
 
 std::vector<std::shared_ptr<Edge>>
-FeedbackEdgeSetSolver::approximateFeedbackEdgeSet(
+FeedbackEdgeSetSolver::approximateFeedbackEdgeSetFromSolution(
     DirectedGraph &graph,
     std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order) {
 
@@ -198,80 +201,6 @@ FeedbackEdgeSetSolver::approximateFeedbackEdgeSet(
         }
     }
     return feedbackEdgeSet;
-}
-
-void FeedbackEdgeSetSolver::globalApproximateFeedbackEdgeSet(
-    FeedbackEdgeInstance &instance) {
-
-    long weight = 0;
-    std::vector<std::shared_ptr<Edge>> feedbackEdgeSet;
-    for (auto &e : instance.usedEdges) {
-        bool usedInGlobalUB = instance.globalUBOrder.get_position(e->end) <
-                              instance.globalUBOrder.get_position(e->start);
-
-        if (usedInGlobalUB) {
-            weight += e->weight;
-            feedbackEdgeSet.emplace_back(e);
-        }
-    }
-
-    if (weight < instance.ub) {
-        instance.ub = weight;
-        instance.bestSolution = feedbackEdgeSet;
-    }
-}
-
-void FeedbackEdgeSetSolver::greedyApproximateFeedbackEdgeSet(
-    FeedbackEdgeInstance &instance) {
-    std::shared_ptr<Edge> edge = nullptr;
-    double bestCost = 100000000;
-    for (auto &e : instance.usedEdges) {
-
-        if (e->numberOfCircles > 0 && !e->selected) {
-            double cost = static_cast<double>(e->weight) / (e->numberOfCircles);
-            if (cost < bestCost) {
-                bestCost = cost;
-                edge = e;
-            }
-        }
-    }
-
-    if (edge == nullptr) {
-        std::vector<std::shared_ptr<Edge>> solution;
-        long weight = 0;
-        for (auto &edge : instance.usedEdges) {
-
-            if (edge->selected) {
-                weight += edge->weight;
-                solution.emplace_back(edge);
-            }
-        }
-
-        if (weight < instance.ub) {
-            instance.ub = weight;
-            instance.bestSolution = solution;
-        }
-
-        return;
-    }
-
-    edge->selected = true;
-    for (auto &c : edge->circles) {
-        c->covered++;
-        for (auto &e : c->edges) {
-            e->numberOfCircles--;
-        }
-    }
-
-    greedyApproximateFeedbackEdgeSet(instance);
-
-    edge->selected = false;
-    for (auto &c : edge->circles) {
-        c->covered--;
-        for (auto &e : c->edges) {
-            e->numberOfCircles++;
-        }
-    }
 }
 
 long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
