@@ -75,12 +75,9 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
     void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance, int k,
                               int cycleSearchStart);
 
-    std::vector<std::shared_ptr<Edge>> approximateFeedbackEdgeSet(
+    std::vector<std::shared_ptr<Edge>> approximateFeedbackEdgeSetFromSolution(
         DirectedGraph &graph,
         std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order);
-
-    void greedyApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
-    void globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
     long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
                            int cycleSearchStart);
