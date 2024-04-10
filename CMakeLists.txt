@@ -46,7 +46,19 @@ add_executable(
         feedback_edge_set_solver
         src/exact/feedback_edge_set_solver.cpp
         src/exact/feedback_edge_set_solver.hpp
+        src/exact/feedback_edge_set_heuristic.cpp
+        src/exact/feedback_edge_set_heuristic.cpp
         src/exact/main.cpp
+        ${HEURISTIC_FILES}
+)
+
+add_executable(
+        feedback_edge_set_heuristic
+        src/exact/feedback_edge_set_heuristic_test.cpp
+        src/exact/feedback_edge_set_solver.cpp
+        src/exact/feedback_edge_set_solver.hpp
+        src/exact/feedback_edge_set_heuristic.cpp
+        src/exact/feedback_edge_set_heuristic.cpp
         ${HEURISTIC_FILES}
 )
 
@@ -75,6 +87,7 @@ target_link_libraries(lb_solver PaceGraph)
 target_link_libraries(heuristic_solver PaceGraph)
 target_link_libraries(feedback_edge_set_solver PaceGraph)
 target_link_libraries(crossing_matrix PaceGraph)
+target_link_libraries(feedback_edge_set_heuristic PaceGraph)
 
 option(ENABLE_ILP_SOLVER "Enable ILP Solver Build (Requires ortools)" OFF)
 

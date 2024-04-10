@@ -3,15 +3,12 @@
 #include "../heuristic_solver/genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
 #include "feedback_edge_set_heuristic.hpp"
+#include <filesystem>
+#include <fstream>
 
 void Circle::permuteEdges() {
     if (!edges.empty()) {
-        auto minIt = std::min_element(
-            edges.begin(), edges.end(),
-            [](const std::shared_ptr<Edge> &a, const std::shared_ptr<Edge> &b) {
-                return a->start < b->start;
-            });
-        std::rotate(edges.begin(), minIt, edges.end());
+        std::sort(edges.begin(), edges.end());
     }
 }
 
@@ -86,6 +83,9 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
 
 void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
                                                  int k, int cycleSearchStart) {
+    if (k >= instance.ub) {
+        return;
+    }
     branches++;
     int cycleId = -1;
     for (int i = cycleSearchStart; i < instance.circles.size(); i++) {
@@ -98,16 +98,17 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
     if (cycleId == -1) {
         std::vector<std::shared_ptr<Edge>> solution;
         int weight = 0;
-        for (int i = 0; i < instance.edges.size(); i++) {
-            for (int j = 0; j < instance.edges.size(); j++) {
-                if (instance.edges[i][j]->selected) {
-                    weight += instance.edges[i][j]->weight;
-                    solution.emplace_back(instance.edges[i][j]);
-                }
+        for (const auto &edge : instance.usedEdges) {
+            if (edge->selected) {
+                weight += edge->weight;
+                solution.emplace_back(edge);
             }
         }
 
         if (weight < instance.ub) {
+            auto s = solution;
+            std::sort(s.begin(), s.end());
+
             instance.ub = weight;
             instance.bestSolution = solution;
         }
@@ -136,18 +137,21 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
 
 void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     FeedbackEdgeInstance &instance) {
-    instance.ub = 100000000;
-    instance.bestSolution.clear();
     long oldBranches = branches;
 
     approximateFeedbackEdgeSet(instance);
-    std::cerr << "UB: " << instance.ub;
+    long ub = instance.ub;
+    std::cerr << "UB: " << ub;
     findGoodCircleOrderForLB(instance);
     std::cerr << " LB: " << lbFeedbackEdgeSet(instance, 0);
     solveFeedbackEdgeSet(instance, 0, 0);
     std::cerr << " Exact: " << instance.ub
               << " Global UB: " << instance.globalUB
               << " Branches: " << branches - oldBranches << std::endl;
+
+    /*if (instance.ub < ub) {
+        instance.saveCurrentInstanceToDataset();
+    }*/
 }
 
 void FeedbackEdgeSetSolver::addCycleMatrixElements(
@@ -177,7 +181,9 @@ void FeedbackEdgeSetSolver::addCycleMatrixElements(
             auto c = std::make_shared<Circle>(circle);
             instance.circles.emplace_back(c);
             for (auto &e : c->edges) {
-                e->circles.emplace_back(c);
+
+                auto it = upper_bound(e->circles.begin(), e->circles.end(), c);
+                e->circles.insert(it, c);
                 e->numberOfCircles++;
                 instance.usedEdges.insert(e);
             }
@@ -259,7 +265,8 @@ void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
         foundImprovement = false;
 
         for (int i = 0; i < instance.circles.size(); ++i) {
-            for (int j = i + 1; j < instance.circles.size(); j++) {
+            for (int j = i + 1;
+                 j < std::min(i + 20, (int)instance.circles.size()); j++) {
                 std::swap(instance.circles[i], instance.circles[j]);
                 long lb = lbFeedbackEdgeSet(instance, 0);
                 if (lb > bestLB) {
@@ -278,4 +285,55 @@ bool FeedbackEdgeInstance::containCircle(Circle &circle) {
                        [&circle](const std::shared_ptr<Circle> &c) {
                            return c->edges == circle.edges;
                        });
+}
+
+void FeedbackEdgeInstance::writeToFile(std::ostream &gr) {
+    int nrEdges = 0;
+    for (int i = 0; i < edges.size(); ++i) {
+        for (int j = 0; j < edges.size(); ++j) {
+            if (edges[i][j] != nullptr && edges[i][j]->weight > 0) {
+                nrEdges++;
+            }
+        }
+    }
+
+    gr << "p " << edges.size() << " " << nrEdges << " " << circles.size() << " "
+       << globalUB << " " << ub << std::endl;
+    for (int i = 0; i < edges.size(); ++i) {
+        for (int j = 0; j < edges.size(); ++j) {
+            if (edges[i][j]->weight > 0) {
+                gr << i << " " << j << " " << edges[i][j]->weight << std::endl;
+            }
+        }
+    }
+
+    for (auto &cycle : circles) {
+        for (auto &edge : cycle->edges) {
+            gr << edge->start << " " << edge->end << " ";
+        }
+        gr << std::endl;
+    }
+
+    for (const auto &globalOrder : globalUBOrder.position_to_vertex) {
+        gr << globalOrder << std::endl;
+    }
+}
+void FeedbackEdgeInstance::saveCurrentInstanceToDataset() {
+    int count = 0;
+    std::string path = "../data/feedback_edge_set/";
+
+    if (!std::filesystem::exists(path)) {
+        if (!std::filesystem::create_directory(path)) {
+            std::cerr << "Failed to create the output directory." << std::endl;
+        }
+    }
+
+    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+        if (entry.is_regular_file()) {
+            count++;
+        }
+    }
+
+    std::ofstream ofs(path + std::to_string(count) + ".gr");
+    writeToFile(ofs);
 }

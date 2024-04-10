@@ -46,6 +46,13 @@ class FeedbackEdgeInstance {
     long globalUB = 0;
     Order globalUBOrder;
 
+    explicit FeedbackEdgeInstance(
+        std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
+        std::vector<std::shared_ptr<Circle>> &circles, Order &globalUBOrder,
+        long globalUB)
+        : edges(edges), circles(circles), globalUB(globalUB),
+          globalUBOrder(globalUBOrder){};
+
     explicit FeedbackEdgeInstance(WeightedDirectedGraph &graph, Order &order,
                                   long globalUB)
         : globalUB(globalUB), globalUBOrder(order) {
@@ -59,6 +66,8 @@ class FeedbackEdgeInstance {
     }
 
     bool containCircle(Circle &circle);
+    void writeToFile(std::ostream &gr);
+    void saveCurrentInstanceToDataset();
 };
 
 class FeedbackEdgeSetSolver : public SolutionSolver {
@@ -69,8 +78,6 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
     addCycleMatrixElements(DirectedGraph &graph,
                            std::vector<std::shared_ptr<Edge>> &feedbackEdgeSet,
                            FeedbackEdgeInstance &instance);
-
-    void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
     void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance, int k,
                               int cycleSearchStart);
@@ -88,6 +95,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
     Order run(PaceGraph &graph) override;
 
   public:
+    void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+
     explicit FeedbackEdgeSetSolver(
         std::chrono::milliseconds limit = std::chrono::milliseconds::max())
         : SolutionSolver(limit) {}
