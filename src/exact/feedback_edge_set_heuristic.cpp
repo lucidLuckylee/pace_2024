@@ -1,7 +1,7 @@
 
 #include "feedback_edge_set_heuristic.hpp"
 
-long calculateCost(std::vector<std::shared_ptr<Edge>> sol) {
+long calculateCost(std::vector<std::shared_ptr<Edge>> &sol) {
     long cost = 0;
     for (auto &e : sol) {
         cost += e->weight;
@@ -75,6 +75,55 @@ greedyApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
 
     return solution;
 }
+
+std::vector<std::shared_ptr<Edge>>
+greedy2ApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
+
+    std::vector<int> positionArray(instance.circles.size());
+    for (int i = 0; i < instance.circles.size(); ++i) {
+        positionArray[i] = i;
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(positionArray.begin(), positionArray.end(),
+                 std::default_random_engine(seed));
+
+    std::vector<std::shared_ptr<Edge>> solution;
+
+    for (auto &i : positionArray) {
+        auto &circle = instance.circles[i];
+        if (circle->covered == 0) {
+            std::shared_ptr<Edge> usedEdge = circle->edges[0];
+            double weightSum = usedEdge->weight;
+            for (int j = 1; j < circle->edges.size(); ++j) {
+                auto &edge = circle->edges[j];
+                weightSum += edge->weight;
+
+                if (dis(gen) < edge->weight / weightSum) {
+                    usedEdge = edge;
+                }
+            }
+
+            for (auto &c : usedEdge->circles) {
+                c->covered++;
+            }
+            solution.emplace_back(usedEdge);
+        }
+    }
+
+    for (auto &edge : solution) {
+        for (auto &c : edge->circles) {
+            c->covered--;
+        }
+    }
+
+    return solution;
+}
+
 void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
     auto lastSolution = instance.bestSolution;
 
@@ -93,10 +142,100 @@ void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
         instance.ub = globalCost;
         instance.bestSolution = std::move(globalSol);
     }
+
+    for (int _ = 0; _ < 1000; _++) {
+        auto greedy2Sol =
+            std::move(greedy2ApproximateFeedbackEdgeSet(instance));
+        localSearchFeedbackEdgeSet(instance, greedy2Sol);
+        long greedy2Cost = calculateCost(greedy2Sol);
+
+        if (greedy2Cost < instance.ub) {
+            instance.ub = greedy2Cost;
+            instance.bestSolution = std::move(greedy2Sol);
+        }
+    }
 }
+
+bool removeOneEdgeForOneEdge(FeedbackEdgeInstance &instance,
+                             std::vector<std::shared_ptr<Edge>> &solution) {
+
+    bool foundImprovement = false;
+
+    for (auto &edgeToRemove : solution) {
+
+        std::shared_ptr<Edge> bestEdgeToAdd = nullptr;
+        int count = 0;
+
+        double coverScoreEdgeToRemove = 0;
+        for (auto &circle : edgeToRemove->circles) {
+            coverScoreEdgeToRemove += 1.0 / circle->edges.size();
+        }
+
+        for (auto &edgeToAdd : instance.usedEdges) {
+            if (edgeToAdd->selected ||
+                edgeToAdd->weight > edgeToRemove->weight) {
+                continue;
+            }
+
+            int edgeToAddPointer = 0;
+            bool covered = true;
+            for (auto &circle : edgeToRemove->circles) {
+                if (circle->covered == 1) {
+                    while (edgeToAddPointer < edgeToAdd->circles.size() &&
+                           edgeToAdd->circles[edgeToAddPointer] < circle) {
+                        edgeToAddPointer++;
+                    }
+
+                    if (edgeToAddPointer == edgeToAdd->circles.size() ||
+                        edgeToAdd->circles[edgeToAddPointer] != circle) {
+                        covered = false;
+                        break;
+                    }
+                }
+            }
+
+            if (covered) {
+
+                if (edgeToRemove->weight == edgeToAdd->weight) {
+                    double coverScoreEdgeToAdd = 0;
+                    for (auto &circle : edgeToAdd->circles) {
+                        coverScoreEdgeToAdd += 1.0 / circle->edges.size();
+                    }
+                    if (coverScoreEdgeToRemove >= coverScoreEdgeToAdd) {
+                        continue;
+                    }
+                }
+
+                // Edges can be swapped
+                count++;
+                if (rand() % count == 0) {
+                    bestEdgeToAdd = edgeToAdd;
+                }
+            }
+        }
+
+        if (bestEdgeToAdd != nullptr) {
+            foundImprovement = true;
+
+            bestEdgeToAdd->selected = true;
+            for (auto &circle : bestEdgeToAdd->circles) {
+                circle->covered++;
+            }
+
+            edgeToRemove->selected = false;
+            for (auto &circle : edgeToRemove->circles) {
+                circle->covered--;
+            }
+
+            edgeToRemove = bestEdgeToAdd;
+        }
+    }
+
+    return foundImprovement;
+}
+
 void localSearchFeedbackEdgeSet(FeedbackEdgeInstance &instance,
                                 std::vector<std::shared_ptr<Edge>> &solution) {
-
     for (auto &edges : solution) {
         edges->selected = true;
         for (auto &circle : edges->circles) {
@@ -105,6 +244,7 @@ void localSearchFeedbackEdgeSet(FeedbackEdgeInstance &instance,
     }
 
     bool foundImprovement = true;
+
     while (foundImprovement) {
         foundImprovement = false;
 
@@ -134,135 +274,8 @@ void localSearchFeedbackEdgeSet(FeedbackEdgeInstance &instance,
             }
         }
 
-        // Test if I can remove one edge for one edge with less weight
-        for (auto &edge : solution) {
-            std::vector<std::shared_ptr<Edge>> edgesThatCanBeUsedToReplace;
-
-            for (auto &circle : edge->circles) {
-                if (circle->covered == 1) {
-                    if (edgesThatCanBeUsedToReplace.empty()) {
-                        edgesThatCanBeUsedToReplace = circle->edges;
-
-                    } else {
-                        std::vector<std::shared_ptr<Edge>>
-                            newEdgesThatCanBeUsedToReplace;
-
-                        std::set_intersection(
-                            edgesThatCanBeUsedToReplace.begin(),
-                            edgesThatCanBeUsedToReplace.end(),
-                            circle->edges.begin(), circle->edges.end(),
-                            std::back_inserter(newEdgesThatCanBeUsedToReplace));
-                        edgesThatCanBeUsedToReplace =
-                            std::move(newEdgesThatCanBeUsedToReplace);
-                    }
-                }
-            }
-
-            for (auto &e : edgesThatCanBeUsedToReplace) {
-                if (e->weight < edge->weight && !e->selected) {
-                    e->selected = true;
-                    foundImprovement = true;
-
-                    for (auto &circle : e->circles) {
-                        circle->covered++;
-                    }
-
-                    edge->selected = false;
-                    for (auto &circle : edge->circles) {
-                        circle->covered--;
-                    }
-
-                    edge = e;
-                }
-            }
-        }
-
-        // Test if I can remove two edges for one
-        for (int i = 0; i < solution.size(); i++) {
-            for (int j = i + 1; j < solution.size(); j++) {
-                auto &e1 = solution[i];
-                auto &e2 = solution[j];
-
-                std::vector<std::shared_ptr<Circle>>
-                    circlesNotCoveredWhenRemoveE1AndE2;
-
-                int pointerE1 = 0;
-                int pointerE2 = 0;
-                while (true) {
-                    if (pointerE1 == e1->circles.size() ||
-                        pointerE2 == e2->circles.size()) {
-                        break;
-                    }
-
-                    if (e1->circles[pointerE1] == e2->circles[pointerE2]) {
-                        if (e1->circles[pointerE1]->covered == 2) {
-                            circlesNotCoveredWhenRemoveE1AndE2.emplace_back(
-                                e1->circles[pointerE1]);
-                        }
-                        pointerE1++;
-                        pointerE2++;
-                    } else if (e1->circles[pointerE1]->covered <
-                               e2->circles[pointerE2]->covered) {
-                        if (e1->circles[pointerE1]->covered == 1) {
-                            circlesNotCoveredWhenRemoveE1AndE2.emplace_back(
-                                e1->circles[pointerE1]);
-                        }
-                        pointerE1++;
-                    } else {
-                        if (e2->circles[pointerE2]->covered == 1) {
-                            circlesNotCoveredWhenRemoveE1AndE2.emplace_back(
-                                e2->circles[pointerE2]);
-                        }
-                        pointerE2++;
-                    }
-                }
-
-                for (int u = pointerE1; u < e1->circles.size(); u++) {
-                    if (e1->circles[u]->covered == 1) {
-                        circlesNotCoveredWhenRemoveE1AndE2.emplace_back(
-                            e1->circles[u]);
-                    }
-                }
-
-                for (int u = pointerE2; u < e2->circles.size(); u++) {
-                    if (e2->circles[u]->covered == 1) {
-                        circlesNotCoveredWhenRemoveE1AndE2.emplace_back(
-                            e2->circles[u]);
-                    }
-                }
-
-                for (auto &e : instance.usedEdges) {
-                    if (!e->selected && e->weight < e1->weight + e2->weight &&
-                        std::includes(
-                            e->circles.begin(), e->circles.end(),
-                            circlesNotCoveredWhenRemoveE1AndE2.begin(),
-                            circlesNotCoveredWhenRemoveE1AndE2.end())) {
-                        e->selected = true;
-                        e1->selected = false;
-                        e2->selected = false;
-                        foundImprovement = true;
-
-                        for (auto &circle : e->circles) {
-                            circle->covered++;
-                        }
-
-                        for (auto &circle : e1->circles) {
-                            circle->covered--;
-                        }
-
-                        for (auto &circle : e2->circles) {
-                            circle->covered--;
-                        }
-
-                        solution.erase(solution.begin() + j);
-                        solution.erase(solution.begin() + i);
-                        solution.insert(solution.begin() + i, e);
-
-                        break;
-                    }
-                }
-            }
-        }
+        foundImprovement =
+            removeOneEdgeForOneEdge(instance, solution) || foundImprovement;
     }
 
     for (auto &edges : solution) {

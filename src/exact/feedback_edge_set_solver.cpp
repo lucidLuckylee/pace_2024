@@ -172,6 +172,10 @@ void FeedbackEdgeSetSolver::addCycleMatrixElements(
             int v = new_circle[(i + 1) % new_circle.size()];
             auto &e = instance.edges[u][v];
 
+            if (e->weight >= FIXED / 2) {
+                continue;
+            }
+
             circle.edges.emplace_back(e);
         }
 

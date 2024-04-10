@@ -25,10 +25,14 @@ def check_if_solution_is_valid(graph, solution):
                     m -= 1
                 elif c > 0:
                     edges = line.split(" ")
-                    for i in range(len(line), 0, 2):
+                    if edges[-1] == "\n":
+                        edges.pop()
+                    circles.append([])
+                    for i in range(0, len(edges), 2):
                         u = int(edges[i])
                         v = int(edges[i + 1])
-                        circles.append((u, v))
+                        circles[-1].append((u, v))
+                    c -= 1
 
     sol = set()
     with open(solution, 'r') as solution_file:

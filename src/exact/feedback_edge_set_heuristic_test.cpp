@@ -42,6 +42,8 @@ int main() {
                 for (int i = 0; i < numbers.size(); i += 2) {
                     int u = numbers[i];
                     int v = numbers[i + 1];
+                    if (weights[u][v]->weight >= FIXED / 2)
+                        continue;
                     circle->edges.emplace_back(weights[u][v]);
                 }
                 circle->permuteEdges();
@@ -71,6 +73,8 @@ int main() {
         }
     }
 
+    /*FeedbackEdgeSetSolver solver;
+    solver.solveFeedbackEdgeSet(instance);*/
     approximateFeedbackEdgeSet(instance);
 
     std::cout << "#Size: " << instance.ub << std::endl;
