@@ -77,9 +77,20 @@ add_executable(
         src/lb/lb_solver.cpp
 )
 
+# Data Reduction stand-alone target
+add_executable(data_reduction
+        src/data_reduction/main.cpp
+        src/heuristic_solver/greedy_insert_solver.cpp
+        src/heuristic_solver/greedy_insert_solver.h
+)
+target_link_libraries(data_reduction PaceGraph)
+
+# Crossing matrix stand-alone target
 add_executable(
         crossing_matrix
         src/crossing_matrix/main.cpp
+        src/heuristic_solver/greedy_insert_solver.cpp
+        src/heuristic_solver/greedy_insert_solver.h
         ${HEURISTIC_FILES}
 )
 target_link_libraries(lb_solver PaceGraph)
@@ -107,13 +118,6 @@ if (ENABLE_ILP_SOLVER)
     target_link_libraries(ilp_solver ortools::ortools)
 endif ()
 
-# Data Reduction stand-alone target
-add_executable(data_reduction
-        src/data_reduction/main.cpp
-        src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.h
-)
-target_link_libraries(data_reduction PaceGraph)
 
 # Test using doctest framework
 option(ENABLE_TEST "Enable Test Build" OFF)

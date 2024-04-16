@@ -8,6 +8,7 @@
 #include <vector>
 
 #define FIXED 1000000
+//#define FIXED 10000
 #define MAX_MATRIX_SIZE 20000
 
 class PaceGraph;
@@ -37,6 +38,7 @@ class CrossingMatrix {
     void remove_free_vertices(std::vector<int> &vertices_to_remove);
     void clean();
     void print();
+    void print_averaged();
 };
 
 #endif // PACE2024_CROSSING_MATRIX_HPP

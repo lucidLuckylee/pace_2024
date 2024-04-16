@@ -9,7 +9,7 @@
 
 bool CrossingMatrix::set_a_lt_b(int a, int b) {
 
-    if (lt(a, b)) {
+    if (lt(a, b) || a == b) {
         return false;
     }
 
@@ -21,6 +21,9 @@ bool CrossingMatrix::set_a_lt_b(int a, int b) {
 }
 
 void CrossingMatrix::unset_a_lt_b(int a, int b) {
+    if (a == b) {
+        return;
+    }
     matrix[b][a] -= FIXED;
     matrix_diff[b][a] -= FIXED;
     matrix_diff[a][b] += FIXED;
@@ -124,6 +127,40 @@ void CrossingMatrix::print() {
     for (int i = 0; i < matrix.size(); i++) {
         for (int j = 0; j < matrix.size(); j++) {
             std::cout << matrix[i][j] << ", ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void CrossingMatrix::print_averaged() {
+    int rows = matrix.size();
+    int cols = matrix.size();
+    int desired_size = 10000;
+    if (desired_size > matrix.size()) {
+        for (int i = 0; i < matrix.size(); i++) {
+            for (int j = 0; j < matrix.size(); j++) {
+                std::cout << matrix[i][j] << ",";
+            }
+            std::cout << std::endl;
+        }
+        return;
+    }
+    int step = rows / (desired_size - 1);
+
+    for (int i = 0; i < rows; i += step) {
+        std::vector<int> row;
+        for (int j = 0; j < cols; j += step) {
+            int sum = 0;
+            int count = 0;
+            for (int x = i; x < std::min(i + step, rows); ++x) {
+                for (int y = j; y < std::min(j + step, cols); ++y) {
+                    sum += matrix[x][y];
+                    ++count;
+                }
+            }
+            // Calculate average value in the current step
+            int avg = sum / count;
+            std::cout << avg << ",";
         }
         std::cout << std::endl;
     }
