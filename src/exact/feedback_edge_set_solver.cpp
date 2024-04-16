@@ -115,7 +115,8 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
         return;
     }
 
-    if (k + lbFeedbackEdgeSet(instance, cycleSearchStart) >= instance.ub) {
+    if (k + lbFeedbackEdgeSet(instance, cycleSearchStart, false) >=
+        instance.ub) {
         return;
     }
 
@@ -143,7 +144,7 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     long ub = instance.ub;
     std::cerr << "UB: " << ub;
     findGoodCircleOrderForLB(instance);
-    std::cerr << " LB: " << lbFeedbackEdgeSet(instance, 0);
+    std::cerr << " LB: " << lbFeedbackEdgeSet(instance, 0, false);
     solveFeedbackEdgeSet(instance, 0, 0);
     std::cerr << " Exact: " << instance.ub
               << " Global UB: " << instance.globalUB
@@ -214,7 +215,8 @@ FeedbackEdgeSetSolver::approximateFeedbackEdgeSetFromSolution(
 }
 
 long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                                              int cycleSearchStart) {
+                                              int cycleSearchStart,
+                                              bool useLocalSearch) {
     for (auto &e : instance.usedEdges) {
         if (!e->selected) {
             e->potential = e->weight;
@@ -227,16 +229,118 @@ long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
 
         if (c->covered == 0) {
             int min = c->edges[0]->potential;
+
             for (auto &e : c->edges) {
                 if (e->potential < min) {
                     min = e->potential;
                 }
             }
 
+            if (min == 0) {
+                continue;
+            }
+
             lb += min;
             for (auto &e : c->edges) {
                 e->potential -= min;
             }
+
+            c->usedPotential = min;
+        }
+    }
+
+    if (!useLocalSearch) {
+        return lb;
+    }
+
+    for (int i = instance.circles.size() - 1; i >= cycleSearchStart; i--) {
+        auto cycleToRemove = instance.circles[i];
+
+        if (cycleToRemove->covered > 0 || cycleToRemove->usedPotential == 0) {
+            continue;
+        }
+
+        long lbChange = 0;
+
+        std::vector<std::tuple<std::shared_ptr<Edge>, int>> edgeChanges;
+        std::vector<std::tuple<std::shared_ptr<Circle>, int>> circleChanges;
+        std::vector<std::shared_ptr<Edge>> edgesWithNewPotential;
+
+        for (auto &e : cycleToRemove->edges) {
+
+            if (e->selected) {
+                continue;
+            }
+
+            edgesWithNewPotential.emplace_back(e);
+            e->potential += cycleToRemove->usedPotential;
+            edgeChanges.emplace_back(e, -cycleToRemove->usedPotential);
+        }
+
+        lbChange -= cycleToRemove->usedPotential;
+
+        std::shuffle(
+            edgesWithNewPotential.begin(), edgesWithNewPotential.end(),
+            std::default_random_engine(
+                std::chrono::system_clock::now().time_since_epoch().count()));
+
+        for (auto &e : edgesWithNewPotential) {
+
+            for (auto &c : e->circles) {
+                if (c == cycleToRemove || c->covered > 0) {
+                    continue;
+                }
+
+                if (c->usedPotential ==
+                    e->potential - cycleToRemove->usedPotential) {
+                    int min = c->edges[0]->potential;
+                    for (auto &e : c->edges) {
+                        if (e->potential < min) {
+                            min = e->potential;
+                        }
+                    }
+
+                    if (min == 0) {
+                        continue;
+                    }
+
+                    lbChange += min;
+                    for (auto &e : c->edges) {
+                        e->potential -= min;
+                        edgeChanges.emplace_back(e, min);
+                    }
+
+                    c->usedPotential += min;
+                    circleChanges.emplace_back(c, -min);
+                }
+            }
+        }
+
+        int min = cycleToRemove->edges[0]->potential;
+        for (auto &e : cycleToRemove->edges) {
+            if (e->potential < min) {
+                min = e->potential;
+            }
+        }
+        lbChange += min;
+
+        if (lbChange <= 0) {
+            for (auto &e : edgeChanges) {
+                std::get<0>(e)->potential += std::get<1>(e);
+            }
+
+            for (auto &c : circleChanges) {
+                std::get<0>(c)->usedPotential += std::get<1>(c);
+            }
+        } else {
+            if (min > 0) {
+                for (auto &e : cycleToRemove->edges) {
+                    e->potential -= min;
+                }
+            }
+            lb += lbChange;
+
+            cycleToRemove->usedPotential = min;
         }
     }
 
@@ -245,7 +349,7 @@ long FeedbackEdgeSetSolver::lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
 
 void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
     FeedbackEdgeInstance &instance) {
-    long bestLB = lbFeedbackEdgeSet(instance, 0);
+    long bestLB = lbFeedbackEdgeSet(instance, 0, false);
     std::vector<std::shared_ptr<Circle>> bestCircles = instance.circles;
     for (int i = 0; i < 1000; i++) {
 
@@ -254,7 +358,7 @@ void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
         std::shuffle(instance.circles.begin(), instance.circles.end(),
                      std::default_random_engine(seed));
 
-        long lb = lbFeedbackEdgeSet(instance, 0);
+        long lb = lbFeedbackEdgeSet(instance, 0, false);
 
         if (lb > bestLB) {
             bestLB = lb;
@@ -272,7 +376,7 @@ void FeedbackEdgeSetSolver::findGoodCircleOrderForLB(
             for (int j = i + 1;
                  j < std::min(i + 20, (int)instance.circles.size()); j++) {
                 std::swap(instance.circles[i], instance.circles[j]);
-                long lb = lbFeedbackEdgeSet(instance, 0);
+                long lb = lbFeedbackEdgeSet(instance, 0, false);
                 if (lb > bestLB) {
                     foundImprovement = true;
                     bestLB = lb;

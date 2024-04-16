@@ -9,6 +9,7 @@ class Edge;
 class Circle {
   public:
     int covered = 0;
+    int usedPotential = 0;
     std::vector<std::shared_ptr<Edge>> edges;
 
     Circle() = default;
@@ -86,9 +87,6 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
         DirectedGraph &graph,
         std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order);
 
-    long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                           int cycleSearchStart);
-
     void findGoodCircleOrderForLB(FeedbackEdgeInstance &instance);
 
   protected:
@@ -96,6 +94,9 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
 
   public:
     void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+
+    long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance, int cycleSearchStart,
+                           bool useLocalSearch);
 
     explicit FeedbackEdgeSetSolver(
         std::chrono::milliseconds limit = std::chrono::milliseconds::max())
