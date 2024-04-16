@@ -10,8 +10,8 @@
 #include "../pace_graph/order.hpp"
 
 Order GeneticAlgoSolver::solve(PaceGraph &graph) {
-    std::vector<std::vector<int>> pre_computed_orders;
-    return solveWithParameters(graph, 100, 50, pre_computed_orders);
+    std::vector<std::vector<int>> precomputed_orders;
+    return solveWithParameters(graph, 2, 2, precomputed_orders);
 }
 
 Order GeneticAlgoSolver::solveWithParameters(
@@ -21,7 +21,6 @@ Order GeneticAlgoSolver::solveWithParameters(
     // create a start population
     std::vector<std::vector<int>> population =
         createPopulationRandom(graph, population_size, precomputed_orders);
-
     // create new generations
     for (int i = 0; i < iterations; ++i) {
 
@@ -35,7 +34,8 @@ Order GeneticAlgoSolver::solveWithParameters(
                 crossover(old_population[0], old_population[1]);
             old_population.erase(old_population.cbegin());
             old_population.erase(old_population.cbegin());
-
+            
+            // TODO 2nd iteration fails here
             for (std::vector<int> &child : children) {
                 // here would be the right place for mutation
                 population.push_back(child);
@@ -61,9 +61,9 @@ Order GeneticAlgoSolver::solveWithParameters(
 
 std::vector<std::vector<int>>
 createPopulationRandom(PaceGraph &graph, int populationSize,
-                       std::vector<std::vector<int>> &pre_computed_orders) {
+                       std::vector<std::vector<int>> &precomputed_orders) {
     std::vector<std::vector<int>> population;
-    for (const std::vector<int> &order : pre_computed_orders) {
+    for (const std::vector<int> &order : precomputed_orders) {
         population.push_back(order);
     }
 
