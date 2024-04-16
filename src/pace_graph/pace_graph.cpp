@@ -100,6 +100,42 @@ std::string PaceGraph::to_gr() {
     return result.str();
 }
 
+std::string PaceGraph::split_graphs_to_gr(
+    const std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
+    const std::vector<int> &isolated_nodes,
+    const int original_size_fixed) {
+    std::ostringstream result;
+
+    // Sum up size_fixed and size_free
+    unsigned int size_free = isolated_nodes.size();
+    unsigned int total_num_edges = 0;
+    for (size_t i = 0; i < subgraphs.size(); i++) {
+        auto &subgraph = subgraphs[i];
+        size_free += subgraph->size_free;
+        unsigned int num_edges = 0;
+
+        for (const auto &neighbors : subgraph->neighbors_fixed) {
+            num_edges += neighbors.size();
+        }
+        total_num_edges += num_edges;
+    }
+
+    result << "p ocr " << original_size_fixed << " " << size_free << " "
+           << total_num_edges << "\n";
+
+    for (size_t i = 0; i < subgraphs.size(); i++) {
+        auto &subgraph = subgraphs[i];
+        for (size_t i = 0; i < subgraph->size_fixed; i++) {
+            for (const auto &neighbor : subgraph->neighbors_fixed[i]) {
+                result << subgraph->fixed_real_names[i] << " "
+                       << subgraph->free_real_names[neighbor] << "\n";
+            }
+        }
+    }
+
+    return result.str();
+}
+
 std::string PaceGraph::print_neighbors_fixed() {
     std::ostringstream result;
 
@@ -130,7 +166,8 @@ void PaceGraph::remove_free_vertices(std::vector<DeleteInfo> vertices) {
 
     std::vector<int> vertices_to_remove;
     for (const DeleteInfo delete_info : vertices) {
-        removed_vertices.emplace(free_real_names[delete_info.v], delete_info.position);
+        removed_vertices.emplace(free_real_names[delete_info.v],
+                                 delete_info.position);
         costs += delete_info.cost;
         vertices_to_remove.push_back(delete_info.v);
     }
