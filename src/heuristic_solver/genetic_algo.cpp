@@ -15,15 +15,15 @@ Order GeneticAlgoSolver::solve(PaceGraph &graph) {
 }
 
 Order GeneticAlgoSolver::solveWithParameters(
-    PaceGraph &graph, int itterations, int populationSize,
-    std::vector<std::vector<int>> &pre_computed_orders) {
+    PaceGraph &graph, int iterations, int population_size,
+    std::vector<std::vector<int>> &precomputed_orders) {
 
     // create a start population
     std::vector<std::vector<int>> population =
-        createPopulationRandom(graph, populationSize, pre_computed_orders);
+        createPopulationRandom(graph, population_size, precomputed_orders);
 
     // create new generations
-    for (int i = 0; i < itterations; ++i) {
+    for (int i = 0; i < iterations; ++i) {
 
         // crossover
         std::vector<std::vector<int>> old_population = population;
@@ -43,7 +43,7 @@ Order GeneticAlgoSolver::solveWithParameters(
         }
 
         // selection
-        population = selection(graph, populationSize, population);
+        population = selection(graph, population_size, population);
     }
 
     // find best order

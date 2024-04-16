@@ -21,7 +21,7 @@ std::vector<int> createRandomOrder(int number_of_free_vertices);
 
 std::vector<std::vector<int>>
 selection(PaceGraph &graph, int populationSize,
-          std::vector<std::vector<int>> population);
+          std::vector<std::vector<int>> &population);
 
 std::vector<std::vector<int>> crossover(std::vector<int> &parent1,
                                         std::vector<int> &parent2);
