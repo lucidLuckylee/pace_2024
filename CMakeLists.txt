@@ -39,7 +39,9 @@ set(HEURISTIC_FILES
         src/heuristic_solver/heuristic_solver.cpp
         src/heuristic_solver/heuristic.hpp
         src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.h
+        src/heuristic_solver/greedy_insert_solver.hpp
+        src/heuristic_solver/genetic_algo.cpp
+        src/heuristic_solver/genetic_algo.hpp
 )
 
 add_executable(
@@ -98,7 +100,7 @@ endif ()
 add_executable(data_reduction
         src/data_reduction/main.cpp
         src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.h
+        src/heuristic_solver/greedy_insert_solver.hpp
 )
 target_link_libraries(data_reduction PaceGraph)
 
