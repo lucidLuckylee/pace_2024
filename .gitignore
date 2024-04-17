@@ -34,6 +34,9 @@
 # Build folder
 build
 build-debug
+
+data
+
 # Helper script to compile and run
 run.sh
 
@@ -43,3 +46,6 @@ cmake-build-release
 
 output.txt
 venv
+
+.ipynb_checkpoints
+.cache
