@@ -5,6 +5,9 @@
 #include "feedback_edge_set_heuristic.hpp"
 #include <filesystem>
 #include <fstream>
+#ifdef USE_ILP_TO_SOLVE_FES
+#include "feedback_edge_set_ilp.hpp"
+#endif
 
 void Circle::permuteEdges() {
     if (!edges.empty()) {
@@ -37,8 +40,6 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
     FeedbackEdgeInstance instance(weightedDirectedGraph, goodOrder,
                                   crossings - lb);
 
-    solveFeedbackEdgeSet(instance);
-
     auto fesInit = approximateFeedbackEdgeSetFromSolution(
         weightedDirectedGraph, instance.edges, goodOrder);
     addCycleMatrixElements(weightedDirectedGraph, fesInit, instance);
@@ -46,7 +47,11 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
     int iter = 0;
     while (true) {
         iter++;
+#ifdef USE_ILP_TO_SOLVE_FES
+        solveFeedbackEdgeSetILP(instance);
+#else
         solveFeedbackEdgeSet(instance);
+#endif
 
         if (instance.ub >= instance.globalUB) {
             std::cerr << "# Branches: " << branches << std::endl;

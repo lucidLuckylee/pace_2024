@@ -11,6 +11,7 @@ class Circle {
     int covered = 0;
     int usedPotential = 0;
     std::vector<std::shared_ptr<Edge>> edges;
+    void *ilpConstraint = nullptr;
 
     Circle() = default;
 
@@ -24,6 +25,7 @@ class Edge {
     bool selected = false;
     int numberOfCircles = 0;
     int potential = 0;
+    void *ilpVar = nullptr;
 
     Edge(int start, int end, int weight)
         : start(start), end(end), weight(weight) {}
@@ -46,6 +48,7 @@ class FeedbackEdgeInstance {
 
     long globalUB = 0;
     Order globalUBOrder;
+    void *ilpModel = nullptr;
 
     explicit FeedbackEdgeInstance(
         std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
