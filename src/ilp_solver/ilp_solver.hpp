@@ -13,10 +13,11 @@ class ILPSolver
                                 operations_research::MPVariable *,
                                 operations_research::MPObjective *,
                                 operations_research::MPSolver::ResultStatus> {
+  private:
+    const std::string solver_name = "SCIP";
 
   protected:
     operations_research::MPSolver *createModel() override {
-        std::string solver_name = "GUROBI";
         return operations_research::MPSolver::CreateSolver(solver_name);
     }
 
@@ -79,8 +80,10 @@ class ILPSolver
     void setThreadLimit(operations_research::MPSolver *&model,
                         int limit) override {
         model->SetNumThreads(limit);
-        model->SetSolverSpecificParametersAsString("Threads " +
-                                                   std::to_string(limit));
+        if (solver_name == "GUROBI") {
+            model->SetSolverSpecificParametersAsString("Threads " +
+                                                       std::to_string(limit));
+        }
     }
 
   public:

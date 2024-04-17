@@ -13,7 +13,8 @@ struct DeleteInfo {
     int position;
     long cost;
 
-    DeleteInfo(int v, int position, long cost) : v(v), position(position), cost(cost) {};
+    DeleteInfo(int v, int position, long cost)
+        : v(v), position(position), cost(cost){};
 };
 
 class PaceGraph {
@@ -99,6 +100,10 @@ class PaceGraph {
 
     std::tuple<std::vector<std::unique_ptr<PaceGraph>>, std::vector<int>>
     splitGraphs();
+    static std::string
+    split_graphs_to_gr(const std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
+                       const std::vector<int> &isolated_nodes,
+                       const int original_size_fixed);
 
     std::tuple<int, int> calculatingCrossingNumber(int u, int v);
 
