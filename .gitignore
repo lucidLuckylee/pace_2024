@@ -48,6 +48,6 @@ output.txt
 venv
 heuristic_solver.tgz
 
-*/.ipynb_checkpoints/
+.ipynb_checkpoints
 data/feedback_edge_set/
 .cache

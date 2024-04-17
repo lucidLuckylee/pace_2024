@@ -2,7 +2,7 @@
 #include <unordered_set>
 
 #include "../pace_graph/order.hpp"
-#include "greedy_insert_solver.h"
+#include "greedy_insert_solver.hpp"
 
 int findBestInsertPosition(PaceGraph &graph, std::vector<int> &current_order,
                            int random_element) {

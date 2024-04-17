@@ -39,7 +39,7 @@ set(HEURISTIC_FILES
         src/heuristic_solver/heuristic_solver.cpp
         src/heuristic_solver/heuristic.hpp
         src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.h
+        src/heuristic_solver/greedy_insert_solver.hpp
 )
 
 add_executable(
@@ -81,7 +81,7 @@ add_executable(
 add_executable(data_reduction
         src/data_reduction/main.cpp
         src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.h
+        src/heuristic_solver/greedy_insert_solver.hpp
 )
 target_link_libraries(data_reduction PaceGraph)
 
@@ -90,7 +90,7 @@ add_executable(
         crossing_matrix
         src/crossing_matrix/main.cpp
         src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.h
+        src/heuristic_solver/greedy_insert_solver.hpp
         ${HEURISTIC_FILES}
 )
 target_link_libraries(lb_solver PaceGraph)
