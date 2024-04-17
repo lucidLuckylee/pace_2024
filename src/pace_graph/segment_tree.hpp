@@ -1,7 +1,7 @@
 #ifndef PACE2024_SEGMENT_TREE_HPP
 #define PACE2024_SEGMENT_TREE_HPP
 
-#include <bits/stdc++.h>
+#include <vector>
 
 /**
  * SegmentTree class implements a segment tree with lazy propagation.

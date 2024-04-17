@@ -49,13 +49,14 @@ def run_command_with_limit(cmd, input_path, output_path, timeout, mem_limit_gb=N
     cmd = cmd.split(" ")
     pace_graph_file = open(input_path, 'r')
     output_file = open(output_path, 'w')
+    error_file = open("error.txt", 'w')
 
     try:
         process = subprocess.Popen(
             cmd,
             stdin=pace_graph_file,
             stdout=output_file,
-            stderr=subprocess.PIPE,
+            stderr=error_file,
             preexec_fn=limit_virtual_memory(mem_limit_gb)
         )
 
@@ -70,7 +71,8 @@ def run_command_with_limit(cmd, input_path, output_path, timeout, mem_limit_gb=N
             return_code = process.wait()
             status = Status.TIMEOUT
         end_time = time.time()
-        stderr = process.stderr.read().decode('utf-8')
+        with open("error.txt", 'r') as f:
+            stderr = f.read()
 
     except MemoryError as e:
         end_time = time.time()
@@ -149,19 +151,24 @@ def clean_output(output_path):
     iterations = ""
     with open(output_path, 'w') as output_file:
         for line in lines:
-            match = re.search(r"#\s*Iterations\s*:\s*(\d+)", line)
-            if match:
-                iterations = str(match.group(1))
-                continue
+
             line = line.split("#")[0].strip()
             if len(line) == 0:
                 continue
-
-            if "Set parameter Username" in line or "Academic license - for non-commercial use only -" in line:
+            if "Set parameter Username" in line or "Academic license - for non-commercial use only -" in line or "Set parameter Threads to value" in line:
                 continue
 
             output_file.write(line)
             output_file.write("\n")
+    return iterations
+
+
+def read_iterations(std_error):
+    match = re.search(r"#\s*Iterations\s*:\s*(\d+)", std_error)
+    iterations = ""
+    if match:
+        iterations = str(match.group(1))
+
     return iterations
 
 
@@ -221,7 +228,8 @@ def main():
                     else:
                         print(path, return_code, time_delta, status.value, stdout, sep=",")
                 else:
-                    iterations = clean_output(SOLUTION_PATH)
+                    clean_output(SOLUTION_PATH)
+                    iterations = read_iterations(stderr)
                     if args.lb:
                         crossing = load_lb_solution(SOLUTION_PATH)
                     else:

@@ -9,7 +9,8 @@
 
 class LBSolver : public Solver<long> {
   protected:
-    void finish(PaceGraph &graph, std::vector<PaceGraph> &subgraphs,
+    void finish(PaceGraph &graph,
+                std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
                 std::vector<long> &results,
                 std::vector<int> &isolated_nodes) override;
     long run(PaceGraph &graph) override;

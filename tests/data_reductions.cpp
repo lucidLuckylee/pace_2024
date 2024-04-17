@@ -1,6 +1,6 @@
-#include <sstream>
+
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../src/pace_graph/order.hpp"
+#include "../src/data_reduction/data_reduction_rules.hpp"
 #include "../src/pace_graph/pace_graph.hpp"
 #include "doctest.h"
 
@@ -20,25 +20,24 @@ TEST_CASE("RR01 Simple") {
     }
 
     graph.init_crossing_matrix_if_necessary();
-    Order order(graph.size_free);
-    bool applied = order.rr1_rr2(graph);
+    bool applied = rr1(graph);
     // 4 < 6
-    CHECK(order.partial_order.lt(0, 2));
+    CHECK(graph.crossing.lt(0, 2));
     // 5 < 6
-    CHECK(order.partial_order.lt(1, 2));
+    CHECK(graph.crossing.lt(1, 2));
     // 5 < 4
-    CHECK(order.partial_order.lt(1, 0));
+    CHECK(graph.crossing.lt(1, 0));
 
     CHECK(applied == true);
 
-    applied = order.rr1_rr2(graph);
+    applied = rr1(graph);
     // Previous partial_order should still exist
     // 4 < 6
-    CHECK(order.partial_order.lt(0, 2));
+    CHECK(graph.crossing.lt(0, 2));
     // 5 < 6
-    CHECK(order.partial_order.lt(1, 2));
+    CHECK(graph.crossing.lt(1, 2));
     // 5 < 4
-    CHECK(order.partial_order.lt(1, 0));
+    CHECK(graph.crossing.lt(1, 0));
     CHECK(applied == false);
 }
 
@@ -60,20 +59,19 @@ TEST_CASE("RR02 Simple") {
     PaceGraph graph = PaceGraph::from_gr(gr_stream);
 
     graph.init_crossing_matrix_if_necessary();
-    Order order(graph.size_free);
-    bool applied = order.rr1_rr2(graph);
-// 4 < 5
-CHECK(order.partial_order.lt(0, 1));
+    bool applied = rr2(graph);
+    // 4 < 5
+    CHECK(graph.crossing.lt(0, 1));
     CHECK(applied == true);
 
-    applied = order.rr1_rr2(graph);
+    applied = rr2(graph);
     // Previous partial_order should still exist
     // 4 < 5
-    CHECK(order.partial_order.lt(0, 1));
+    CHECK(graph.crossing.lt(0, 1));
     // 4 < 7
-    CHECK(order.partial_order.lt(0, 3));
+    CHECK(graph.crossing.lt(0, 3));
     // 5 < 7
-    CHECK(order.partial_order.lt(1, 3));
+    CHECK(graph.crossing.lt(1, 3));
     CHECK(applied == false);
 }
 
@@ -95,29 +93,31 @@ TEST_CASE("RRLO1 Simple") {
     PaceGraph graph = PaceGraph::from_gr(gr_stream);
 
     graph.init_crossing_matrix_if_necessary();
-    Order order(graph.size_free);
-    bool applied = order.rr1_rr2(graph);
+    rr1(graph);
+    rr2(graph);
     // 4 < 5
-    CHECK(order.partial_order.lt(0, 1));
+    CHECK(graph.crossing.lt(0, 1));
     // 4 < 7
-    CHECK(order.partial_order.lt(0, 3));
+    CHECK(graph.crossing.lt(0, 3));
     // 5 < 7
-    CHECK(order.partial_order.lt(1, 3));
+    CHECK(graph.crossing.lt(1, 3));
     // 4 < 8
-    CHECK(order.partial_order.lt(0, 4));
+    CHECK(graph.crossing.lt(0, 4));
     // 5 < 8
-    CHECK(order.partial_order.lt(1, 4));
+    CHECK(graph.crossing.lt(1, 4));
     // 6 < 8
-    CHECK(order.partial_order.lt(2, 4));
+    CHECK(graph.crossing.lt(2, 4));
     // 7 < 8
-    CHECK(order.partial_order.lt(3, 4));
-    CHECK(applied == true);
+    CHECK(graph.crossing.lt(3, 4));
 
     int old_size_free = graph.size_free;
-    applied = order.rrlo1_rrlo2(graph);
+    bool applied = rrlo1(graph);
     // Vertex 8 can be removed
     CHECK(applied == true);
     CHECK(old_size_free == graph.size_free + 1);
+    // No more deletions possible
+    applied = rrlo1(graph);
+    CHECK(applied == false);
 }
 
 TEST_CASE("RRLO2 Simple") {
@@ -142,30 +142,30 @@ TEST_CASE("RRLO2 Simple") {
     PaceGraph graph = PaceGraph::from_gr(gr_stream);
 
     graph.init_crossing_matrix_if_necessary();
-    Order order(graph.size_free);
-    bool applied = order.rr1_rr2(graph);
-    // 4 < 5
-    CHECK(order.partial_order.lt(0, 1));
-    // 4 < 7
-    CHECK(order.partial_order.lt(0, 3));
-    // 5 < 7
-    CHECK(order.partial_order.lt(1, 3));
-    // 4 < 8
-    CHECK(order.partial_order.lt(0, 4));
-    // 5 < 8
-    CHECK(order.partial_order.lt(1, 4));
-    // 6 < 8
-    CHECK(order.partial_order.lt(2, 4));
-    // 7 < 8
-    CHECK(order.partial_order.lt(3, 4));
-    CHECK(applied == true);
+    while (rr1(graph)) {
+    };
+    while (rr2(graph)) {
+    };
 
-    int old_size_free = graph.size_free;
-    applied = order.rrlo1_rrlo2(graph);
-    // Vertex 8 can be removed
+    // 4 < 5
+    CHECK(graph.crossing.lt(0, 1));
+    // 4 < 7
+    CHECK(graph.crossing.lt(0, 3));
+    // 5 < 7
+    CHECK(graph.crossing.lt(1, 3));
+    // 4 < 8
+    CHECK(graph.crossing.lt(0, 4));
+    // 5 < 8
+    CHECK(graph.crossing.lt(1, 4));
+    // 6 < 8
+    CHECK(graph.crossing.lt(2, 4));
+    // 7 < 8
+    CHECK(graph.crossing.lt(3, 4));
+
+    bool applied = rrlo2(graph);
     CHECK(applied == true);
     // 11 < 10
-    CHECK(order.partial_order.lt(5, 4));
+    CHECK(graph.crossing.lt(5, 4));
 }
 
 TEST_CASE("Exhaustively Reduce") {
@@ -190,11 +190,13 @@ TEST_CASE("Exhaustively Reduce") {
 4 7
 4 8
 4 9)";
-    
+
     std::istringstream gr_stream(graph_gr);
     PaceGraph graph = PaceGraph::from_gr(gr_stream);
 
     graph.init_crossing_matrix_if_necessary();
-    Order order(graph.size_free);
-
+    apply_reduction_rules(graph);
+    CHECK(graph.to_gr().compare(
+              R"(p ocr 4 0 0
+)") == 0);
 }

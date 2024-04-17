@@ -7,8 +7,6 @@
 
 #include "../pace_graph/pace_graph.hpp"
 
-enum class SearchStrategyForConflicts { MATRIX, NEIGHBORS, BMI, BITMAP };
-
 class SimpleLBParameter {
   public:
     bool usePotentialMatrix = true;
@@ -18,8 +16,6 @@ class SimpleLBParameter {
     int maxNrOfConflicts = 10000000;
 
     int numberOfIterationsForConflictOrder = 100;
-    SearchStrategyForConflicts searchStrategyForConflicts =
-        SearchStrategyForConflicts::BITMAP;
 };
 
 long simpleLB(PaceGraph &graph, SimpleLBParameter &parameter);

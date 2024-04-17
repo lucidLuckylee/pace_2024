@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <random>
 
 /**
@@ -17,15 +18,15 @@ long sifting_node(PaceGraph &graph, Order &order,
     long bestCostChange = 0;
 
     long crossingOld = 0;
-    auto crossing_matrix_diff = graph.crossing_matrix_diff[v];
+    auto crossing_matrix_diff = graph.crossing.matrix_diff[v];
 
     int foundWithThisCost = 0;
-    for (int i = posOfV - 1; i >= 0 && crossingOld <= INF; i--) {
+    for (int i = posOfV - 1; i >= 0; i--) {
         int u = order.get_vertex(i);
 
         int crossingDiff = crossing_matrix_diff[u];
 
-        if (crossingDiff >= INF / 2) {
+        if (crossingDiff >= FIXED / 2) {
             break;
         }
 
@@ -56,11 +57,11 @@ long sifting_node(PaceGraph &graph, Order &order,
     }
 
     crossingOld = 0;
-    for (int i = posOfV + 1; i < graph.size_free && crossingOld <= INF; ++i) {
+    for (int i = posOfV + 1; i < graph.size_free; ++i) {
         int u = order.get_vertex(i);
 
         int crossingDiff = -crossing_matrix_diff[u];
-        if (crossingDiff >= INF / 2) {
+        if (crossingDiff >= FIXED / 2) {
             break;
         }
 
@@ -123,7 +124,7 @@ long sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
 
     long improvement = 0;
     for (int v = 0; v < graph.size_free; v++) {
-        improvement += sifting_node(graph, order, parameter, v);
+        improvement += sifting_node(graph, order, parameter, position_array[v]);
     }
     return improvement;
 }

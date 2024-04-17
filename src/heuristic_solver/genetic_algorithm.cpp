@@ -1,12 +1,14 @@
 #include "genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
 #include "local_search.hpp"
+#include <chrono>
 #include <iostream>
 
 Order GeneticHeuristic::solve(PaceGraph &graph) {
+    graph.init_crossing_matrix_if_necessary();
+
     SimpleLBParameter lbParameter;
     long lb = simpleLB(graph, lbParameter);
-    graph.init_crossing_matrix_if_necessary();
 
     Order bestOrder(graph.size_free);
     long bestCost = bestOrder.count_crossings(graph);
@@ -51,19 +53,19 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                     int u = newOrder.get_vertex(i);
                     int v = newOrder.get_vertex(i + 1);
 
-                    if (graph.crossing_matrix[v][u] >= INF) {
+                    if (graph.crossing.lt(u, v)) {
                         continue;
                     }
 
                     newOrder.swap_by_vertices(u, v);
 
                     // force node order to be different
-                    graph.fixNodeOrder(v, u);
+                    graph.crossing.set_a_lt_b(v, u);
                     local_search(graph, newOrder, localSearchParameter,
                                  [this, number_of_iterations]() {
                                      return has_time_left(number_of_iterations);
                                  });
-                    graph.unfixNodeOrder(v, u);
+                    graph.crossing.unset_a_lt_b(v, u);
 
                     newCost = newOrder.count_crossings(graph);
 
@@ -78,7 +80,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
         number_of_iterations++;
     }
 
-    std::cout << "# Iterations: " << number_of_iterations << std::endl;
+    std::cerr << "# Iterations: " << number_of_iterations << std::endl;
 
     return bestOrder;
 }
