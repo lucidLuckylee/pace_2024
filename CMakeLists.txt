@@ -14,8 +14,10 @@ add_library(PaceGraph src/pace_graph/pace_graph.cpp
         src/heuristic_solver/heuristic.hpp
         src/heuristic_solver/mean_position_heuristic.cpp
         src/heuristic_solver/mean_position_heuristic.hpp
-        src/pace_graph/crossing_matrix.cpp
-        src/pace_graph/crossing_matrix.hpp
+        #src/pace_graph/crossing_matrix.cpp
+        #src/pace_graph/crossing_matrix.hpp
+        src/pace_graph/bool_crossing_matrix.cpp
+        src/pace_graph/bool_crossing_matrix.hpp
         src/pace_graph/directed_graph.cpp
         src/pace_graph/directed_graph.hpp
         src/data_reduction/data_reduction_rules.cpp
@@ -89,9 +91,9 @@ target_link_libraries(data_reduction PaceGraph)
 add_executable(
         crossing_matrix
         src/crossing_matrix/main.cpp
-        src/heuristic_solver/greedy_insert_solver.cpp
-        src/heuristic_solver/greedy_insert_solver.hpp
-        ${HEURISTIC_FILES}
+        # src/heuristic_solver/greedy_insert_solver.cpp
+        # src/heuristic_solver/greedy_insert_solver.hpp
+        # ${HEURISTIC_FILES}
 )
 target_link_libraries(lb_solver PaceGraph)
 # Link the executable with the PaceGraph library

@@ -1,7 +1,7 @@
 #ifndef PACE_GRAPH_HPP
 #define PACE_GRAPH_HPP
 
-#include "crossing_matrix.hpp"
+#include "bool_crossing_matrix.hpp"
 #include <memory>
 #include <stack>
 #include <string>
@@ -54,7 +54,8 @@ class PaceGraph {
 
     std::vector<int> fixed_real_names;
     std::vector<int> free_real_names;
-
+    
+    // Saves the real name and position of a removed free vertex.
     std::stack<std::tuple<int, int>> removed_vertices;
 
     CrossingMatrix crossing;

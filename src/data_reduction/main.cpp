@@ -30,6 +30,5 @@ int main() {
     std::cout << PaceGraph::split_graphs_to_gr(splittedGraphs, isolated_nodes,
                                                graph.size_fixed)
               << std::endl;
-    // TODO Reconstruct correct order solution so we can check correctness
     return 0;
 }

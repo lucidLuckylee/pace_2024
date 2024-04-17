@@ -123,6 +123,8 @@ bool rrlo1(PaceGraph &graph) {
         }
     }
 
+    std::cout << "Compared all vertices" << std::endl;
+    std::cout << "Deleting " << vertices_to_delete.size() << " vertices now." << std::endl;
     if (vertices_to_delete.empty()) {
         return false;
     }
@@ -168,6 +170,7 @@ bool rrtransitive(PaceGraph &graph) {
 
     return applied;
 }
+
 void apply_reduction_rules(PaceGraph &graph) {
     if (!graph.init_crossing_matrix_if_necessary()) {
         return;
