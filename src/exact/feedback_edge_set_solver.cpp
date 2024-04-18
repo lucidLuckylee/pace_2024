@@ -208,7 +208,7 @@ FeedbackEdgeSetSolver::approximateFeedbackEdgeSetFromSolution(
 
     std::vector<std::shared_ptr<Edge>> feedbackEdgeSet;
     for (int i = 0; i < graph.neighbors.size(); i++) {
-        for (int j = 0; j < i - 1; j++) {
+        for (int j = 0; j < i; j++) {
             auto &edge = edges[order.get_vertex(i)][order.get_vertex(j)];
             if (edge->weight == 0) {
                 continue;
