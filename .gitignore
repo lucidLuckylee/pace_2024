@@ -34,6 +34,9 @@
 # Build folder
 build
 build-debug
+
+data
+
 # Helper script to compile and run
 run.sh
 
@@ -45,5 +48,6 @@ output.txt
 venv
 heuristic_solver.tgz
 
-*/.ipynb_checkpoints/
+.ipynb_checkpoints
 data/feedback_edge_set/
+.cache

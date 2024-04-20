@@ -1,5 +1,5 @@
 #include "../data_reduction/data_reduction_rules.hpp"
-#include "../heuristic_solver/greedy_insert_solver.h"
+#include "../heuristic_solver/greedy_insert_solver.hpp"
 #include "../pace_graph/pace_graph.hpp"
 #include <iostream>
 

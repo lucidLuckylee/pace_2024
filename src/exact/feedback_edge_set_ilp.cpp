@@ -6,9 +6,13 @@ void solveFeedbackEdgeSetILP(FeedbackEdgeInstance &instance) {
         std::string solverName = "SCIP";
         auto model = operations_research::MPSolver::CreateSolver(solverName);
         instance.ilpModel = model;
-        model->SetNumThreads(1);
         if (solverName == "GUROBI") {
             model->SetSolverSpecificParametersAsString("Threads 1");
+        } else {
+            const auto status = model->SetNumThreads(1);
+            if (status != absl::OkStatus()) {
+                std::cerr << "Failed to set number of threads" << std::endl;
+            }
         }
     }
 
