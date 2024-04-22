@@ -45,15 +45,31 @@ void CrossingMatrix::remove_free_vertices(
     std::vector<int> &vertices_to_remove) {
 
     std::sort(vertices_to_remove.begin(), vertices_to_remove.end());
+    std::cout << "Sorted vertices to remove" << std::endl;
+    for (int i = 0; i < vertices_to_remove.size(); ++i) {
+        std::cout << i << ", ";
+    }
 
     for (int i = vertices_to_remove.size() - 1; i >= 0; --i) {
         matrix.erase(matrix.begin() + vertices_to_remove[i]);
     }
-
-    for (int i = vertices_to_remove.size() - 1; i >= 0; --i) {
-        for (int j = 0; j < matrix.size(); ++j) {
-            matrix[j].erase(matrix[j].begin() + vertices_to_remove[i]);
+    
+    std::cout << "Removed all vertices_to_remove rows" << std::endl;
+        
+    for (int j = 0; j < matrix.size(); ++j) {
+        int backward_copy = 1;
+        int current_vertices_to_remove_index = 1;
+        for (int i = vertices_to_remove[0] + 1; i < matrix.size(); ++i) {
+            if (current_vertices_to_remove_index < vertices_to_remove.size() &&
+                vertices_to_remove[current_vertices_to_remove_index] == i) {
+                current_vertices_to_remove_index++;
+                backward_copy++;
+            } else {
+                matrix[j][i - backward_copy] = matrix[j][i];
+            }
         }
+        std::cout << "Updated matrix row "<< j  << std::endl;
+        matrix[j].resize(matrix[j].size() - vertices_to_remove.size());
     }
 }
 

@@ -173,10 +173,13 @@ void PaceGraph::remove_free_vertices(std::vector<DeleteInfo> vertices) {
     }
 
     std::sort(vertices_to_remove.begin(), vertices_to_remove.end());
+    std::cout << "Sorted deletion vertices." << std::endl;
 
     if (crossing.is_initialized()) {
         crossing.remove_free_vertices(vertices_to_remove);
     }
+
+    std::cout << "Remove crossing entries." << std::endl;
 
     // update vertices naming
     std::vector<int> mapping(size_free, -1);

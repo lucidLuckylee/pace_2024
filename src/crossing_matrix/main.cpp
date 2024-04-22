@@ -10,9 +10,11 @@ int main() {
     //Order upper_bound_order = upper_bound_solver.solve(graph);
     //graph.ub = upper_bound_order.count_crossings(graph);
     //apply_reduction_rules(graph);
-    //rrtransitive(graph);
     std::cout << "Matrix created" << std::endl;
+    rrtransitive(graph);
+    std::cout << "RRTransitive Done." << std::endl;
     rrlo1(graph);
+    std::cout << "RRLO1 Done." << std::endl;
     //rrlo2(graph);
     //graph.crossing.print();
     std::cout << "Done." << std::endl;
