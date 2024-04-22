@@ -50,10 +50,10 @@ class FeedbackEdgeInstance {
     Order globalUBOrder;
     void *ilpModel = nullptr;
 
-    explicit FeedbackEdgeInstance(
-        std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
-        std::vector<std::shared_ptr<Circle>> &circles, Order &globalUBOrder,
-        long globalUB)
+    explicit
+    FeedbackEdgeInstance(std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
+                         std::vector<std::shared_ptr<Circle>> &circles,
+                         Order &globalUBOrder, long globalUB)
         : edges(edges), circles(circles), globalUB(globalUB),
           globalUBOrder(globalUBOrder){};
 
@@ -77,6 +77,8 @@ class FeedbackEdgeInstance {
 class FeedbackEdgeSetSolver : public SolutionSolver {
   private:
     long branches;
+    std::chrono::milliseconds time_limit_left_for_heuristic =
+        std::chrono::milliseconds(10 * 1000);
 
     void
     addCycleMatrixElements(DirectedGraph &graph,

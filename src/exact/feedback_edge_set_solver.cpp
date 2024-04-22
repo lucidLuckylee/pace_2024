@@ -26,9 +26,24 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
         return Order(weightedDirectedGraph.topologicalOrder);
     }
 
+    std::chrono::steady_clock::time_point start =
+        std::chrono::steady_clock::now();
+
+    std::chrono::milliseconds time_for_heuristic =
+        std::chrono::milliseconds(static_cast<int>(
+            time_limit_left_for_heuristic.count() * percentage_for_this_part));
+    time_limit_left_for_heuristic -= time_for_heuristic;
+
     GeneticHeuristicParameter geneticHeuristicParameter;
-    GeneticHeuristic geneticHeuristic([](auto it) { return it <= 2000; },
-                                      geneticHeuristicParameter);
+    GeneticHeuristic geneticHeuristic(
+        [start, time_for_heuristic](auto _) {
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed =
+                std::chrono::duration_cast<std::chrono::milliseconds>(now -
+                                                                      start);
+            return elapsed < time_for_heuristic;
+        },
+        geneticHeuristicParameter);
 
     Order goodOrder = geneticHeuristic.solve(graph);
     long crossings = goodOrder.count_crossings(graph);

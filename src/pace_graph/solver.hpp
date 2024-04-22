@@ -21,6 +21,8 @@ template <typename T> class Solver {
     bool initUB;
 
   protected:
+    double percentage_for_this_part;
+
     virtual void finish(PaceGraph &graph,
                         std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
                         std::vector<T> &results,
@@ -117,10 +119,10 @@ template <typename T> class Solver {
                 sizeForAllUpcomingSegments += splittedGraphs[j]->size_free;
             }
 
-            double percentageForThisSegment =
+            percentage_for_this_part =
                 static_cast<double>(g->size_free) / sizeForAllUpcomingSegments;
 
-            double newTimeLimitMs = msLeft.count() * percentageForThisSegment;
+            double newTimeLimitMs = msLeft.count() * percentage_for_this_part;
 
             time_limit_for_part =
                 std::chrono::milliseconds(static_cast<int>(newTimeLimitMs));
