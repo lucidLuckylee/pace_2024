@@ -7,6 +7,8 @@
 #include "order.hpp"
 #include "pace_graph.hpp"
 #include <chrono>
+#include <csignal>
+#include <cstring>
 
 enum ReorderType { REORDER_NONE, REORDER_HEURISTIC, REORDER_FIXED_NODE_SET };
 
@@ -19,7 +21,8 @@ template <typename T> class Solver {
     std::chrono::milliseconds time_limit_for_part;
     ReorderType reorderNodes;
     bool initUB;
-
+    static inline volatile bool got_signal = false;
+ 
   protected:
     virtual void finish(PaceGraph &graph,
                         std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
@@ -28,13 +31,20 @@ template <typename T> class Solver {
     virtual T run(PaceGraph &graph) = 0;
 
   public:
+    static void term(int _) { got_signal = true; }
+
     Solver(std::chrono::milliseconds limit = std::chrono::milliseconds::max(),
            ReorderType reorderNodes = REORDER_NONE, bool initUB = true)
         : start_time(std::chrono::steady_clock::now()),
           start_time_for_part(std::chrono::steady_clock::now()),
           time_limit(limit),
           time_limit_for_part(std::chrono::milliseconds::zero()),
-          reorderNodes(reorderNodes), initUB(initUB) {}
+          reorderNodes(reorderNodes), initUB(initUB) {
+        struct sigaction action;
+        memset(&action, 0, sizeof(struct sigaction));
+        action.sa_handler = &Solver::term;
+        sigaction(SIGTERM, &action, NULL);
+    }
 
     void solve(PaceGraph &graph) {
         std::tuple<std::vector<std::unique_ptr<PaceGraph>>, std::vector<int>>
@@ -83,7 +93,7 @@ template <typename T> class Solver {
                         if (diff > std::chrono::milliseconds(5000)) {
                             return false;
                         }
-                        return it == 0;
+                        return it == 0 && this->has_time_left();
                     },
                     meanPositionParameter);
 
@@ -137,6 +147,7 @@ template <typename T> class Solver {
                 std::chrono::milliseconds(static_cast<int>(newTimeLimitMs));
 
             results.push_back(run(*g));
+            g->crossing.clean();
         }
 
         finish(graph, splittedGraphs, results, isolated_nodes);
@@ -150,7 +161,8 @@ template <typename T> class Solver {
 
     bool has_time_left() const {
         return std::chrono::steady_clock::now() - start_time_for_part <
-               time_limit_for_part;
+                   time_limit_for_part &&
+               !got_signal;
     }
 };
 
