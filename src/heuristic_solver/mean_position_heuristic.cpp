@@ -12,14 +12,16 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
     std::vector<double> nodeOffset = std::vector<double>(graph.size_free);
     std::vector<std::tuple<int, double>> average_position(graph.size_free);
     for (int i = 0; i < graph.size_free; ++i) {
-        if (meanPositionParameter.useJittering) {
+        if (meanPositionParameter.useJittering && iteration != 0) {
             nodeOffset[i] = dis(gen);
         } else {
             nodeOffset[i] = 0;
         }
     }
 
-    for (int _ = 0; _ < meanPositionParameter.jitterIterations; ++_) {
+    int jitterIterations =
+        iteration == 0 ? 1 : meanPositionParameter.jitterIterations;
+    for (int _ = 0; _ < jitterIterations; ++_) {
         std::vector<double> newNodeOffset = std::vector<double>(nodeOffset);
         for (int j = 0; j < graph.size_free; ++j) {
             newNodeOffset[j] += dis(gen) / 10;

@@ -12,7 +12,7 @@ class MeanPositionParameter {
   public:
     MeanTypeAlgo meanType = median;
     bool useJittering = true;
-    int jitterIterations = 10;
+    int jitterIterations = 3;
 };
 
 class MeanPositionSolver : Heuristic {
