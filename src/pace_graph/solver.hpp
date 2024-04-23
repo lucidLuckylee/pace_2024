@@ -47,9 +47,6 @@ template <typename T> class Solver {
         auto isolated_nodes = std::move(std::get<1>(val));
 
         std::vector<T> results;
-        MeanPositionParameter meanPositionParameter;
-        MeanPositionSolver meanPositionSolver(
-            [this](int it) { return it == 0; }, meanPositionParameter);
 
         // solve all nodes with <= 2 free nodes directly
         for (const auto &g : splittedGraphs) {
@@ -78,6 +75,20 @@ template <typename T> class Solver {
                 continue;
             }
             if (reorderNodes == REORDER_HEURISTIC || initUB) {
+
+                MeanPositionParameter meanPositionParameter;
+                auto start_time = std::chrono::steady_clock::now();
+                MeanPositionSolver meanPositionSolver(
+                    [this, start_time](int it) {
+                        auto current_time = std::chrono::steady_clock::now();
+                        auto diff = current_time - start_time;
+                        if (diff > std::chrono::milliseconds(5000)) {
+                            return false;
+                        }
+                        return it == 0;
+                    },
+                    meanPositionParameter);
+
                 auto order = meanPositionSolver.solve(*g);
                 long ub = order.count_crossings(*g);
 
@@ -162,7 +173,7 @@ class SolutionSolver : public Solver<Order> {
             auto &g = subgraphs[i];
             auto &sol = results[i];
 
-            crossings += sol.count_crossings(*g);
+            // crossings += sol.count_crossings(*g);
             crossings += g->cost_through_deleted_nodes;
             std::vector<int> sub_solution = sol.position_to_vertex;
 

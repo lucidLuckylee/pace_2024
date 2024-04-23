@@ -4,8 +4,8 @@
 #include <iostream>
 
 int main() {
-    PaceGraph graph = PaceGraph::from_gr(std::cin);
     HeuristicSolver solver;
+    PaceGraph graph = PaceGraph::from_gr(std::cin);
     solver.solve(graph);
     return 0;
 }

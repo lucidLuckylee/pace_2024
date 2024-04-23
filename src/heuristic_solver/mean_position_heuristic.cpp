@@ -89,6 +89,9 @@ void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
         foundSwap = false;
 
         for (int i = 0; i < graph.size_free - 1; ++i) {
+            if (!has_time_left(iteration)) {
+                break;
+            }
             int u = order.get_vertex(i);
             int v = order.get_vertex(i + 1);
 
@@ -114,6 +117,13 @@ Order MeanPositionSolver::solve(PaceGraph &graph) {
     while (has_time_left(iteration)) {
         Order order = jittering(graph, iteration);
         improveOrderWithSwapping(graph, order, iteration);
+
+        if (!has_time_left(iteration)) {
+            if (bestOrderCost == 1000000000000000000) {
+                return order;
+            }
+            break;
+        }
 
         long cost = order.count_crossings(graph);
         if (cost <= bestOrderCost) {
