@@ -141,19 +141,19 @@ endif ()
 # Test using doctest framework
 option(ENABLE_TEST "Enable Test Build" OFF)
 
-#if (ENABLE_TEST)
-enable_testing()
-set(TEST_FILES
-        tests/data_reductions.cpp
-        tests/pace_graph.cpp
-        tests/directed_graph.cpp
-        src/exact/feedback_edge_set_solver.cpp
-        src/exact/feedback_edge_set_solver.hpp
-        src/exact/feedback_edge_set_heuristic.cpp
-        src/exact/feedback_edge_set_heuristic.cpp
-        tests/fes_lb_test.cpp
-)
-add_executable(tests ${HEURISTIC_FILES} ${TEST_FILES} tests/doctest.h)
-target_link_libraries(tests PaceGraph)
-add_test(NAME tests COMMAND tests)
-#endif ()
+if (ENABLE_TEST)
+    enable_testing()
+    set(TEST_FILES
+            tests/data_reductions.cpp
+            tests/pace_graph.cpp
+            tests/directed_graph.cpp
+            src/exact/feedback_edge_set_solver.cpp
+            src/exact/feedback_edge_set_solver.hpp
+            src/exact/feedback_edge_set_heuristic.cpp
+            src/exact/feedback_edge_set_heuristic.cpp
+            tests/fes_lb_test.cpp
+    )
+    add_executable(tests ${HEURISTIC_FILES} ${TEST_FILES} tests/doctest.h)
+    target_link_libraries(tests PaceGraph)
+    add_test(NAME tests COMMAND tests)
+endif ()
