@@ -8,29 +8,23 @@ int findBestInsertPosition(PaceGraph &graph, std::vector<int> &current_order,
                            int random_element) {
     // find best position in existing order
     int best_position = 0;
-    int least_crossings = 0;
-    int number_of_crossing_left = 0;
-    int number_of_crossing_right = 0;
+    long least_crossings = 0;
+    long number_of_crossing_left = 0;
+    long number_of_crossing_right = 0;
 
-    for (int i = 0; i <= current_order.size(); ++i) {
-        if (i == 0) {
-            for (int v : current_order) {
-                number_of_crossing_right +=
-                    graph.crossing.matrix[random_element][v];
-            }
-            least_crossings = number_of_crossing_right;
-        } else {
-            number_of_crossing_left +=
-                graph.crossing.matrix[current_order[i - 1]][random_element];
-            number_of_crossing_right -=
-                graph.crossing.matrix[random_element][current_order[i - 1]];
+    for (int i = 1; i <= current_order.size(); ++i) {
 
-            if (number_of_crossing_right + number_of_crossing_left <
-                least_crossings) {
-                best_position = i;
-                least_crossings =
-                    number_of_crossing_right + number_of_crossing_left;
-            }
+        auto [left, right] = graph.calculatingCrossingNumber(
+            current_order[i - 1], random_element);
+
+        number_of_crossing_left += left;
+        number_of_crossing_right -= right;
+
+        if (number_of_crossing_right + number_of_crossing_left <
+            least_crossings) {
+            best_position = i;
+            least_crossings =
+                number_of_crossing_right + number_of_crossing_left;
         }
     }
     return best_position;
@@ -54,7 +48,7 @@ Order GreedyInsertSolver::solve(PaceGraph &graph) {
     // Generate a random index
 
     while (!vertices_not_inserted.empty()) {
-
+        std::cout << vertices_not_inserted.size() << std::endl;
         std::uniform_int_distribution<> dis(0,
                                             vertices_not_inserted.size() - 1);
 
