@@ -22,7 +22,7 @@ template <typename T> class Solver {
     ReorderType reorderNodes;
     bool initUB;
     static inline volatile bool got_signal = false;
- 
+
   protected:
     virtual void finish(PaceGraph &graph,
                         std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
@@ -82,18 +82,20 @@ template <typename T> class Solver {
                 results.push_back(run(*g));
                 continue;
             }
+
             if (reorderNodes == REORDER_HEURISTIC || initUB) {
 
                 MeanPositionParameter meanPositionParameter;
-                auto start_time = std::chrono::steady_clock::now();
+                auto st = std::chrono::steady_clock::now();
                 MeanPositionSolver meanPositionSolver(
-                    [this, start_time](int it) {
+                    [this, st](int it) {
                         auto current_time = std::chrono::steady_clock::now();
-                        auto diff = current_time - start_time;
+                        auto diff = current_time - st;
                         if (diff > std::chrono::milliseconds(5000)) {
                             return false;
                         }
-                        return it == 0 && this->has_time_left();
+
+                        return it == 0;
                     },
                     meanPositionParameter);
 
