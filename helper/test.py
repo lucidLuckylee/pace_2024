@@ -1,3 +1,4 @@
+import platform
 from enum import Enum, auto
 import os
 import re
@@ -50,8 +51,12 @@ def run_command_with_limit(cmd, input_path, output_path, timeout, mem_limit_gb=N
     pace_graph_file = open(input_path, 'r')
     output_file = open(output_path, 'w')
     error_file = open("error.txt", 'w')
+    mem = ""
 
     try:
+        if platform.system() == 'Linux':
+            cmd = ["/usr/bin/time", '-v'] + cmd
+            cmd = ["timeout", f"{timeout + 1}s"] + cmd
         process = subprocess.Popen(
             cmd,
             stdin=pace_graph_file,
@@ -73,6 +78,10 @@ def run_command_with_limit(cmd, input_path, output_path, timeout, mem_limit_gb=N
         end_time = time.time()
         with open("error.txt", 'r') as f:
             stderr = f.read()
+            memory_usage_search = re.search(r"Maximum resident set size \(kbytes\): (\d+)", stderr)
+            if memory_usage_search:
+                memory_usage_kb = int(memory_usage_search.group(1))
+                mem = memory_usage_kb / (1024 ** 2)
 
     except MemoryError as e:
         end_time = time.time()
@@ -90,7 +99,7 @@ def run_command_with_limit(cmd, input_path, output_path, timeout, mem_limit_gb=N
     pace_graph_file.close()
     output_file.close()
 
-    return return_code, end_time - start_time, stderr, status
+    return return_code, end_time - start_time, mem, stderr, status
 
 
 def count_crossings(input_path, solution_str):
@@ -205,28 +214,30 @@ def main():
 
     if args.print:
         if args.std:
-            print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'stdout':<16}")
+            print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Mem':<16}{'Status':<16}{'stdout':<16}")
         else:
-            print(f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Status':<16}{'Crossings':<16}{'Iterations':<16}")
+            print(
+                f"{'File':<16}{'Exit Code':<16}{'Time':<16}{'Mem':<16}{'Status':<16}{'Crossings':<16}{'Iterations':<16}")
     else:
         if args.std:
-            print("file", "exit_code", "time", "status", "stdout", sep=",")
+            print("file", "exit_code", "time", "mem", "status", "stdout", sep=",")
         else:
-            print("file", "exit_code", "time", "status", "crossings", "iterations", sep=",")
+            print("file", "exit_code", "time", "mem", "status", "crossings", "iterations", sep=",")
     for path in paths:
         if path.endswith(".gr"):
             pace_graph_path = os.path.join(base_path, path)
             process_result = run_command_with_limit(program, pace_graph_path, SOLUTION_PATH, args.timelimit,
                                                     mem_limit_gb=args.memlimit)
-            return_code, time_delta, stderr, status = process_result
+            return_code, time_delta, mem, stderr, status = process_result
 
             if return_code == 0:
                 if args.std:
                     stdout = open(SOLUTION_PATH, 'r').read().replace("\n", "\\n")
                     if args.print:
-                        print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{stdout:<16}")
+                        print(
+                            f"{path:<16}{return_code:<16}{time_delta:<16.5f}{mem:<16.5f}{status.value:<16}{stdout:<16}")
                     else:
-                        print(path, return_code, time_delta, status.value, stdout, sep=",")
+                        print(path, return_code, time_delta, mem, status.value, stdout, sep=",")
                 else:
                     clean_output(SOLUTION_PATH)
                     iterations = read_iterations(stderr)
@@ -237,21 +248,23 @@ def main():
                         crossing = count_crossings(pace_graph_path, SOLUTION_PATH)
                     if args.print:
                         print(
-                            f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{crossing:<16}{iterations:<16}")
+                            f"{path:<16}{return_code:<16}{time_delta:<16.5f}{mem:<16.5f}{status.value:<16}{crossing:<16}{iterations:<16}")
                     else:
-                        print(path, return_code, time_delta, status.value, crossing, iterations, sep=",")
+                        print(path, return_code, time_delta, mem, status.value, crossing, iterations, sep=",")
 
             else:
                 if args.print:
                     if args.std:
-                        print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{stderr:<16}")
+                        print(
+                            f"{path:<16}{return_code:<16}{time_delta:<16.5f}{mem:<16.5f}{status.value:<16}{stderr:<16}")
                     else:
-                        print(f"{path:<16}{return_code:<16}{time_delta:<16.5f}{status.value:<16}{'':<16}{'':<16}")
+                        print(
+                            f"{path:<16}{return_code:<16}{time_delta:<16.5f}{mem:<16.5f}{status.value:<16}{'':<16}{'':<16}")
                 else:
                     if args.std:
-                        print(path, return_code, time_delta, status.value, stderr, sep=",")
+                        print(path, return_code, time_delta, mem, status.value, stderr, sep=",")
                     else:
-                        print(path, return_code, time_delta, status.value, '', '', sep=",")
+                        print(path, return_code, time_delta, mem, status.value, '', '', sep=",")
             sys.stdout.flush()
 
 
