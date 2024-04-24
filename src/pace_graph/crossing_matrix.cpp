@@ -57,15 +57,10 @@ void CrossingMatrix::init_crossing_matrix(PaceGraph &graph) {
 
     for (int i = 0; i < graph.size_free; i++) {
         for (int j = i + 1; j < graph.size_free; j++) {
-            for (int m : graph.neighbors_free[i]) {
-                for (int n : graph.neighbors_free[j]) {
-                    if (m > n) {
-                        matrix[i][j]++;
-                    } else if (n > m) {
-                        matrix[j][i]++;
-                    }
-                }
-            }
+            auto [a, b] = graph.calculatingCrossingNumber(i, j);
+
+            matrix[i][j] = a;
+            matrix[j][i] = b;
         }
     }
 
@@ -74,6 +69,8 @@ void CrossingMatrix::init_crossing_matrix(PaceGraph &graph) {
             matrix_diff[i][j] = matrix[i][j] - matrix[j][i];
         }
     }
+
+    is_init = true;
 }
 void CrossingMatrix::remove_free_vertices(
     std::vector<int> &vertices_to_remove) {
@@ -106,13 +103,14 @@ void CrossingMatrix::remove_free_vertices(
     }
 }
 
-bool CrossingMatrix::is_initialized() { return matrix.size() > 0; }
+bool CrossingMatrix::is_initialized() { return is_init; }
 
 bool CrossingMatrix::can_initialized(PaceGraph &graph) {
     return graph.size_free <= MAX_MATRIX_SIZE;
 }
 
 void CrossingMatrix::clean() {
+    is_init = false;
     for (int i = 0; i < matrix.size(); i++) {
         delete[] matrix[i];
         delete[] matrix_diff[i];

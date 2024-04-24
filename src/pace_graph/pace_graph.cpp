@@ -102,8 +102,7 @@ std::string PaceGraph::to_gr() {
 
 std::string PaceGraph::split_graphs_to_gr(
     const std::vector<std::unique_ptr<PaceGraph>> &subgraphs,
-    const std::vector<int> &isolated_nodes,
-    const int original_size_fixed) {
+    const std::vector<int> &isolated_nodes, const int original_size_fixed) {
     std::ostringstream result;
 
     // Sum up size_fixed and size_free
@@ -391,24 +390,30 @@ std::tuple<int, int> PaceGraph::calculatingCrossingNumber(int u, int v) {
     int crossing_entries_u_v = 0;
     int crossing_entries_v_u = 0;
 
-    int currentVPointer = 0;
-    int currentUPointer = 0;
-
     const auto &u_neighbors = neighbors_free[u];
     const auto &v_neighbors = neighbors_free[v];
 
-    for (const auto &u_N : u_neighbors) {
-        while (currentVPointer < v_neighbors.size() &&
-               v_neighbors[currentVPointer] < u_N) {
-            crossing_entries_u_v += u_neighbors.size() - currentUPointer;
-            currentVPointer++;
+    int n = u_neighbors.size();
+    int m = v_neighbors.size();
+    int i = 0, j = 0;
+
+    while (i < n && j < m) {
+        if (u_neighbors[i] < v_neighbors[j]) {
+            crossing_entries_u_v += j;
+            i++;
+        } else if (v_neighbors[j] < u_neighbors[i]) {
+            crossing_entries_v_u += i;
+            j++;
+        } else {
+            crossing_entries_u_v += j;
+            crossing_entries_v_u += i;
+            i++;
+            j++;
         }
-        crossing_entries_v_u += v_neighbors.size() - currentVPointer;
-        currentUPointer++;
     }
 
-    crossing_entries_u_v += (v_neighbors.size() - currentVPointer) *
-                            (u_neighbors.size() - currentUPointer);
+    crossing_entries_u_v += (n - i) * m;
+    crossing_entries_v_u += (m - j) * n;
 
     return std::make_tuple(crossing_entries_u_v, crossing_entries_v_u);
 }

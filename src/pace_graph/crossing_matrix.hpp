@@ -8,12 +8,13 @@
 #include <vector>
 
 #define FIXED 1000000
-//#define FIXED 10000
 #define MAX_MATRIX_SIZE 20000
 
 class PaceGraph;
 
 class CrossingMatrix {
+  private:
+    bool is_init = false;
 
   public:
     std::vector<int *> matrix;
