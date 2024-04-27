@@ -8,16 +8,16 @@
 
 class GeneticHeuristicParameter {
   public:
-    int forceMoveAllDirectNodesAfterIterationWithNoImprovement = 1000;
+    int forceMoveAllDirectNodesAfterIterationWithNoImprovement = 100;
 };
 
 class GeneticHeuristic : public Heuristic {
   public:
     GeneticHeuristicParameter geneticHeuristicParameter;
 
-    explicit GeneticHeuristic(
-        std::function<bool(int)> has_time_left,
-        GeneticHeuristicParameter geneticHeuristicParameter)
+    explicit
+    GeneticHeuristic(std::function<bool(int)> has_time_left,
+                     GeneticHeuristicParameter geneticHeuristicParameter)
         : geneticHeuristicParameter(geneticHeuristicParameter),
           Heuristic(std::move(has_time_left)) {}
     Order solve(PaceGraph &graph) override;
