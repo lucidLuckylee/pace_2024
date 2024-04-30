@@ -37,7 +37,7 @@ class DirectedGraph {
   public:
     std::vector<std::vector<int>> neighbors;
     std::vector<std::vector<int>> sccs;
-    std::vector<std::bitset<20000>> reachabilityMatrix;
+    std::vector<std::bitset<MAX_MATRIX_SIZE>> reachabilityMatrix;
     std::vector<int> topologicalOrder;
     std::vector<std::vector<int>> cycles;
 

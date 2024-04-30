@@ -8,7 +8,7 @@
 #include <vector>
 
 #define FIXED 1000000
-#define MAX_MATRIX_SIZE 20000
+#define MAX_MATRIX_SIZE 10000
 
 class PaceGraph;
 

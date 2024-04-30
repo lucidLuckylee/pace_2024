@@ -2,8 +2,8 @@
 
 #include <bitset>
 #include <queue>
-#include <utility>
 #include <unordered_map>
+#include <utility>
 
 DirectedGraph::DirectedGraph(std::vector<std::vector<int>> &neighbors)
     : neighbors(std::move(neighbors)), visited(neighbors.size(), false),
@@ -93,7 +93,8 @@ DirectedGraph DirectedGraph::construct_sccs_graph() {
 }
 void DirectedGraph::init_reachability_matrix_dag() {
 
-    reachabilityMatrix = std::vector<std::bitset<20000>>(neighbors.size());
+    reachabilityMatrix =
+        std::vector<std::bitset<MAX_MATRIX_SIZE>>(neighbors.size());
 
     topologicalSort();
     std::reverse(topologicalOrder.begin(), topologicalOrder.end());

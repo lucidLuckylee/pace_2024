@@ -11,8 +11,8 @@ std::vector<std::tuple<int, int, int>>
 getConflictPairsBitmap(PaceGraph &graph, SimpleLBParameter &parameter) {
     std::vector<std::tuple<int, int, int>> conflictPairs;
 
-    std::vector<std::bitset<20000>> edges(graph.size_free);
-    std::vector<std::bitset<20000>> notEdges(graph.size_free);
+    std::vector<std::bitset<MAX_MATRIX_SIZE>> edges(graph.size_free);
+    std::vector<std::bitset<MAX_MATRIX_SIZE>> notEdges(graph.size_free);
 
     for (int i = 0; i < graph.size_free; ++i) {
         for (int j = 0; j < graph.size_free; ++j) {

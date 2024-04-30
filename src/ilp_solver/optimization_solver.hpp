@@ -85,7 +85,7 @@ Order OptimizationSolver<MODEL, VAR, OPT_FUN, MODEL_RESULT>::run(
         res = solveModel(model);
         is_transitivity = true;
 
-        std::vector<std::bitset<20000>> edges(graph.size_free);
+        std::vector<std::bitset<MAX_MATRIX_SIZE>> edges(graph.size_free);
 
         for (int i = 0; i < graph.size_free; ++i) {
             for (int j = 0; j < graph.size_free; ++j) {
