@@ -8,6 +8,9 @@
 #include "../pace_graph/solver.hpp"
 
 class HeuristicSolver : public SolutionSolver {
+  private:
+    Order largeGraphHeuristic(PaceGraph &graph);
+
   protected:
     Order run(PaceGraph &graph) override;
 
