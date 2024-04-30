@@ -1,6 +1,7 @@
 #include "genetic_algorithm.hpp"
 #include "../lb/simple_lb.hpp"
 #include "local_search.hpp"
+#include "mean_position_heuristic.hpp"
 #include <chrono>
 #include <iostream>
 
@@ -9,16 +10,26 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
         return Order(graph.size_free);
     }
 
+    LocalSearchParameter localSearchParameter;
+    localSearchParameter.siftingType = SiftingType::Random;
+
     graph.init_crossing_matrix_if_necessary();
 
     SimpleLBParameter lbParameter;
+    lbParameter.maxNrOfConflicts = 100000;
     long lb = simpleLB(graph, lbParameter);
 
-    Order bestOrder(graph.size_free);
+    MeanPositionParameter meanPositionParameter;
+    meanPositionParameter.useLocalSearch = false;
+    meanPositionParameter.useJittering = false;
+    meanPositionParameter.meanType = median;
+    MeanPositionSolver meanPositionHeuristic(
+        [this](int it) { return it == 0 && this->has_time_left(0); },
+        meanPositionParameter);
+    Order bestOrder = meanPositionHeuristic.solve(graph);
+    local_search(graph, bestOrder, localSearchParameter,
+                 [this]() { return this->has_time_left(0); });
     long bestCost = bestOrder.count_crossings(graph);
-
-    LocalSearchParameter localSearchParameter;
-    localSearchParameter.siftingType = SiftingType::Random;
 
     int number_of_iterations = 0;
     int number_of_iteration_without_improvement = 0;

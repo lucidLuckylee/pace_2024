@@ -12,6 +12,7 @@ class MeanPositionParameter {
   public:
     MeanTypeAlgo meanType = median;
     bool useJittering = true;
+    bool useLocalSearch = true;
     int jitterIterations = 3;
 };
 

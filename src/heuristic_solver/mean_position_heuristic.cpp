@@ -113,12 +113,15 @@ void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
 Order MeanPositionSolver::solve(PaceGraph &graph) {
 
     Order currentBestOrder = Order(graph.size_free);
+
     long bestOrderCost = 1000000000000000000;
 
     int iteration = 0;
     while (has_time_left(iteration)) {
         Order order = jittering(graph, iteration);
-        improveOrderWithSwapping(graph, order, iteration);
+        if (meanPositionParameter.useLocalSearch) {
+            improveOrderWithSwapping(graph, order, iteration);
+        }
 
         if (!has_time_left(iteration)) {
             if (bestOrderCost == 1000000000000000000) {
