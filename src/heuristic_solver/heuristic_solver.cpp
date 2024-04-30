@@ -9,14 +9,20 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
     }
 
     MeanPositionParameter meanPositionParameter;
+    meanPositionParameter.meanType = average;
     MeanPositionSolver meanPositionSolver1(
-        [this](int it) { return it == 0 && this->has_time_left(); },
+        [this](int it) {
+            return it == 0 && this->time_percentage_past() < 0.2;
+        },
         meanPositionParameter);
 
     Order o1 = meanPositionSolver1.solve(graph);
-    meanPositionParameter.meanType = average;
+    meanPositionParameter.meanType = median;
     MeanPositionSolver meanPositionSolver2(
-        [this](int it) { return it == 0 && this->has_time_left(); },
+        [this](int it) {
+            return it == 0 && this->has_time_left() &&
+                   this->time_percentage_past() < 0.5;
+        },
         meanPositionParameter);
 
     Order o2 = meanPositionSolver2.solve(graph);
@@ -69,7 +75,7 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
             currentCostChange = 0;
             for (int pos = posOfV + 1;
                  pos < std::min(graph.size_free, posOfV + 2000); pos++) {
-                 
+
                 if (!has_time_left()) {
                     foundBestPos = false;
                     break;

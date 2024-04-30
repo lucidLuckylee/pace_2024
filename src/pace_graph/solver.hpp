@@ -168,6 +168,16 @@ template <typename T> class Solver {
                    time_limit_for_part &&
                !got_signal;
     }
+
+    double time_percentage_past() const {
+        if (got_signal) {
+            return 1.01;
+        }
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+                   (std::chrono::steady_clock::now() - start_time_for_part))
+                   .count() /
+               static_cast<double>(time_limit_for_part.count());
+    };
 };
 
 class SolutionSolver : public Solver<Order> {
