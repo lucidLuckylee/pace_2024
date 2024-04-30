@@ -59,58 +59,72 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
             if (number_of_iteration_without_improvement >
                 geneticHeuristicParameter
                     .forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
+                for (int swapFurther = 1;
+                     swapFurther <=
+                     geneticHeuristicParameter.numberOfForceSwapPositions;
+                     swapFurther +=
+                     geneticHeuristicParameter.numberOfForceSwapStepSize) {
 
-                bool improvement = true;
-                while (improvement) {
-                    improvement = false;
-
-                    std::shuffle(force_swap_position_array.begin(),
-                                 force_swap_position_array.end(),
-                                 std::default_random_engine(
-                                     std::chrono::system_clock::now()
-                                         .time_since_epoch()
-                                         .count()));
                     if (!has_time_left(number_of_iterations)) {
                         break;
                     }
-                    newOrder = lookAtOrder.clone();
 
-                    for (int i = 0; i < graph.size_free - 1; i++) {
+                    bool improvement = true;
+                    while (improvement) {
+                        improvement = false;
 
+                        std::shuffle(force_swap_position_array.begin(),
+                                     force_swap_position_array.end(),
+                                     std::default_random_engine(
+                                         std::chrono::system_clock::now()
+                                             .time_since_epoch()
+                                             .count()));
                         if (!has_time_left(number_of_iterations)) {
                             break;
                         }
+                        newOrder = lookAtOrder.clone();
 
-                        int pos = force_swap_position_array[i];
-                        int u = newOrder.get_vertex(pos);
-                        int v = newOrder.get_vertex(pos + 1);
+                        for (int i = 0; i < graph.size_free - 1; i++) {
 
-                        if (graph.crossing.lt(u, v)) {
-                            continue;
-                        }
-
-                        newOrder.swap_by_vertices(u, v);
-
-                        // force node order to be different
-                        graph.crossing.set_a_lt_b(v, u);
-                        local_search(graph, newOrder, localSearchParameter,
-                                     [this, number_of_iterations]() {
-                                         return has_time_left(
-                                             number_of_iterations);
-                                     });
-                        graph.crossing.unset_a_lt_b(v, u);
-
-                        newCost = newOrder.count_crossings(graph);
-                        if (newCost <= lookAtCost) {
-                            lookAtOrder = newOrder;
-                            if (newCost < lookAtCost) {
-                                improvement = true;
-                                lookAtCost = newCost;
+                            if (!has_time_left(number_of_iterations)) {
+                                break;
                             }
 
-                            if (newCost < bestCost) {
-                                bestOrder = newOrder;
-                                bestCost = newCost;
+                            int pos = force_swap_position_array[i];
+                            if (pos + swapFurther >= graph.size_free) {
+                                continue;
+                            }
+
+                            int u = newOrder.get_vertex(pos);
+                            int v = newOrder.get_vertex(pos + swapFurther);
+
+                            if (graph.crossing.lt(u, v)) {
+                                continue;
+                            }
+
+                            newOrder.swap_by_vertices(u, v);
+
+                            // force node order to be different
+                            graph.crossing.set_a_lt_b(v, u);
+                            local_search(graph, newOrder, localSearchParameter,
+                                         [this, number_of_iterations]() {
+                                             return has_time_left(
+                                                 number_of_iterations);
+                                         });
+                            graph.crossing.unset_a_lt_b(v, u);
+
+                            newCost = newOrder.count_crossings(graph);
+                            if (newCost <= lookAtCost) {
+                                lookAtOrder = newOrder;
+                                if (newCost < lookAtCost) {
+                                    improvement = true;
+                                    lookAtCost = newCost;
+                                }
+
+                                if (newCost < bestCost) {
+                                    bestOrder = newOrder;
+                                    bestCost = newCost;
+                                }
                             }
                         }
                     }
