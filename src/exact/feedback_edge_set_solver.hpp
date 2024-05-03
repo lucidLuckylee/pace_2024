@@ -25,6 +25,7 @@ class Edge {
     bool selected = false;
     int numberOfCircles = 0;
     int potential = 0;
+    double greedyValue = 0;
     void *ilpVar = nullptr;
 
     Edge(int start, int end, int weight)
@@ -50,10 +51,10 @@ class FeedbackEdgeInstance {
     Order globalUBOrder;
     void *ilpModel = nullptr;
 
-    explicit
-    FeedbackEdgeInstance(std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
-                         std::vector<std::shared_ptr<Circle>> &circles,
-                         Order &globalUBOrder, long globalUB)
+    explicit FeedbackEdgeInstance(
+        std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
+        std::vector<std::shared_ptr<Circle>> &circles, Order &globalUBOrder,
+        long globalUB)
         : edges(edges), circles(circles), globalUB(globalUB),
           globalUBOrder(globalUBOrder){};
 

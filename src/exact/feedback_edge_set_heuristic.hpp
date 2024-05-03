@@ -7,13 +7,17 @@
 
 #include "feedback_edge_set_solver.hpp"
 
-void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
+class FeedbackEdgeHeuristicParameter {
+  public:
+    double priority = 0.05;
+    double restriction = 0.35;
+    double improvement = 0.15;
+    double search_magnitude = 0.3;
+    int max_iterations = 100;
+    int imp_iterations = 400;
+};
 
-std::vector<std::shared_ptr<Edge>>
-greedyApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
-std::vector<std::shared_ptr<Edge>>
-globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance);
-void localSearchFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                                std::vector<std::shared_ptr<Edge>> &solution);
+void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance,
+                                FeedbackEdgeHeuristicParameter &parameter);
 
 #endif // PACE2024_FEEDBACK_EDGE_SET_HEURISTIC_HPP

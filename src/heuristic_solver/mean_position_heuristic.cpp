@@ -4,7 +4,7 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-1, 1);
+    std::uniform_real_distribution<> dis(-1.0, 1.0);
 
     Order currentBestOrder = Order(graph.size_free);
     long bestOrderCost = 1000000000000000000;

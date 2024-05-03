@@ -75,7 +75,7 @@ int main() {
 
     /*FeedbackEdgeSetSolver solver;
     solver.solveFeedbackEdgeSet(instance);*/
-    approximateFeedbackEdgeSet(instance);
+    // approximateFeedbackEdgeSet(instance);
 
     std::cout << "#Size: " << instance.ub << std::endl;
 

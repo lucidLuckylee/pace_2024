@@ -10,6 +10,161 @@ long calculateCost(std::vector<std::shared_ptr<Edge>> &sol) {
     return cost;
 }
 
+void init_edge_circles(FeedbackEdgeInstance &instance) {
+    for (auto &edge : instance.usedEdges) {
+        edge->numberOfCircles = 0;
+    }
+    for (auto &circle : instance.circles) {
+        if (circle->covered > 0) {
+            continue;
+        }
+
+        for (auto &edge : circle->edges) {
+            edge->numberOfCircles++;
+        }
+    }
+}
+
+void removeUnnecessaryEdges(FeedbackEdgeInstance &instance,
+                            std::vector<std::shared_ptr<Edge>> &solution) {
+    std::sort(
+        solution.begin(), solution.end(),
+        [](const std::shared_ptr<Edge> &a, const std::shared_ptr<Edge> &b) {
+            return a->weight > b->weight;
+        });
+
+    for (auto it = solution.begin(); it != solution.end();) {
+        bool canRemove = true;
+        for (auto &circle : (*it)->circles) {
+            if (circle->covered == 1) {
+                canRemove = false;
+                break;
+            }
+        }
+
+        if (canRemove) {
+            (*it)->selected = false;
+            for (auto &circle : (*it)->circles) {
+                circle->covered--;
+            }
+            it = solution.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+std::vector<std::shared_ptr<Edge>>
+metaRapsConstruction(FeedbackEdgeInstance &instance,
+                     FeedbackEdgeHeuristicParameter &parameter) {
+    init_edge_circles(instance);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> functionDistribution(0, 3);
+    std::uniform_real_distribution<> probDistribution(0.0, 1.0);
+
+    std::vector<std::shared_ptr<Edge>> solution;
+
+    std::vector<std::shared_ptr<Circle>> uncoveredCircles;
+
+    for (auto &circle : instance.circles) {
+        if (circle->covered == 0) {
+            uncoveredCircles.push_back(circle);
+        }
+    }
+
+    std::vector<std::shared_ptr<Edge>> edges;
+    for (auto &edge : instance.usedEdges) {
+        if (edge->selected) {
+            solution.push_back(edge);
+        } else {
+            edges.push_back(edge);
+        }
+    }
+
+    while (!uncoveredCircles.empty()) {
+        int usedFunction = functionDistribution(gen);
+
+        std::shared_ptr<Edge> minGreedyScore;
+        for (auto &edge : edges) {
+            if (edge->numberOfCircles == 0) {
+                continue;
+            }
+            auto c = static_cast<double>(edge->weight);
+            auto k = static_cast<double>(edge->numberOfCircles);
+
+            switch (usedFunction) {
+            case 0:
+                edge->greedyValue = c / k;
+                break;
+            case 1:
+                edge->greedyValue = c / (k * k);
+                break;
+            case 2:
+                edge->greedyValue = sqrt(c) / k;
+                break;
+            case 3:
+                edge->greedyValue = c / sqrt(k);
+                break;
+            default:
+                std::cerr << "Unknown function" << std::endl;
+                edge->greedyValue = c / k;
+            }
+
+            if (minGreedyScore == nullptr ||
+                edge->greedyValue < minGreedyScore->greedyValue) {
+                minGreedyScore = edge;
+            }
+        }
+
+        std::shared_ptr<Edge> usedEdge = minGreedyScore;
+        if (probDistribution(gen) > parameter.priority) {
+
+            for (auto &edge : edges) {
+
+                int numberOfHits = 0;
+
+                if (edge->greedyValue <=
+                    minGreedyScore->greedyValue * (1 + parameter.restriction)) {
+
+                    numberOfHits++;
+
+                    if (probDistribution(gen) < 1.0 / numberOfHits) {
+                        usedEdge = edge;
+                    }
+                }
+            }
+        }
+
+        usedEdge->selected = true;
+        solution.push_back(usedEdge);
+
+        for (auto &circle : usedEdge->circles) {
+            circle->covered++;
+            if (circle->covered == 1) {
+                for (auto &edge : circle->edges) {
+                    edge->numberOfCircles--;
+                }
+            }
+        }
+
+        auto _ =
+            std::remove_if(uncoveredCircles.begin(), uncoveredCircles.end(),
+                           [](std::shared_ptr<Circle> &circle) {
+                               return circle->covered > 0;
+                           });
+
+        uncoveredCircles.erase(_, uncoveredCircles.end());
+
+        edges.erase(std::remove(edges.begin(), edges.end(), usedEdge),
+                    edges.end());
+    }
+
+    removeUnnecessaryEdges(instance, solution);
+
+    return solution;
+}
+
 std::vector<std::shared_ptr<Edge>>
 globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
 
@@ -27,261 +182,97 @@ globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
 }
 
 std::vector<std::shared_ptr<Edge>>
-greedyApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
-    std::shared_ptr<Edge> edge = nullptr;
-    double bestCost = 100000000;
-    for (auto &e : instance.usedEdges) {
-
-        if (e->numberOfCircles > 0 && !e->selected) {
-            double cost = static_cast<double>(e->weight) / (e->numberOfCircles);
-            if (cost < bestCost) {
-                bestCost = cost;
-                edge = e;
-            }
-        }
-    }
-
-    if (edge == nullptr) {
-        std::vector<std::shared_ptr<Edge>> solution;
-        long weight = 0;
-        for (auto &edge : instance.usedEdges) {
-
-            if (edge->selected) {
-                weight += edge->weight;
-                solution.emplace_back(edge);
-            }
-        }
-
-        return solution;
-    }
-
-    edge->selected = true;
-    for (auto &c : edge->circles) {
-        c->covered++;
-        for (auto &e : c->edges) {
-            e->numberOfCircles--;
-        }
-    }
-
-    auto solution = std::move(greedyApproximateFeedbackEdgeSet(instance));
-
-    edge->selected = false;
-    for (auto &c : edge->circles) {
-        c->covered--;
-        for (auto &e : c->edges) {
-            e->numberOfCircles++;
-        }
-    }
-
-    return solution;
-}
-
-std::vector<std::shared_ptr<Edge>>
-greedy2ApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
-
-    std::vector<int> positionArray(instance.circles.size());
-    for (int i = 0; i < instance.circles.size(); ++i) {
-        positionArray[i] = i;
-    }
+neighbourhoodSearch(FeedbackEdgeInstance &instance,
+                    std::vector<std::shared_ptr<Edge>> &solution,
+                    FeedbackEdgeHeuristicParameter &parameter) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0);
 
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(positionArray.begin(), positionArray.end(),
-                 std::default_random_engine(seed));
+    std::vector<std::shared_ptr<Edge>> bestSolution = solution;
+    long currentCost = calculateCost(bestSolution);
 
-    std::vector<std::shared_ptr<Edge>> solution;
+    for (int i = 0; i < parameter.imp_iterations; i++) {
 
-    for (auto &i : positionArray) {
-        auto &circle = instance.circles[i];
-        if (circle->covered == 0) {
-            std::shared_ptr<Edge> usedEdge = circle->edges[0];
-            double weightSum = usedEdge->weight;
-            for (int j = 1; j < circle->edges.size(); ++j) {
-                auto &edge = circle->edges[j];
-                weightSum += edge->weight;
+        for (auto &edge : instance.usedEdges) {
+            edge->selected = false;
+        }
 
-                if (dis(gen) < edge->weight / weightSum) {
-                    usedEdge = edge;
+        for (auto &circle : instance.circles) {
+            circle->covered = 0;
+        }
+
+        for (auto &edge : bestSolution) {
+            if (dis(gen) < parameter.search_magnitude) {
+                edge->selected = true;
+                for (auto &circle : edge->circles) {
+                    circle->covered++;
                 }
             }
-
-            for (auto &c : usedEdge->circles) {
-                c->covered++;
-            }
-            solution.emplace_back(usedEdge);
         }
+
+        std::vector<std::shared_ptr<Edge>> newSol =
+            metaRapsConstruction(instance, parameter);
+        long newCost = calculateCost(newSol);
+
+        if (newCost < currentCost) {
+            bestSolution = newSol;
+            currentCost = newCost;
+        }
+    }
+
+    return bestSolution;
+}
+
+void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance,
+                                FeedbackEdgeHeuristicParameter &parameter) {
+    auto solution = globalApproximateFeedbackEdgeSet(instance);
+
+    for (auto &circle : instance.circles) {
+        circle->covered = 0;
     }
 
     for (auto &edge : solution) {
-        for (auto &c : edge->circles) {
-            c->covered--;
-        }
-    }
-
-    return solution;
-}
-
-void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
-    auto lastSolution = instance.bestSolution;
-
-    auto greedySol = std::move(greedyApproximateFeedbackEdgeSet(instance));
-    localSearchFeedbackEdgeSet(instance, greedySol);
-    long greedyCost = calculateCost(greedySol);
-
-    auto globalSol = globalApproximateFeedbackEdgeSet(instance);
-    localSearchFeedbackEdgeSet(instance, globalSol);
-    long globalCost = calculateCost(globalSol);
-
-    if (greedyCost < globalCost) {
-        instance.ub = greedyCost;
-        instance.bestSolution = std::move(greedySol);
-    } else {
-        instance.ub = globalCost;
-        instance.bestSolution = std::move(globalSol);
-    }
-
-    for (int _ = 0; _ < 1000; _++) {
-        auto greedy2Sol =
-            std::move(greedy2ApproximateFeedbackEdgeSet(instance));
-        localSearchFeedbackEdgeSet(instance, greedy2Sol);
-        long greedy2Cost = calculateCost(greedy2Sol);
-
-        if (greedy2Cost < instance.ub) {
-            instance.ub = greedy2Cost;
-            instance.bestSolution = std::move(greedy2Sol);
-        }
-    }
-}
-
-bool removeOneEdgeForOneEdge(FeedbackEdgeInstance &instance,
-                             std::vector<std::shared_ptr<Edge>> &solution) {
-
-    bool foundImprovement = false;
-
-    for (auto &edgeToRemove : solution) {
-
-        std::shared_ptr<Edge> bestEdgeToAdd = nullptr;
-        int count = 0;
-
-        double coverScoreEdgeToRemove = 0;
-        for (auto &circle : edgeToRemove->circles) {
-            coverScoreEdgeToRemove += 1.0 / circle->edges.size();
-        }
-
-        for (auto &edgeToAdd : instance.usedEdges) {
-            if (edgeToAdd->selected ||
-                edgeToAdd->weight > edgeToRemove->weight) {
-                continue;
-            }
-
-            int edgeToAddPointer = 0;
-            bool covered = true;
-            for (auto &circle : edgeToRemove->circles) {
-                if (circle->covered == 1) {
-                    while (edgeToAddPointer < edgeToAdd->circles.size() &&
-                           edgeToAdd->circles[edgeToAddPointer] < circle) {
-                        edgeToAddPointer++;
-                    }
-
-                    if (edgeToAddPointer == edgeToAdd->circles.size() ||
-                        edgeToAdd->circles[edgeToAddPointer] != circle) {
-                        covered = false;
-                        break;
-                    }
-                }
-            }
-
-            if (covered) {
-
-                if (edgeToRemove->weight == edgeToAdd->weight) {
-                    double coverScoreEdgeToAdd = 0;
-                    for (auto &circle : edgeToAdd->circles) {
-                        coverScoreEdgeToAdd += 1.0 / circle->edges.size();
-                    }
-                    if (coverScoreEdgeToRemove >= coverScoreEdgeToAdd) {
-                        continue;
-                    }
-                }
-
-                // Edges can be swapped
-                count++;
-                if (rand() % count == 0) {
-                    bestEdgeToAdd = edgeToAdd;
-                }
-            }
-        }
-
-        if (bestEdgeToAdd != nullptr) {
-            foundImprovement = true;
-
-            bestEdgeToAdd->selected = true;
-            for (auto &circle : bestEdgeToAdd->circles) {
-                circle->covered++;
-            }
-
-            edgeToRemove->selected = false;
-            for (auto &circle : edgeToRemove->circles) {
-                circle->covered--;
-            }
-
-            edgeToRemove = bestEdgeToAdd;
-        }
-    }
-
-    return foundImprovement;
-}
-
-void localSearchFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                                std::vector<std::shared_ptr<Edge>> &solution) {
-    for (auto &edges : solution) {
-        edges->selected = true;
-        for (auto &circle : edges->circles) {
+        for (auto &circle : edge->circles) {
             circle->covered++;
         }
     }
 
-    bool foundImprovement = true;
-
-    while (foundImprovement) {
-        foundImprovement = false;
-
-        std::shuffle(solution.begin(), solution.end(),
-                     std::default_random_engine(time(nullptr)));
-
-        // Test if I can remove an edge
-        for (auto it = solution.begin(); it != solution.end();) {
-            bool canRemove = true;
-            for (auto &circle : (*it)->circles) {
-                if (circle->covered == 1) {
-                    canRemove = false;
-                    break;
-                }
-            }
-
-            if (canRemove) {
-                foundImprovement = true;
-                (*it)->selected = false;
-                for (auto &circle : (*it)->circles) {
-                    circle->covered--;
-                }
-                // remove the edge from bestSolution
-                it = solution.erase(it);
-            } else {
-                ++it;
-            }
-        }
-
-        foundImprovement =
-            removeOneEdgeForOneEdge(instance, solution) || foundImprovement;
+    removeUnnecessaryEdges(instance, solution);
+    solution = neighbourhoodSearch(instance, solution, parameter);
+    for (auto &circle : instance.circles) {
+        circle->covered = 0;
     }
 
-    for (auto &edges : solution) {
-        edges->selected = false;
-        for (auto &circle : edges->circles) {
-            circle->covered--;
+    long cost = calculateCost(solution);
+
+    for (int i = 0; i < parameter.max_iterations; i++) {
+
+        for (auto &edge : instance.usedEdges) {
+            edge->selected = false;
+        }
+
+        for (auto &circle : instance.circles) {
+            circle->covered = 0;
+        }
+
+        auto X = metaRapsConstruction(instance, parameter);
+        long Z = calculateCost(X);
+
+        if (static_cast<double>(Z) <=
+            static_cast<double>(cost) * (1 + parameter.improvement)) {
+            // Neighbourhood search
+
+            X = neighbourhoodSearch(instance, X, parameter);
+            Z = calculateCost(X);
+        }
+
+        if (Z < cost) {
+            solution = X;
+            cost = Z;
         }
     }
+
+    std::cout << "Cost: " << cost << std::endl << std::flush;
 }

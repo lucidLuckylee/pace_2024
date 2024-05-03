@@ -59,6 +59,7 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
         weightedDirectedGraph, instance.edges, goodOrder);
     addCycleMatrixElements(weightedDirectedGraph, fesInit, instance);
 
+    FeedbackEdgeHeuristicParameter heuristicParameter;
     int iter = 0;
     while (true) {
         iter++;
@@ -159,8 +160,9 @@ void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(FeedbackEdgeInstance &instance,
 void FeedbackEdgeSetSolver::solveFeedbackEdgeSet(
     FeedbackEdgeInstance &instance) {
     long oldBranches = branches;
+    FeedbackEdgeHeuristicParameter heuristicParameter;
 
-    approximateFeedbackEdgeSet(instance);
+    approximateFeedbackEdgeSet(instance, heuristicParameter);
     long ub = instance.ub;
     std::cerr << "UB: " << ub;
     findGoodCircleOrderForLB(instance);
