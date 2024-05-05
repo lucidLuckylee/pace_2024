@@ -2,3 +2,5 @@ psutil
 pace2024-verifier
 pandas
 matplotlib
+beautifulsoup4
+selenium
