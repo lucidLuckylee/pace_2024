@@ -10,6 +10,10 @@ int main() {
     //Order upper_bound_order = upper_bound_solver.solve(graph);
     //graph.ub = upper_bound_order.count_crossings(graph);
     //apply_reduction_rules(graph);
-    graph.crossing.print_averaged();
+    
+    GreedyInsertSolver solver([](int useless_param) { return true; });
+    Order solution = solver.solve(graph);
+    graph.crossing.print_in_order(solution);
+
     return 0;
 }
