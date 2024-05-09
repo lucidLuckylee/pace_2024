@@ -33,14 +33,17 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
     Order bestOrder = cost1 < cost2 ? o1 : o2;
 
     bool foundImprovement = true;
+
+    long largestFallback = 20000;
+    int largestMoveDistance = 2000;
     while (foundImprovement) {
+        foundImprovement = false;
         if (!has_time_left()) {
             break;
         }
 
         std::shuffle(positionOrder.begin(), positionOrder.end(),
                      std::mt19937(std::random_device()()));
-
         for (int i = 0; i < graph.size_free; i++) {
 
             if (!has_time_left()) {
@@ -54,9 +57,10 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
             int bestPos = posOfV;
             int currentCostChange = 0;
             bool foundBestPos = true;
+            long currentFallback = 0;
 
-            for (int pos = posOfV - 1; pos >= std::max(0, posOfV - 2000);
-                 pos--) {
+            for (int pos = posOfV - 1;
+                 pos >= std::max(0, posOfV - largestMoveDistance); pos--) {
                 if (!has_time_left()) {
                     foundBestPos = false;
                     break;
@@ -66,15 +70,36 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
                 auto [u_v, v_u] = graph.calculatingCrossingNumber(u, v);
                 int crossingDiff = v_u - u_v;
                 currentCostChange += crossingDiff;
+
+                if (currentCostChange >= largestFallback) {
+                    break;
+                }
+
+                if (currentFallback < currentCostChange) {
+                    currentFallback = currentCostChange;
+                }
+
+                if (currentCostChange <= 0) {
+                    if (2 * currentFallback > largestFallback) {
+                        largestFallback = 2 * currentFallback;
+                        std::cerr << "Increase Fallback: " << largestFallback
+                                  << std::endl;
+                    }
+                }
+
                 if (currentCostChange < bestCostChange) {
+                    foundImprovement = true;
                     bestCostChange = currentCostChange;
                     bestPos = pos;
                 }
             }
 
             currentCostChange = 0;
+            currentFallback = 0;
+
             for (int pos = posOfV + 1;
-                 pos < std::min(graph.size_free, posOfV + 2000); pos++) {
+                 pos < std::min(graph.size_free, posOfV + largestMoveDistance);
+                 pos++) {
 
                 if (!has_time_left()) {
                     foundBestPos = false;
@@ -86,9 +111,27 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
                 auto [u_v, v_u] = graph.calculatingCrossingNumber(u, v);
                 int crossingDiff = -v_u + u_v;
                 currentCostChange += crossingDiff;
+
+                if (currentCostChange >= largestFallback) {
+                    break;
+                }
+
+                if (currentFallback < currentCostChange) {
+                    currentFallback = currentCostChange;
+                }
+
+                if (currentCostChange <= 0) {
+                    if (2 * currentFallback > largestFallback) {
+                        largestFallback = 2 * currentFallback;
+                        std::cerr << "Increase Fallback: " << largestFallback
+                                  << std::endl;
+                    }
+                }
+
                 if (currentCostChange < bestCostChange) {
                     bestCostChange = currentCostChange;
                     bestPos = pos;
+                    foundImprovement = true;
                 }
             }
 
