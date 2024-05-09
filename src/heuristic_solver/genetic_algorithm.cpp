@@ -93,8 +93,9 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                         if (!has_time_left(number_of_iterations)) {
                             break;
                         }
-                        newOrder = lookAtOrder.clone();
 
+                        newOrder = lookAtOrder.clone();
+                        Order orginalOrder = lookAtOrder.clone();
                         for (int i = 0; i < graph.size_free - 1; i++) {
 
                             if (!has_time_left(number_of_iterations)) {
@@ -106,8 +107,8 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                                 continue;
                             }
 
-                            int u = newOrder.get_vertex(pos);
-                            int v = newOrder.get_vertex(pos + swapFurther);
+                            int u = orginalOrder.get_vertex(pos);
+                            int v = orginalOrder.get_vertex(pos + swapFurther);
 
                             if (graph.crossing.lt(u, v)) {
                                 continue;
