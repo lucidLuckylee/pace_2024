@@ -15,11 +15,9 @@ bool rr1(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             // RR1
-            if (graph.crossing.matrix[a][b] == 0 &&
-                graph.crossing.matrix[b][a] > 0) {
+            if (graph.crossing.matrix[a][b] == 0) {
                 applied = graph.crossing.set_a_lt_b(a, b) || applied;
-            } else if (graph.crossing.matrix[b][a] == 0 &&
-                       graph.crossing.matrix[a][b] > 0) {
+            } else if (graph.crossing.matrix[b][a] == 0) {
                 applied = graph.crossing.set_a_lt_b(b, a) || applied;
             }
         }

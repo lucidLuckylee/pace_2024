@@ -4,6 +4,7 @@
 
 #include "crossing_matrix.hpp"
 #include "pace_graph.hpp"
+#include "order.hpp"
 #include <algorithm>
 #include <iostream>
 
@@ -130,35 +131,13 @@ void CrossingMatrix::print() {
     }
 }
 
-void CrossingMatrix::print_averaged() {
+void CrossingMatrix::print_in_order(Order &order) {
     int rows = matrix.size();
     int cols = matrix.size();
-    int desired_size = 10000;
-    if (desired_size > matrix.size()) {
-        for (int i = 0; i < matrix.size(); i++) {
-            for (int j = 0; j < matrix.size(); j++) {
-                std::cout << matrix[i][j] << ",";
-            }
-            std::cout << std::endl;
-        }
-        return;
-    }
-    int step = rows / (desired_size - 1);
 
-    for (int i = 0; i < rows; i += step) {
-        std::vector<int> row;
-        for (int j = 0; j < cols; j += step) {
-            int sum = 0;
-            int count = 0;
-            for (int x = i; x < std::min(i + step, rows); ++x) {
-                for (int y = j; y < std::min(j + step, cols); ++y) {
-                    sum += matrix[x][y];
-                    ++count;
-                }
-            }
-            // Calculate average value in the current step
-            int avg = sum / count;
-            std::cout << avg << ",";
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            std::cout << matrix[order.position_to_vertex[i]][order.position_to_vertex[j]] << ",";
         }
         std::cout << std::endl;
     }

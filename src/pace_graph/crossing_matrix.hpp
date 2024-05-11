@@ -11,6 +11,7 @@
 #define MAX_MATRIX_SIZE 10000
 
 class PaceGraph;
+class Order;
 
 class CrossingMatrix {
   private:
@@ -39,7 +40,7 @@ class CrossingMatrix {
     void remove_free_vertices(std::vector<int> &vertices_to_remove);
     void clean();
     void print();
-    void print_averaged();
+    void print_in_order(Order &order);
 };
 
 #endif // PACE2024_CROSSING_MATRIX_HPP
