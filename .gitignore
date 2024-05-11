@@ -51,3 +51,4 @@ heuristic_solver.tgz
 .ipynb_checkpoints
 data/feedback_edge_set/
 .cache
+feedback_edge_set_solver.tgz
