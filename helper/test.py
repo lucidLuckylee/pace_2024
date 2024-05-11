@@ -104,6 +104,32 @@ def run_command_with_limit(cmd, input_path, output_path, timeout, mem_limit_gb=N
 
 def count_crossings(input_path, solution_str):
     order = pace.read_solution(solution_str)
+
+    output = ""
+    skip = 0
+    is_cutwidth_file = False
+    with open(input_path, "r", encoding='utf-8') as f:
+        for line in f.readlines():
+            if skip > 0:
+                skip -= 1
+                continue
+            if line[0] == "p":
+                a, b = list(map(int, line.split(" ")[2:4]))
+                spaces = line.count(" ")
+                if spaces == 5:
+                    is_cutwidth_file = True
+                    output += line
+                    skip = a + b
+                else:
+                    break
+            elif is_cutwidth_file:
+                output += line
+
+    if is_cutwidth_file:
+        with open("tmp.gr", "w", encoding='utf-8') as f:
+            f.write(output)
+        input_path = "tmp.gr"
+
     pace_graph = pace.read_graph(input_path, order=order)
     crossings = pace_graph.countcrossings_segtree()
     return crossings

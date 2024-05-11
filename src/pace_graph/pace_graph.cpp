@@ -51,8 +51,15 @@ PaceGraph PaceGraph::from_gr(std::istream &gr) {
     std::string line;
     while (std::getline(gr, line)) {
         if (line[0] == 'p') {
-            // TODO: Extend for parameterized track with cutwidth
+            int spaceCount = std::count(line.begin(), line.end(), ' ');
+
             sscanf(line.c_str(), "p ocr %d %d", &a, &b);
+            if (spaceCount == 5) {
+                for (int _ = 0; _ < a + b; _++) {
+                    std::getline(gr, line);
+                }
+            }
+
             pfound = true;
         } else if (line[0] == 'c') {
             // Comment line, do nothing
