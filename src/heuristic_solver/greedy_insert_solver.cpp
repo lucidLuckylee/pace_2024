@@ -48,7 +48,7 @@ Order GreedyInsertSolver::solve(PaceGraph &graph) {
     // Generate a random index
 
     while (!vertices_not_inserted.empty()) {
-        std::cout << vertices_not_inserted.size() << std::endl;
+        //std::cout << vertices_not_inserted.size() << std::endl;
         std::uniform_int_distribution<> dis(0,
                                             vertices_not_inserted.size() - 1);
 

@@ -179,11 +179,11 @@ void apply_reduction_rules(PaceGraph &graph) {
         rrlarge(graph);
         rrtransitive(graph);
     };
-    while (rrlo2(graph)) {
-        rrtransitive(graph);
-        while (rrlo1(graph)) {
-            rrlarge(graph);
-            rrtransitive(graph);
-        };
-    };
+    //while (rrlo2(graph)) {
+    //    rrtransitive(graph);
+    //    while (rrlo1(graph)) {
+    //        rrlarge(graph);
+    //        rrtransitive(graph);
+    //    };
+    //};
 }
