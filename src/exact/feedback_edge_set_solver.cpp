@@ -1,8 +1,10 @@
 
 #include "feedback_edge_set_solver.hpp"
 #include "../heuristic_solver/genetic_algorithm.hpp"
+#include "../heuristic_solver/greedy_insert_solver.hpp"
 #include "../lb/simple_lb.hpp"
 #include "feedback_edge_set_heuristic.hpp"
+
 #include <filesystem>
 #include <fstream>
 #ifdef USE_ILP_TO_SOLVE_FES
@@ -33,10 +35,14 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
         std::chrono::milliseconds(static_cast<int>(
             time_limit_left_for_heuristic.count() * percentage_for_this_part));
     time_limit_left_for_heuristic -= time_for_heuristic;
+    Order goodOrder = Order(0);
 
     GeneticHeuristicParameter geneticHeuristicParameter;
     GeneticHeuristic geneticHeuristic(
-        [start, time_for_heuristic](auto _) {
+        [start, time_for_heuristic, this](auto it) {
+            if (this->fes_parameter.useFastHeuristic) {
+                return it == 0;
+            }
             auto now = std::chrono::steady_clock::now();
             auto elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(now -
@@ -45,7 +51,8 @@ Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
         },
         geneticHeuristicParameter);
 
-    Order goodOrder = geneticHeuristic.solve(graph);
+    goodOrder = geneticHeuristic.solve(graph);
+
     long crossings = goodOrder.count_crossings(graph);
 
     SimpleLBParameter parameter;
