@@ -31,7 +31,7 @@ class GeneticHeuristic : public Heuristic {
         GeneticHeuristicParameter geneticHeuristicParameter)
         : geneticHeuristicParameter(geneticHeuristicParameter),
           Heuristic(std::move(has_time_left)) {}
-    Order solve(PaceGraph &graph) override;
+    Order solve(PaceGraph &graph, char **argv) override;
 };
 
 #endif // PACE2024_GENETIC_ALGORITHM_HPP

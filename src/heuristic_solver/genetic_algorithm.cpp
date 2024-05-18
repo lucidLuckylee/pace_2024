@@ -5,7 +5,13 @@
 #include <chrono>
 #include <iostream>
 
-Order GeneticHeuristic::solve(PaceGraph &graph) {
+Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
+    // change varibles
+    int forceMoveAllDirectNodesAfterIterationWithNoImprovement =
+        std::strtol(argv[0]);
+    int numberOfForceSwapPositions = argv[1];
+    int numberOfForceSwapStepSize = argv[2];
+
     if (graph.size_free <= 1) {
         return Order(graph.size_free);
     }

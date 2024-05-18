@@ -3,9 +3,9 @@
 #include "heuristic_solver.hpp"
 #include <iostream>
 
-int main() {
-    HeuristicSolver solver;
+int main(int argc, char **argv) {
+    HeuristicSolver solver();
     PaceGraph graph = PaceGraph::from_gr(std::cin);
-    solver.solve(graph);
+    solver.solve(graph, argv);
     return 0;
 }
