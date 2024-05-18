@@ -8,9 +8,9 @@
 Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
     // change varibles
     int forceMoveAllDirectNodesAfterIterationWithNoImprovement =
-        std::strtol(argv[0]);
-    int numberOfForceSwapPositions = argv[1];
-    int numberOfForceSwapStepSize = argv[2];
+        std::strtol(argv[0], nullptr, 0);
+    int numberOfForceSwapPositions = std::strtol(argv[1], nullptr, 0);
+    int numberOfForceSwapStepSize = std::strtol(argv[2], nullptr, 0);
 
     if (graph.size_free <= 1) {
         return Order(graph.size_free);
@@ -35,7 +35,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
     MeanPositionSolver meanPositionHeuristic(
         [this](int it) { return it == 0 && this->has_time_left(0); },
         meanPositionParameter);
-    Order bestOrder = meanPositionHeuristic.solve(graph);
+    Order bestOrder = meanPositionHeuristic.solve(graph, argv);
     local_search(graph, bestOrder, localSearchParameter,
                  [this]() { return this->has_time_left(0); });
     long bestCost = bestOrder.count_crossings(graph);
@@ -77,8 +77,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
             number_of_iteration_without_improvement++;
 
             if (number_of_iteration_without_improvement >
-                geneticHeuristicParameter
-                    .forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
+                forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
 
                 localSearchParameter.siftingType =
                     geneticHeuristicParameter.siftingTypeImprovementSearch;
@@ -88,9 +87,9 @@ Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
 
                 for (int swapFurther = 1;
                      swapFurther <=
-                     geneticHeuristicParameter.numberOfForceSwapPositions;
+                     numberOfForceSwapPositions;
                      swapFurther +=
-                     geneticHeuristicParameter.numberOfForceSwapStepSize) {
+                     numberOfForceSwapStepSize) {
 
                     if (!has_time_left(number_of_iterations)) {
                         break;

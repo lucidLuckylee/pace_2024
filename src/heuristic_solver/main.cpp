@@ -4,7 +4,7 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-    HeuristicSolver solver();
+    HeuristicSolver solver ();
     PaceGraph graph = PaceGraph::from_gr(std::cin);
     solver.solve(graph, argv);
     return 0;

@@ -110,7 +110,7 @@ void MeanPositionSolver::improveOrderWithSwapping(PaceGraph &graph,
     }
 }
 
-Order MeanPositionSolver::solve(PaceGraph &graph) {
+Order MeanPositionSolver::solve(PaceGraph &graph, char** argv) {
 
     Order currentBestOrder = Order(graph.size_free);
 

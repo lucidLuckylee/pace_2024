@@ -48,7 +48,7 @@ template <typename T> class Solver {
         sigaction(SIGTERM, &action, NULL);
     }
 
-    void solve(PaceGraph &graph) {
+    void solve(PaceGraph &graph, char** argv) {
         std::tuple<std::vector<std::unique_ptr<PaceGraph>>, std::vector<int>>
             val = graph.splitGraphs();
         std::vector<std::unique_ptr<PaceGraph>> splittedGraphs =
