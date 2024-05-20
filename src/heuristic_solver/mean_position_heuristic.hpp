@@ -30,7 +30,7 @@ class MeanPositionSolver : Heuristic {
         : Heuristic(std::move(has_time_left)),
           meanPositionParameter(meanPositionParameter) {}
 
-    Order solve(PaceGraph &graph, char** argv) override;
+    Order solve(PaceGraph &graph) override;
 };
 
 #endif // PACE2024_CHEAP_HEURISTICS_H

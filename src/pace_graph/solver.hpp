@@ -48,7 +48,7 @@ template <typename T> class Solver {
         sigaction(SIGTERM, &action, NULL);
     }
 
-    void solve(PaceGraph &graph, char** argv) {
+    void solve(PaceGraph &graph) {
         std::tuple<std::vector<std::unique_ptr<PaceGraph>>, std::vector<int>>
             val = graph.splitGraphs();
         std::vector<std::unique_ptr<PaceGraph>> splittedGraphs =
@@ -197,7 +197,7 @@ class SolutionSolver : public Solver<Order> {
             auto &g = subgraphs[i];
             auto &sol = results[i];
 
-            // crossings += sol.count_crossings(*g);
+            crossings += sol.count_crossings(*g);
             crossings += g->cost_through_deleted_nodes;
             std::vector<int> sub_solution = sol.position_to_vertex;
 

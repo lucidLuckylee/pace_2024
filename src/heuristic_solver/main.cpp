@@ -4,8 +4,9 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-    HeuristicSolver solver ();
+    HeuristicSolver solver;
     PaceGraph graph = PaceGraph::from_gr(std::cin);
-    solver.solve(graph, argv);
+    GeneticHeuristicParameter::getInstance().parseArgs(argc, argv);
+    solver.solve(graph);
     return 0;
 }

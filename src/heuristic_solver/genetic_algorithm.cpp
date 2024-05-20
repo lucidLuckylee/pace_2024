@@ -5,22 +5,18 @@
 #include <chrono>
 #include <iostream>
 
-Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
+Order GeneticHeuristic::solve(PaceGraph &graph) {
     // change varibles
-    int forceMoveAllDirectNodesAfterIterationWithNoImprovement =
-        std::strtol(argv[0], nullptr, 0);
-    int numberOfForceSwapPositions = std::strtol(argv[1], nullptr, 0);
-    int numberOfForceSwapStepSize = std::strtol(argv[2], nullptr, 0);
-
     if (graph.size_free <= 1) {
         return Order(graph.size_free);
     }
 
     LocalSearchParameter localSearchParameter;
     localSearchParameter.siftingType =
-        geneticHeuristicParameter.siftingTypeInitialSearch;
+        GeneticHeuristicParameter::getInstance().siftingTypeInitialSearch;
     localSearchParameter.siftingInsertionType =
-        geneticHeuristicParameter.siftingInsertionTypeInitialSearch;
+        GeneticHeuristicParameter::getInstance()
+            .siftingInsertionTypeInitialSearch;
 
     graph.init_crossing_matrix_if_necessary();
 
@@ -35,7 +31,7 @@ Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
     MeanPositionSolver meanPositionHeuristic(
         [this](int it) { return it == 0 && this->has_time_left(0); },
         meanPositionParameter);
-    Order bestOrder = meanPositionHeuristic.solve(graph, argv);
+    Order bestOrder = meanPositionHeuristic.solve(graph);
     local_search(graph, bestOrder, localSearchParameter,
                  [this]() { return this->has_time_left(0); });
     long bestCost = bestOrder.count_crossings(graph);
@@ -77,19 +73,21 @@ Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
             number_of_iteration_without_improvement++;
 
             if (number_of_iteration_without_improvement >
-                forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
+                GeneticHeuristicParameter::getInstance()
+                    .forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
 
                 localSearchParameter.siftingType =
-                    geneticHeuristicParameter.siftingTypeImprovementSearch;
+                    GeneticHeuristicParameter::getInstance()
+                        .siftingTypeImprovementSearch;
                 localSearchParameter.siftingInsertionType =
-                    geneticHeuristicParameter
+                    GeneticHeuristicParameter::getInstance()
                         .siftingInsertionTypeImprovementSearch;
 
                 for (int swapFurther = 1;
-                     swapFurther <=
-                     numberOfForceSwapPositions;
-                     swapFurther +=
-                     numberOfForceSwapStepSize) {
+                     swapFurther <= GeneticHeuristicParameter::getInstance()
+                                        .numberOfForceSwapPositions;
+                     swapFurther += GeneticHeuristicParameter::getInstance()
+                                        .numberOfForceSwapStepSize) {
 
                     if (!has_time_left(number_of_iterations)) {
                         break;
@@ -158,9 +156,11 @@ Order GeneticHeuristic::solve(PaceGraph &graph, char **argv) {
                 }
 
                 localSearchParameter.siftingType =
-                    geneticHeuristicParameter.siftingTypeInitialSearch;
+                    GeneticHeuristicParameter::getInstance()
+                        .siftingTypeInitialSearch;
                 localSearchParameter.siftingInsertionType =
-                    geneticHeuristicParameter.siftingInsertionTypeInitialSearch;
+                    GeneticHeuristicParameter::getInstance()
+                        .siftingInsertionTypeInitialSearch;
                 number_of_iteration_without_improvement = 0;
 
                 lookAtOrder = Order(graph.size_free);
