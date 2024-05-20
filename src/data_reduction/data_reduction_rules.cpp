@@ -9,7 +9,7 @@
  * RR1: For every pair {a, b} with c_{a,b} = 0 commit a < b in
  * partial_order.
  */
-bool rr1(PaceGraph &graph) {
+void rr1(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             // RR1
@@ -39,7 +39,7 @@ bool rr1(PaceGraph &graph) {
 //    }
 //}
 
-bool rr2_same_border(PaceGraph &graph) {
+void rr2_same_border(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             if (graph.neighbors_free[a].size() > 0 &&
@@ -59,7 +59,7 @@ bool rr2_same_border(PaceGraph &graph) {
     }
 }
 
-bool rr3(PaceGraph &graph) {
+void rr3(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             // RR1
@@ -86,7 +86,7 @@ bool rr3(PaceGraph &graph) {
  * upper_bound - lb commit a < b in partial_order.
  *
  */
-bool rrlarge(PaceGraph &graph) {
+void rrlarge(PaceGraph &graph) {
     long ub = graph.ub;
     SimpleLBParameter parameter;
     parameter.usePotentialMatrix = false;
@@ -173,7 +173,7 @@ bool rrlo2(PaceGraph &graph) {
     return applied;
 }
 
-bool rrtransitive(PaceGraph &graph) {
+void rrtransitive(PaceGraph &graph) {
     auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
     dg.init_reachability_matrix_dag();
     for (int i = 0; i < graph.size_free; i++) {
