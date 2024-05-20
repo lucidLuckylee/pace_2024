@@ -51,7 +51,7 @@ void rr2_same_border(PaceGraph &graph) {
                         graph.crossing.matrix[b][a]) {
                         graph.crossing.set_a_lt_b(a, b);
                     } else {
-                        graph.crossing.set_a_lt_b(a, b);
+                        graph.crossing.set_a_lt_b(b, a);
                     }
                 }
             }
