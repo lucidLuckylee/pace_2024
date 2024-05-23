@@ -1,3 +1,5 @@
+from multiprocessing import freeze_support
+
 from ConfigSpace import ConfigurationSpace, UniformIntegerHyperparameter
 from smac import Scenario, HyperparameterOptimizationFacade
 
@@ -21,16 +23,19 @@ def objective_function(cfg, seed: int = 0, num_evals=5):
     return average_result
 
 
-cs = ConfigurationSpace()
-cs.add_hyperparameter(UniformIntegerHyperparameter("forceMoveAllDirectNodesAfterIterationWithNoImprovement", 1, 1000))
-cs.add_hyperparameter(UniformIntegerHyperparameter("numberOfForceSwapPositions", 1, 100))
-cs.add_hyperparameter(UniformIntegerHyperparameter("numberOfForceSwapStepSize", 1, 10))
+if __name__ == '__main__':
+    freeze_support()
+    cs = ConfigurationSpace()
+    cs.add_hyperparameter(
+        UniformIntegerHyperparameter("forceMoveAllDirectNodesAfterIterationWithNoImprovement", 1, 1000))
+    cs.add_hyperparameter(UniformIntegerHyperparameter("numberOfForceSwapPositions", 1, 100))
+    cs.add_hyperparameter(UniformIntegerHyperparameter("numberOfForceSwapStepSize", 1, 10))
 
-scenario = Scenario(cs, n_workers=20, n_trials=500)
+    scenario = Scenario(cs, n_workers=20, n_trials=500)
 
-smac = HyperparameterOptimizationFacade(
-    scenario,
-    objective_function,
-)
-incumbent = smac.optimize()
-print(incumbent)
+    smac = HyperparameterOptimizationFacade(
+        scenario,
+        objective_function,
+    )
+    incumbent = smac.optimize()
+    print(incumbent)

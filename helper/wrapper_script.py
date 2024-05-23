@@ -15,7 +15,7 @@ def run_program(param1, param2, param3):
 
     points = 0
 
-    SOLUTION_PATH = uuid.uuid4()
+    SOLUTION_PATH = str(uuid.uuid4())
 
     for i, path in enumerate(paths):
         pace_graph_path = os.path.join(base_path, path)
