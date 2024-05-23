@@ -1,22 +1,21 @@
 import os
-import sys
+import uuid
 
-from test import run_command_with_limit, SOLUTION_PATH, clean_output, check_if_solution_is_valid, count_crossings
+from test import run_command_with_limit, clean_output, check_if_solution_is_valid, count_crossings
 
 
 def run_program(param1, param2, param3):
     base_path = "/home/jt/work/uni/pace/pace_2024/data/heuristic_public/"
     program = f"/home/jt/work/uni/pace/pace_2024/cmake-build-release/heuristic_solver {param1} {param2} {param3}"
-    paths = os.listdir(base_path)
+    # paths = os.listdir(base_path)
 
-    try:
-        paths = ["13.gr", "19.gr", "24.gr", "37.gr", "38.gr", "55.gr", "68.gr", "73.gr", "89.gr", "94.gr"]
-        optimal_sol = [3361112, 11031590, 4450937, 33588854, 30602538, 1282785, 1282785, 567661, 2833852, 365618,
-                       3599100]
-    except ValueError:
-        pass
+    paths = ["13.gr", "19.gr", "24.gr", "37.gr", "38.gr", "55.gr", "68.gr", "73.gr", "89.gr", "94.gr"]
+    optimal_sol = [3361112, 11031590, 4450937, 33588854, 30602538, 1282785, 1282785, 567661, 2833852, 365618,
+                   3599100]
 
     points = 0
+
+    SOLUTION_PATH = uuid.uuid4()
 
     for i, path in enumerate(paths):
         pace_graph_path = os.path.join(base_path, path)
