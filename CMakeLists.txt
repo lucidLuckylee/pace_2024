@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(pace2024)
 
+
+# Set the build type to Release (needed for optil.io)
+#set(CMAKE_BUILD_TYPE Release)
+
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
@@ -105,36 +109,21 @@ message(STATUS "Check ILP Solver: ${ENABLE_ILP_SOLVER}")
 
 if (ENABLE_ILP_SOLVER)
     message(STATUS "ILP Solver Enabled")
-    option(USE_ILP_TO_SOLVE_FES "Enable ILP Solver to solve FES" ON)
 
-    if (USE_ILP_TO_SOLVE_FES)
-        message(STATUS "FES ILP Enabled")
+    message(STATUS "FES ILP Enabled")
 
-        add_library(
-                fes_ilp_solver_lib
-                src/exact/feedback_edge_set_ilp.cpp
-                src/exact/feedback_edge_set_ilp.hpp
-        )
-
-        add_compile_definitions(USE_ILP_TO_SOLVE_FES)
-        target_link_libraries(feedback_edge_set_solver fes_ilp_solver_lib)
-        target_link_libraries(feedback_edge_set_solver ortools::ortools)
-    endif (USE_ILP_TO_SOLVE_FES)
-
-
-    find_package(ortools CONFIG REQUIRED)
-
-    add_executable(ilp_solver src/ilp_solver/main.cpp
-            src/ilp_solver/ilp_solver.hpp
-
-            src/lb/simple_lb.cpp
-            src/lb/simple_lb.hpp
-            src/ilp_solver/optimization_solver.hpp
-            src/ilp_solver/cp_solver.hpp
+    add_library(
+            fes_ilp_solver_lib
+            src/exact/feedback_edge_set_ilp.cpp
+            src/exact/feedback_edge_set_ilp.hpp
     )
 
-    target_link_libraries(ilp_solver PaceGraph)
-    target_link_libraries(ilp_solver ortools::ortools)
+    find_package(ortools CONFIG REQUIRED)
+    add_compile_definitions(USE_ILP_TO_SOLVE_FES)
+    target_link_libraries(feedback_edge_set_solver fes_ilp_solver_lib)
+    target_link_libraries(feedback_edge_set_solver ortools::ortools)
+
+
 endif ()
 
 

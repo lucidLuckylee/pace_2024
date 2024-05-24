@@ -2,9 +2,11 @@
 #include <iostream>
 
 int main() {
+    PaceGraph graph = PaceGraph::from_gr(std::cin);
 
     FESParameter fes_parameter;
-    PaceGraph graph = PaceGraph::from_gr(std::cin);
+    fes_parameter.useFastHeuristic = graph.is_cutwidth_graph;
+
     FeedbackEdgeSetSolver solver(fes_parameter);
     solver.solve(graph);
     return 0;

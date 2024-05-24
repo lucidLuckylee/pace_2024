@@ -165,7 +165,8 @@ class Order {
 
         return std::make_unique<PaceGraph>(graph.size_fixed, graph.size_free,
                                            new_edges, graph.fixed_real_names,
-                                           new_free_real_names);
+                                           new_free_real_names,
+                                           graph.is_cutwidth_graph);
     }
 };
 
