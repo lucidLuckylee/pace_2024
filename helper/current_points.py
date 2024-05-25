@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 
-def main(global_leaderboard, username, password):
+def main(global_leaderboard, ignore_instance_40, username, password):
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
@@ -46,7 +46,11 @@ def main(global_leaderboard, username, password):
         else:
             elements = elements[6:]
 
-        for score in elements:
+        for i, score in enumerate(elements):
+
+            if i == 39 and ignore_instance_40:
+                continue
+
             try:
                 points[name].append(int(score.get_text(strip=True).split('.')[0].replace(",", "")))
             except:
@@ -54,7 +58,7 @@ def main(global_leaderboard, username, password):
 
     best_scores = []
 
-    for i in range(0, 100):
+    for i in range(0, len(list(points.values())[0])):
         best_score = 1000000000000000
         for value in points.values():
             if isinstance(value[i], int) and value[i] < best_score:
@@ -65,7 +69,7 @@ def main(global_leaderboard, username, password):
 
     for name in points:
         overall_points = 0
-        for i in range(0, 100):
+        for i in range(0, len(best_scores)):
             if isinstance(points[name][i], int):
                 score = points[name][i]
                 best_score = best_scores[i]
@@ -85,10 +89,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--global_leaderboard', type=bool,
                         help='Weather to use the global leaderboard (leaderboard is not hidden) or only my runs')
+    parser.add_argument('--ignore_instance_40', type=bool,
+                        help='Weather to ignore instance 40 (this instance seems to be the hardest and introduce a high bias)')
 
     parser.add_argument("--username", type=str, default="", help="Username to login (needed for my runs)")
     parser.add_argument("--password", type=str, default="", help="Password to login (needed for my runs)")
 
     args = parser.parse_args()
 
-    main(args.global_leaderboard, args.username, args.password)
+    main(args.global_leaderboard, args.ignore_instance_40, args.username, args.password)
