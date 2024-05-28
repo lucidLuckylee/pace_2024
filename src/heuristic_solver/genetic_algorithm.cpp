@@ -11,7 +11,10 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
     }
 
     LocalSearchParameter localSearchParameter;
-    localSearchParameter.siftingType = SiftingType::Random;
+    localSearchParameter.siftingType =
+        geneticHeuristicParameter.siftingTypeInitialSearch;
+    localSearchParameter.siftingInsertionType =
+        geneticHeuristicParameter.siftingInsertionTypeInitialSearch;
 
     graph.init_crossing_matrix_if_necessary();
 
@@ -70,6 +73,13 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
             if (number_of_iteration_without_improvement >
                 geneticHeuristicParameter
                     .forceMoveAllDirectNodesAfterIterationWithNoImprovement) {
+
+                localSearchParameter.siftingType =
+                    geneticHeuristicParameter.siftingTypeImprovementSearch;
+                localSearchParameter.siftingInsertionType =
+                    geneticHeuristicParameter
+                        .siftingInsertionTypeImprovementSearch;
+
                 for (int swapFurther = 1;
                      swapFurther <=
                      geneticHeuristicParameter.numberOfForceSwapPositions;
@@ -142,6 +152,10 @@ Order GeneticHeuristic::solve(PaceGraph &graph) {
                     }
                 }
 
+                localSearchParameter.siftingType =
+                    geneticHeuristicParameter.siftingTypeInitialSearch;
+                localSearchParameter.siftingInsertionType =
+                    geneticHeuristicParameter.siftingInsertionTypeInitialSearch;
                 number_of_iteration_without_improvement = 0;
 
                 lookAtOrder = Order(graph.size_free);

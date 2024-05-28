@@ -8,49 +8,75 @@
  * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
  * RR1: For every pair {a, b} with c_{a,b} = 0 commit a < b in
  * partial_order.
- * @return Boolean value indicating whether reduction rules were applied.
  */
-bool rr1(PaceGraph &graph) {
-    bool applied = false;
+void rr1(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             // RR1
             if (graph.crossing.matrix[a][b] == 0) {
-                applied = graph.crossing.set_a_lt_b(a, b) || applied;
+                graph.crossing.set_a_lt_b(a, b);
             } else if (graph.crossing.matrix[b][a] == 0) {
-                applied = graph.crossing.set_a_lt_b(b, a) || applied;
+                graph.crossing.set_a_lt_b(b, a);
             }
         }
     }
-    return applied;
 }
+
 /*
  * Applies reduction rule RR2 from
  * https://www.sciencedirect.com/science/article/pii/S1570866707000469.
  * RR2: For every pair {a, b} with N(a) == N(b) arbitrarily
  * commit a < b in partial_order.
  *
- * @return Boolean value indicating whether reduction rules were applied.
  */
-bool rr2(PaceGraph &graph) {
+//bool rr2(PaceGraph &graph) {
+//    for (int a = 0; a < graph.size_free; a++) {
+//        for (int b = a + 1; b < graph.size_free; b++) {
+//            if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
+//                graph.crossing.set_a_lt_b(a, b);
+//            }
+//        }
+//    }
+//}
 
-    bool applied = false;
-    // auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
-    // dg.topologicalSort();
-
+void rr2_same_border(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
-
-            // int u = dg.topologicalOrder[a];
-            // int v = dg.topologicalOrder[b];
-
-            if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
-                applied = graph.crossing.set_a_lt_b(a, b) || applied;
+            if (graph.neighbors_free[a].size() > 0 &&
+                graph.neighbors_free[b].size() > 0) {
+                if (graph.neighbors_free[a][0] == graph.neighbors_free[b][0] &&
+                    graph.neighbors_free[a].back() ==
+                        graph.neighbors_free[b].back()) {
+                    if (graph.crossing.matrix[a][b] <
+                        graph.crossing.matrix[b][a]) {
+                        graph.crossing.set_a_lt_b(a, b);
+                    } else {
+                        graph.crossing.set_a_lt_b(b, a);
+                    }
+                }
             }
         }
     }
+}
 
-    return applied;
+void rr3(PaceGraph &graph) {
+    for (int a = 0; a < graph.size_free; a++) {
+        for (int b = a + 1; b < graph.size_free; b++) {
+            // RR1
+            if (graph.crossing.matrix[a][b] == 2 && graph.crossing.matrix[b][a] == 1) {
+                // Check if we are in case 1 of Lemma 3
+                if (graph.neighbors_free[a].size() == 2 && graph.neighbors_free[b].size() == 2) {
+                    std::cout << "RR3 DID SOMETHING" << std::endl;
+                    graph.crossing.set_a_lt_b(a, b);
+                }
+            } else if (graph.crossing.matrix[a][b] == 1 && graph.crossing.matrix[b][a] == 2) {
+                if (graph.neighbors_free[a].size() == 2 && graph.neighbors_free[b].size() == 2) {
+                    std::cout << "RR3 DID SOMETHING" << std::endl;
+                    graph.crossing.set_a_lt_b(b, a);
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -59,25 +85,22 @@ bool rr2(PaceGraph &graph) {
  * RRLarge:  Let lb be the simple lb. For every pair {a, b} with c_{b, a} >
  * upper_bound - lb commit a < b in partial_order.
  *
- * @return Boolean value indicating whether the reduction rule was applied.
  */
-bool rrlarge(PaceGraph &graph) {
+void rrlarge(PaceGraph &graph) {
     long ub = graph.ub;
     SimpleLBParameter parameter;
     parameter.usePotentialMatrix = false;
     long lb = simpleLB(graph, parameter);
 
-    bool applied = false;
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             if (graph.crossing.matrix_diff[a][b] > ub - lb) {
-                applied = graph.crossing.set_a_lt_b(b, a) || applied;
+                graph.crossing.set_a_lt_b(b, a);
             } else if (graph.crossing.matrix_diff[b][a] > ub - lb) {
-                applied = graph.crossing.set_a_lt_b(a, b) || applied;
+                graph.crossing.set_a_lt_b(a, b);
             }
         }
     }
-    return applied;
 }
 
 /*
@@ -150,40 +173,38 @@ bool rrlo2(PaceGraph &graph) {
     return applied;
 }
 
-bool rrtransitive(PaceGraph &graph) {
-
-    bool applied = false;
-
+void rrtransitive(PaceGraph &graph) {
     auto dg = DirectedGraph::dag_from_partial_order(graph.crossing);
     dg.init_reachability_matrix_dag();
     for (int i = 0; i < graph.size_free; i++) {
         for (int j = 0; j < graph.size_free; j++) {
             if (dg.reachabilityMatrix[i][j]) {
-                applied = graph.crossing.set_a_lt_b(i, j) || applied;
+                graph.crossing.set_a_lt_b(i, j);
             }
         }
     }
-
-    return applied;
 }
+
 void apply_reduction_rules(PaceGraph &graph) {
     if (!graph.init_crossing_matrix_if_necessary()) {
         return;
     }
 
     rr1(graph);
-    rr2(graph);
+    rr2_same_border(graph);
+    rr3(graph);
     rrlarge(graph);
     rrtransitive(graph);
     while (rrlo1(graph)) {
         rrlarge(graph);
         rrtransitive(graph);
     };
-    while (rrlo2(graph)) {
-        rrtransitive(graph);
-        while (rrlo1(graph)) {
-            rrlarge(graph);
-            rrtransitive(graph);
-        };
-    };
+    // Uncomment this to re-enable rrlo2.
+    // while (rrlo2(graph)) {
+    //     rrtransitive(graph);
+    //     while (rrlo1(graph)) {
+    //         rrlarge(graph);
+    //         rrtransitive(graph);
+    //     };
+    // };
 }

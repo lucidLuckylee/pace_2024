@@ -5,12 +5,21 @@
 
 #include "../pace_graph/order.hpp"
 #include "heuristic.hpp"
+#include "local_search.hpp"
 
 class GeneticHeuristicParameter {
   public:
     int forceMoveAllDirectNodesAfterIterationWithNoImprovement = 100;
     int numberOfForceSwapPositions = 20;
     int numberOfForceSwapStepSize = 1;
+
+    SiftingType siftingTypeInitialSearch = SiftingType::Random;
+    SiftingInsertionType siftingInsertionTypeInitialSearch =
+        SiftingInsertionType::Last;
+
+    SiftingType siftingTypeImprovementSearch = SiftingType::Random;
+    SiftingInsertionType siftingInsertionTypeImprovementSearch =
+        SiftingInsertionType::Last;
 };
 
 class GeneticHeuristic : public Heuristic {

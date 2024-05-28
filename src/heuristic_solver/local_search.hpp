@@ -14,13 +14,14 @@ enum class SiftingType {
 
 enum class SiftingInsertionType {
     First,
+    Last,
     Random,
 };
 
 class LocalSearchParameter {
   public:
-    SiftingType siftingType = SiftingType::None;
-    SiftingInsertionType siftingInsertionType = SiftingInsertionType::First;
+    SiftingType siftingType = SiftingType::Random;
+    SiftingInsertionType siftingInsertionType = SiftingInsertionType::Random;
     bool exhaustiveSifting = true;
 };
 

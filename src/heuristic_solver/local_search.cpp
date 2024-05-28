@@ -20,7 +20,7 @@ long sifting_node(PaceGraph &graph, Order &order,
     long crossingOld = 0;
     auto crossing_matrix_diff = graph.crossing.matrix_diff[v];
 
-    int foundWithThisCost = 0;
+    int foundWithThisCost = 1;
     for (int i = posOfV - 1; i >= 0; i--) {
         int u = order.get_vertex(i);
 
@@ -41,11 +41,15 @@ long sifting_node(PaceGraph &graph, Order &order,
                     if (rand() % foundWithThisCost == 0) {
                         bestPositionToInsert = i;
                     }
-                } else {
+                } else if (parameter.siftingInsertionType ==
+                           SiftingInsertionType::Last) {
                     useSolution = true;
+                } else if (parameter.siftingInsertionType ==
+                           SiftingInsertionType::First) {
+                    useSolution = false;
                 }
             } else {
-                foundWithThisCost = 0;
+                foundWithThisCost = 1;
                 useSolution = true;
             }
 
@@ -77,11 +81,15 @@ long sifting_node(PaceGraph &graph, Order &order,
                     if (rand() % foundWithThisCost == 0) {
                         bestPositionToInsert = i;
                     }
-                } else {
+                } else if (parameter.siftingInsertionType ==
+                           SiftingInsertionType::Last) {
                     useSolution = true;
+                } else if (parameter.siftingInsertionType ==
+                           SiftingInsertionType::First) {
+                    useSolution = false;
                 }
             } else {
-                foundWithThisCost = 0;
+                foundWithThisCost = 1;
                 useSolution = true;
             }
 
@@ -98,11 +106,6 @@ long sifting_node(PaceGraph &graph, Order &order,
 
 long sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
              std::vector<int> &position_array) {
-
-    if (parameter.siftingType == SiftingType::None) {
-        return 0;
-    }
-
     if (parameter.siftingType == SiftingType::Random) {
         unsigned seed =
             std::chrono::system_clock::now().time_since_epoch().count();
