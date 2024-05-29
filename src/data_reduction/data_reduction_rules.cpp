@@ -29,7 +29,7 @@ void rr1(PaceGraph &graph) {
  * commit a < b in partial_order.
  *
  */
-//bool rr2(PaceGraph &graph) {
+//void rr2(PaceGraph &graph) {
 //    for (int a = 0; a < graph.size_free; a++) {
 //        for (int b = a + 1; b < graph.size_free; b++) {
 //            if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
@@ -39,7 +39,7 @@ void rr1(PaceGraph &graph) {
 //    }
 //}
 
-void rr2_same_border(PaceGraph &graph) {
+void rr2(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             if (graph.neighbors_free[a].size() > 0 &&
@@ -47,7 +47,7 @@ void rr2_same_border(PaceGraph &graph) {
                 if (graph.neighbors_free[a][0] == graph.neighbors_free[b][0] &&
                     graph.neighbors_free[a].back() ==
                         graph.neighbors_free[b].back()) {
-                    if (graph.crossing.matrix[a][b] <
+                    if (graph.crossing.matrix[a][b] <=
                         graph.crossing.matrix[b][a]) {
                         graph.crossing.set_a_lt_b(a, b);
                     } else {
@@ -66,12 +66,10 @@ void rr3(PaceGraph &graph) {
             if (graph.crossing.matrix[a][b] == 2 && graph.crossing.matrix[b][a] == 1) {
                 // Check if we are in case 1 of Lemma 3
                 if (graph.neighbors_free[a].size() == 2 && graph.neighbors_free[b].size() == 2) {
-                    std::cout << "RR3 DID SOMETHING" << std::endl;
                     graph.crossing.set_a_lt_b(a, b);
                 }
             } else if (graph.crossing.matrix[a][b] == 1 && graph.crossing.matrix[b][a] == 2) {
                 if (graph.neighbors_free[a].size() == 2 && graph.neighbors_free[b].size() == 2) {
-                    std::cout << "RR3 DID SOMETHING" << std::endl;
                     graph.crossing.set_a_lt_b(b, a);
                 }
             }
@@ -191,7 +189,7 @@ void apply_reduction_rules(PaceGraph &graph) {
     }
 
     rr1(graph);
-    rr2_same_border(graph);
+    rr2(graph);
     rr3(graph);
     rrlarge(graph);
     rrtransitive(graph);
