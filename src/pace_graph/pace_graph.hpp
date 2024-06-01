@@ -30,6 +30,7 @@ class PaceGraph {
   public:
     long lb = 0;
     long ub = 1000000000;
+    bool is_cutwidth_graph = false;
 
     long cost_through_deleted_nodes = 0;
 
@@ -61,7 +62,7 @@ class PaceGraph {
 
     PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges,
               std::vector<int> fixed_real_names,
-              std::vector<int> free_real_names);
+              std::vector<int> free_real_names, bool is_cutwidth_graph);
 
     /**
      *
@@ -71,8 +72,10 @@ class PaceGraph {
      * graph. u must be always in [0,..., a - 1] and v must be always in
      * [0,..., b - 1]
      */
-    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges)
-        : PaceGraph(a, b, edges, createMap(a, 0), createMap(b, a)) {}
+    PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges,
+              bool is_cutwidth_graph)
+        : PaceGraph(a, b, edges, createMap(a, 0), createMap(b, a),
+                    is_cutwidth_graph) {}
 
     /**
      * To read more about the .gr file format, see:

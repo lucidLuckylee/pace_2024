@@ -59,31 +59,30 @@ void DirectedGraph::tarjansDFS(int v) {
         sccs.push_back(component);
     }
 }
-DirectedGraph DirectedGraph::construct_sccs_graph() {
-    std::vector<std::vector<int>> sccs_neighbors(sccs.size(),
-                                                 std::vector<int>());
 
+DirectedGraph DirectedGraph::construct_sccs_graph() {
+    std::vector sccs_neighbors(sccs.size(), std::vector<int>());
+
+    std::vector nodes_scc(neighbors.size(), -1);
+    for (int i = 0; i < sccs.size(); i++) {
+        for (const auto &node : sccs[i]) {
+            nodes_scc[node] = i;
+        }
+    }
+
+    std::vector<bool> alreadySet = std::vector(sccs.size(), false);
     for (int i = 0; i < sccs.size(); i++) {
 
         auto &sccI = sccs[i];
-        for (int j = 0; j < sccs.size(); j++) {
 
-            if (i == j)
-                continue;
+        std::fill(alreadySet.begin(), alreadySet.end(), false);
+        alreadySet[i] = true;
 
-            auto &sccJ = sccs[j];
-
-            bool added = false;
-            for (int u : sccI) {
-                if (added)
-                    break;
-                for (int v : sccJ) {
-                    if (std::binary_search(neighbors[u].begin(),
-                                           neighbors[u].end(), v)) {
-                        sccs_neighbors[i].push_back(j);
-                        added = true;
-                        break;
-                    }
+        for (const auto &node : sccI) {
+            for (const auto &neighbor : neighbors[node]) {
+                if (!alreadySet[nodes_scc[neighbor]]) {
+                    alreadySet[nodes_scc[neighbor]] = true;
+                    sccs_neighbors[i].push_back(nodes_scc[neighbor]);
                 }
             }
         }
@@ -91,6 +90,7 @@ DirectedGraph DirectedGraph::construct_sccs_graph() {
 
     return DirectedGraph(sccs_neighbors);
 }
+
 void DirectedGraph::init_reachability_matrix_dag() {
 
     reachabilityMatrix =

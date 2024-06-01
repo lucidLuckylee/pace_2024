@@ -4,6 +4,11 @@
 
 #include "../pace_graph/solver.hpp"
 
+class FESParameter {
+  public:
+    bool useFastHeuristic = true;
+};
+
 class Edge;
 
 class Circle {
@@ -51,10 +56,10 @@ class FeedbackEdgeInstance {
     Order globalUBOrder;
     void *ilpModel = nullptr;
 
-    explicit FeedbackEdgeInstance(
-        std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
-        std::vector<std::shared_ptr<Circle>> &circles, Order &globalUBOrder,
-        long globalUB)
+    explicit
+    FeedbackEdgeInstance(std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
+                         std::vector<std::shared_ptr<Circle>> &circles,
+                         Order &globalUBOrder, long globalUB)
         : edges(edges), circles(circles), globalUB(globalUB),
           globalUBOrder(globalUBOrder){};
 
@@ -94,6 +99,7 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
         std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order);
 
     void findGoodCircleOrderForLB(FeedbackEdgeInstance &instance);
+    FESParameter fes_parameter;
 
   protected:
     Order run(PaceGraph &graph) override;
@@ -105,8 +111,9 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
                            bool useLocalSearch);
 
     explicit FeedbackEdgeSetSolver(
+        FESParameter fes_parameter,
         std::chrono::milliseconds limit = std::chrono::milliseconds::max())
-        : SolutionSolver(limit) {}
+        : fes_parameter(fes_parameter), SolutionSolver(limit) {}
 };
 
 #endif // PACE2024_FEEDBACK_EDGE_SET_SOLVER_HPP

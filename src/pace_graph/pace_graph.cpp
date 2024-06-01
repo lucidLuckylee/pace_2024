@@ -12,7 +12,8 @@
 
 PaceGraph::PaceGraph(int a, int b, std::vector<std::tuple<int, int>> &edges,
                      std::vector<int> fixed_real_names,
-                     std::vector<int> free_real_names) {
+                     std::vector<int> free_real_names, bool is_cutwidth_graph)
+    : is_cutwidth_graph(is_cutwidth_graph) {
 
     size_fixed = a;
     size_free = b;
@@ -46,6 +47,7 @@ PaceGraph PaceGraph::from_gr(std::istream &gr) {
     int a = 0;
     int b = 0;
     bool pfound = false;
+    bool cutwidth = false;
     std::vector<std::tuple<int, int>> edges;
 
     std::string line;
@@ -55,6 +57,7 @@ PaceGraph PaceGraph::from_gr(std::istream &gr) {
 
             sscanf(line.c_str(), "p ocr %d %d", &a, &b);
             if (spaceCount == 5) {
+                cutwidth = true;
                 for (int _ = 0; _ < a + b; _++) {
                     std::getline(gr, line);
                 }
@@ -75,7 +78,7 @@ PaceGraph PaceGraph::from_gr(std::istream &gr) {
         }
     }
 
-    return PaceGraph(a, b, edges);
+    return PaceGraph(a, b, edges, cutwidth);
 }
 
 PaceGraph PaceGraph::from_file(std::string file_path) {
@@ -343,7 +346,7 @@ PaceGraph::induced_subgraphs_free(std::vector<int> free_nodes) {
 
     return std::make_unique<PaceGraph>(fixedCount, free_nodes.size(), edges,
                                        new_fixed_real_names,
-                                       new_free_real_names);
+                                       new_free_real_names, is_cutwidth_graph);
 }
 
 std::unique_ptr<PaceGraph>
@@ -385,7 +388,7 @@ PaceGraph::induced_subgraphs_fixed(std::vector<int> fixed_nodes) {
 
     return std::make_unique<PaceGraph>(fixed_nodes.size(), freeCount, edges,
                                        new_fixed_real_names,
-                                       new_free_real_names);
+                                       new_free_real_names, is_cutwidth_graph);
 }
 
 std::tuple<int, int> PaceGraph::calculatingCrossingNumber(int u, int v) {

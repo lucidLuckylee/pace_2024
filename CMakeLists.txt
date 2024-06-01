@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(pace2024)
 
+
+# Set the build type to Release (needed for optil.io)
+#set(CMAKE_BUILD_TYPE Release)
+
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
@@ -107,6 +111,9 @@ if (ENABLE_ILP_SOLVER)
     message(STATUS "ILP Solver Enabled")
 
     find_package(ortools CONFIG REQUIRED)
+    add_compile_definitions(USE_ILP_TO_SOLVE_FES)
+    target_link_libraries(feedback_edge_set_solver fes_ilp_solver_lib)
+    target_link_libraries(feedback_edge_set_solver ortools::ortools)
 
     add_library(
             fes_ilp_solver_lib
