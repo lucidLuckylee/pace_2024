@@ -61,7 +61,8 @@ long sifting_node(PaceGraph &graph, Order &order,
     }
 
     crossingOld = 0;
-    for (int i = posOfV + 1; i < graph.size_free; ++i) {
+    const int graphSize = graph.size_free;
+    for (int i = posOfV + 1; i < graphSize; ++i) {
         int u = order.get_vertex(i);
 
         int crossingDiff = -crossing_matrix_diff[u];
