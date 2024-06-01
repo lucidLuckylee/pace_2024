@@ -1,5 +1,5 @@
 import platform
-from enum import Enum, auto
+from enum import Enum
 import os
 import re
 import subprocess
