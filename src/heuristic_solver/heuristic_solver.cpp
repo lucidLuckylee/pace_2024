@@ -10,18 +10,23 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
 
     MeanPositionParameter meanPositionParameter;
     meanPositionParameter.meanType = average;
+
+    double start_time = this->time_percentage_past();
+
     MeanPositionSolver meanPositionSolver1(
-        [this](int it) {
-            return it == 0 && this->time_percentage_past() < 0.2;
+        [this, start_time](int it) {
+            return it == 0 && this->time_percentage_past() < 0.1 + start_time;
         },
         meanPositionParameter);
 
     Order o1 = meanPositionSolver1.solve(graph);
     meanPositionParameter.meanType = median;
+    start_time = this->time_percentage_past();
+
     MeanPositionSolver meanPositionSolver2(
-        [this](int it) {
+        [this, start_time](int it) {
             return it == 0 && this->has_time_left() &&
-                   this->time_percentage_past() < 0.5;
+                   this->time_percentage_past() < 0.1 + start_time;
         },
         meanPositionParameter);
 
