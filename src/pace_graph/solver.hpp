@@ -188,7 +188,7 @@ class SolutionSolver : public Solver<Order> {
                 std::vector<int> &isolated_nodes) override {
 
         for (const auto &u : isolated_nodes) {
-            std::cout << graph.free_real_names[u] << std::endl;
+            std::cout << graph.free_real_names[u] << '\n';
         }
 
         long crossings = graph.cost_through_deleted_nodes;
@@ -213,11 +213,11 @@ class SolutionSolver : public Solver<Order> {
             }
 
             for (const auto &u : sub_solution) {
-                std::cout << u << std::endl;
+                std::cout << u << '\n';
             }
         }
 
-        std::cerr << "#Crossings: " << crossings << std::endl;
+        std::cerr << "#Crossings: " << crossings << '\n';
     }
 
     Order run(PaceGraph &graph) override = 0;
