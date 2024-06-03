@@ -56,10 +56,10 @@ class FeedbackEdgeInstance {
     Order globalUBOrder;
     void *ilpModel = nullptr;
 
-    explicit
-    FeedbackEdgeInstance(std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
-                         std::vector<std::shared_ptr<Circle>> &circles,
-                         Order &globalUBOrder, long globalUB)
+    explicit FeedbackEdgeInstance(
+        std::vector<std::vector<std::shared_ptr<Edge>>> &edges,
+        std::vector<std::shared_ptr<Circle>> &circles, Order &globalUBOrder,
+        long globalUB)
         : edges(edges), circles(circles), globalUB(globalUB),
           globalUBOrder(globalUBOrder){};
 
@@ -98,7 +98,6 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
         DirectedGraph &graph,
         std::vector<std::vector<std::shared_ptr<Edge>>> &edges, Order &order);
 
-    void findGoodCircleOrderForLB(FeedbackEdgeInstance &instance);
     FESParameter fes_parameter;
 
   protected:
@@ -107,8 +106,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
   public:
     void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance);
 
-    long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance, int cycleSearchStart,
-                           bool useLocalSearch);
+    long lbFeedbackEdgeSet(FeedbackEdgeInstance &instance,
+                           int cycleSearchStart);
 
     explicit FeedbackEdgeSetSolver(
         FESParameter fes_parameter,

@@ -11,13 +11,12 @@ class FeedbackEdgeHeuristicParameter {
   public:
     double priority = 0.05;
     double restriction = 0.35;
-    double improvement = 0.15;
     double search_magnitude = 0.3;
-    int max_iterations = 100;
-    int imp_iterations = 400;
+    int imp_iterations = 10;
 };
 
 void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                                FeedbackEdgeHeuristicParameter &parameter);
+                                FeedbackEdgeHeuristicParameter &parameter,
+                                long lb);
 
 #endif // PACE2024_FEEDBACK_EDGE_SET_HEURISTIC_HPP

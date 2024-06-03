@@ -184,7 +184,7 @@ globalApproximateFeedbackEdgeSet(FeedbackEdgeInstance &instance) {
 std::vector<std::shared_ptr<Edge>>
 neighbourhoodSearch(FeedbackEdgeInstance &instance,
                     std::vector<std::shared_ptr<Edge>> &solution,
-                    FeedbackEdgeHeuristicParameter &parameter) {
+                    FeedbackEdgeHeuristicParameter &parameter, long lb) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -219,6 +219,10 @@ neighbourhoodSearch(FeedbackEdgeInstance &instance,
         if (newCost < currentCost) {
             bestSolution = newSol;
             currentCost = newCost;
+
+            if (currentCost == lb) {
+                break;
+            }
         }
     }
 
@@ -226,53 +230,36 @@ neighbourhoodSearch(FeedbackEdgeInstance &instance,
 }
 
 void approximateFeedbackEdgeSet(FeedbackEdgeInstance &instance,
-                                FeedbackEdgeHeuristicParameter &parameter) {
+                                FeedbackEdgeHeuristicParameter &parameter,
+                                long lb) {
     auto solution = globalApproximateFeedbackEdgeSet(instance);
-
-    for (auto &circle : instance.circles) {
-        circle->covered = 0;
-    }
-
-    for (auto &edge : solution) {
-        for (auto &circle : edge->circles) {
-            circle->covered++;
-        }
-    }
-
-    removeUnnecessaryEdges(instance, solution);
-    solution = neighbourhoodSearch(instance, solution, parameter);
-    for (auto &circle : instance.circles) {
-        circle->covered = 0;
-    }
-
     long cost = calculateCost(solution);
 
-    for (int i = 0; i < parameter.max_iterations; i++) {
-
-        for (auto &edge : instance.usedEdges) {
-            edge->selected = false;
-        }
-
+    if (cost != lb) {
         for (auto &circle : instance.circles) {
             circle->covered = 0;
         }
 
-        auto X = metaRapsConstruction(instance, parameter);
-        long Z = calculateCost(X);
-
-        if (static_cast<double>(Z) <=
-            static_cast<double>(cost) * (1 + parameter.improvement)) {
-            // Neighbourhood search
-
-            X = neighbourhoodSearch(instance, X, parameter);
-            Z = calculateCost(X);
+        for (auto &edge : solution) {
+            for (auto &circle : edge->circles) {
+                circle->covered++;
+            }
         }
 
-        if (Z < cost) {
-            solution = X;
-            cost = Z;
+        removeUnnecessaryEdges(instance, solution);
+        solution = neighbourhoodSearch(instance, solution, parameter, lb);
+        for (auto &circle : instance.circles) {
+            circle->covered = 0;
         }
+
+        for (auto &circle : instance.usedEdges) {
+            circle->selected = false;
+        }
+
+        cost = calculateCost(solution);
     }
 
-    std::cout << "Cost: " << cost << std::endl << std::flush;
+    instance.ub = cost;
+    std::sort(solution.begin(), solution.end());
+    instance.bestSolution = solution;
 }

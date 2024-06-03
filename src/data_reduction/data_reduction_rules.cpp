@@ -29,17 +29,17 @@ void rr1(PaceGraph &graph) {
  * commit a < b in partial_order.
  *
  */
-//void rr2(PaceGraph &graph) {
-//    for (int a = 0; a < graph.size_free; a++) {
-//        for (int b = a + 1; b < graph.size_free; b++) {
-//            if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
-//                graph.crossing.set_a_lt_b(a, b);
-//            }
-//        }
-//    }
-//}
-
 void rr2(PaceGraph &graph) {
+    for (int a = 0; a < graph.size_free; a++) {
+        for (int b = a + 1; b < graph.size_free; b++) {
+            if (graph.neighbors_free[a] == graph.neighbors_free[b]) {
+                graph.crossing.set_a_lt_b(a, b);
+            }
+        }
+    }
+}
+
+/*void rr2(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             if (graph.neighbors_free[a].size() > 0 &&
@@ -57,19 +57,23 @@ void rr2(PaceGraph &graph) {
             }
         }
     }
-}
+}*/
 
 void rr3(PaceGraph &graph) {
     for (int a = 0; a < graph.size_free; a++) {
         for (int b = a + 1; b < graph.size_free; b++) {
             // RR1
-            if (graph.crossing.matrix[a][b] == 2 && graph.crossing.matrix[b][a] == 1) {
+            if (graph.crossing.matrix[a][b] == 2 &&
+                graph.crossing.matrix[b][a] == 1) {
                 // Check if we are in case 1 of Lemma 3
-                if (graph.neighbors_free[a].size() == 2 && graph.neighbors_free[b].size() == 2) {
+                if (graph.neighbors_free[a].size() == 2 &&
+                    graph.neighbors_free[b].size() == 2) {
                     graph.crossing.set_a_lt_b(a, b);
                 }
-            } else if (graph.crossing.matrix[a][b] == 1 && graph.crossing.matrix[b][a] == 2) {
-                if (graph.neighbors_free[a].size() == 2 && graph.neighbors_free[b].size() == 2) {
+            } else if (graph.crossing.matrix[a][b] == 1 &&
+                       graph.crossing.matrix[b][a] == 2) {
+                if (graph.neighbors_free[a].size() == 2 &&
+                    graph.neighbors_free[b].size() == 2) {
                     graph.crossing.set_a_lt_b(b, a);
                 }
             }
@@ -190,13 +194,10 @@ void apply_reduction_rules(PaceGraph &graph) {
 
     rr1(graph);
     rr2(graph);
-    rr3(graph);
+    // rr3(graph);
     rrlarge(graph);
     rrtransitive(graph);
-    while (rrlo1(graph)) {
-        rrlarge(graph);
-        rrtransitive(graph);
-    };
+    rrlo1(graph);
     // Uncomment this to re-enable rrlo2.
     // while (rrlo2(graph)) {
     //     rrtransitive(graph);
