@@ -34,7 +34,7 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
 
     long cost1 = o1.count_crossings(graph);
     long cost2 = o2.count_crossings(graph);
-
+    std::cerr << "Cost1: " << cost1 << " Cost2: " << cost2 << std::endl;
     Order bestOrder = cost1 < cost2 ? o1 : o2;
 
     bool foundImprovement = true;
@@ -64,9 +64,12 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
             bool foundBestPos = true;
             long currentFallback = 0;
 
+            double percentage_left = time_percentage_past();
+            bool isInEndPhase = percentage_left >= 0.9;
             for (int pos = posOfV - 1;
                  pos >= std::max(0, posOfV - largestMoveDistance); pos--) {
-                if (!has_time_left()) {
+                if ((isInEndPhase && !has_time_left()) ||
+                    (!isInEndPhase && pos % 100 == 0 && !has_time_left())) {
                     foundBestPos = false;
                     break;
                 }
@@ -106,7 +109,9 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
                  pos < std::min(graph.size_free, posOfV + largestMoveDistance);
                  pos++) {
 
-                if (!has_time_left()) {
+                if ((isInEndPhase && percentage_left >= 0.9 &&
+                     !has_time_left()) ||
+                    (!isInEndPhase && pos % 100 == 0 && !has_time_left())) {
                     foundBestPos = false;
                     break;
                 }
