@@ -69,3 +69,12 @@ file to sumbit to Optil.io:
 # Set the build type to Release (needed for optil.io)
 #set(CMAKE_BUILD_TYPE Release)
 ```
+
+### Rebuiding the project
+
+Ensure you have removed the `build` directory before rebuilding the project. For example, when activate/deactivate the
+ilp solver.
+
+```sh
+rm -rf build
+``` 
