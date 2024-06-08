@@ -19,7 +19,7 @@ class HeuristicSolver : public SolutionSolver {
   public:
     explicit HeuristicSolver(std::chrono::milliseconds limit =
                                  std::chrono::milliseconds(1000 * 60 * 5 -
-                                                           1000))
+                                                           1000 * 15))
         : SolutionSolver(limit) {}
 };
 
