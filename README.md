@@ -52,6 +52,14 @@ make
 ./feedback_edge_set_solver < path/to/your/gr.file
 ```
 
+When everything is set up correctly, you should see somewhere the following output:
+
+```sh
+...
+-- Check ILP Solver: ON
+...
+```
+
 If your can not install Google OR-Tools on your system, you can use the following command to build the exact solver and
 parameterized solver (but it is much slower). Make sure to remove the `build` directory before rebuilding the project
 with ortools.
