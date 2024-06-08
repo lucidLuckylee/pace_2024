@@ -112,8 +112,6 @@ if (ENABLE_ILP_SOLVER)
 
     find_package(ortools CONFIG REQUIRED)
     add_compile_definitions(USE_ILP_TO_SOLVE_FES)
-    target_link_libraries(feedback_edge_set_solver fes_ilp_solver_lib)
-    target_link_libraries(feedback_edge_set_solver ortools::ortools)
 
     add_library(
             fes_ilp_solver_lib
@@ -124,6 +122,9 @@ if (ENABLE_ILP_SOLVER)
     add_compile_definitions(USE_ILP_TO_SOLVE_FES)
     target_link_libraries(feedback_edge_set_solver fes_ilp_solver_lib)
     target_link_libraries(feedback_edge_set_solver ortools::ortools)
+
+    target_link_libraries(feedback_edge_set_heuristic fes_ilp_solver_lib)
+    target_link_libraries(feedback_edge_set_heuristic ortools::ortools)
 endif ()
 
 
