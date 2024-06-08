@@ -27,7 +27,7 @@ any value you want.
 
 ```sh
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ./heuristic_solver < path/to/your/gr.file
 ```
@@ -43,7 +43,7 @@ We have tested the code with Google OR-Tools version 9.10.
 
 ```sh
 cd build
-cmake -DENABLE_ILP_SOLVER=ON .. 
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_ILP_SOLVER=ON .. 
 make
 ./feedback_edge_set_solver < path/to/your/gr.file
 ```
@@ -53,7 +53,7 @@ parameterized solver (but it is much slower).
 
 ```sh
 cd build
-cmake .. 
+cmake -DCMAKE_BUILD_TYPE=Release  .. 
 make
 ./feedback_edge_set_solver < path/to/your/gr.file
 ```
