@@ -33,7 +33,7 @@ def gurobi_solver(lenA, lenB, crossing_matrix):
     sorted_tuples = sorted(enumerate(number_of_elements_smaller), key=lambda x: x[1])
 
     sorted_indices = [index for index, element in sorted_tuples]
-
+    m.close()
     return [i + 1 + lenA for i in sorted_indices]
 
 
