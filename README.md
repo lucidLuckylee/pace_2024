@@ -36,9 +36,11 @@ make
 
 #### Requirements
 
-- Google OR-Tools
+- Google OR-Tools (Highly recommended)
 
-Ensure you have installed Google OR-Tools on your system.
+Ensure you have installed Google OR-Tools on your system. Take a look at
+the [official binaries](https://developers.google.com/optimization/install/cpp/binary_linux)
+or [build and install it from source](https://developers.google.com/optimization/install/cpp/source_linux).
 We have tested the code with Google OR-Tools version 9.10.
 
 ```sh
