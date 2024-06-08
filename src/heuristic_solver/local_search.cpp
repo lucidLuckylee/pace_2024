@@ -127,7 +127,8 @@ long sifting(PaceGraph &graph, Order &order, LocalSearchParameter &parameter,
     }
 
     long improvement = 0;
-    for (int v = 0; v < graph.size_free; v++) {
+    const auto size = graph.size_free;
+    for (int v = 0; v < size; v++) {
         improvement += sifting_node(graph, order, parameter, position_array[v]);
     }
     return improvement;
@@ -140,7 +141,8 @@ long local_search(PaceGraph &graph, Order &order,
 
     std::vector<int> position_array;
     position_array.reserve(graph.size_free);
-    for (int i = 0; i < graph.size_free; ++i) {
+    const auto size = graph.size_free;
+    for (int i = 0; i < size; ++i) {
         position_array.push_back(i);
     }
 

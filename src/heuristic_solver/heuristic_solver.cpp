@@ -6,7 +6,8 @@ Order largeGraphHeuristic(PaceGraph &graph,
                           const std::function<bool()> &has_time_left,
                           const std::function<double()> &time_percentage_past) {
     std::vector<int> positionOrder(graph.size_free);
-    for (int i = 0; i < graph.size_free; ++i) {
+    const auto size = graph.size_free;
+    for (int i = 0; i < size; ++i) {
         positionOrder[i] = i;
     }
 
@@ -51,7 +52,8 @@ Order largeGraphHeuristic(PaceGraph &graph,
 
         std::shuffle(positionOrder.begin(), positionOrder.end(),
                      std::mt19937(std::random_device()()));
-        for (int i = 0; i < graph.size_free; i++) {
+        const auto size = graph.size_free;
+        for (int i = 0; i < size; i++) {
 
             if (!has_time_left()) {
                 break;

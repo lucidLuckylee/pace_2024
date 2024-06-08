@@ -11,7 +11,9 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
 
     std::vector<double> nodeOffset = std::vector<double>(graph.size_free);
     std::vector<std::tuple<int, double>> average_position(graph.size_free);
-    for (int i = 0; i < graph.size_free; ++i) {
+    const auto size = graph.size_free;
+
+    for (int i = 0; i < size; ++i) {
         if (meanPositionParameter.useJittering && iteration != 0) {
             nodeOffset[i] = dis(gen);
         } else {
@@ -23,10 +25,11 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
         iteration == 0 ? 1 : meanPositionParameter.jitterIterations;
     for (int _ = 0; _ < jitterIterations; ++_) {
         std::vector<double> newNodeOffset = std::vector<double>(nodeOffset);
-        for (int j = 0; j < graph.size_free; ++j) {
+        for (int j = 0; j < size; ++j) {
             newNodeOffset[j] += dis(gen) / 10;
         }
-        for (int i = 0; i < graph.neighbors_free.size(); ++i) {
+
+        for (int i = 0; i < size; ++i) {
             auto neighbors_of_node = graph.neighbors_free[i];
 
             double avg = 0;
@@ -63,7 +66,7 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
                   });
 
         std::vector<int> orderVector(graph.size_free);
-        for (int i = 0; i < graph.size_free; ++i) {
+        for (int i = 0; i < size; ++i) {
             orderVector[i] = std::get<0>(average_position[i]);
         }
 

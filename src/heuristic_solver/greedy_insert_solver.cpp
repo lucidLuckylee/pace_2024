@@ -12,7 +12,8 @@ int findBestInsertPosition(PaceGraph &graph, std::vector<int> &current_order,
     long number_of_crossing_left = 0;
     long number_of_crossing_right = 0;
 
-    for (int i = 1; i <= current_order.size(); ++i) {
+    const auto size = current_order.size();
+    for (int i = 1; i <= size; ++i) {
 
         auto [left, right] = graph.calculatingCrossingNumber(
             current_order[i - 1], random_element);
@@ -37,7 +38,8 @@ Order GreedyInsertSolver::solve(PaceGraph &graph) {
 
     // initialize set with vertices not yet placed in the order
     std::unordered_set<int> vertices_not_inserted;
-    for (int i = 0; i < graph.size_free; ++i) {
+    const auto size = graph.size_free;
+    for (int i = 0; i < size; ++i) {
         vertices_not_inserted.insert(i);
     }
 
@@ -48,7 +50,7 @@ Order GreedyInsertSolver::solve(PaceGraph &graph) {
     // Generate a random index
 
     while (!vertices_not_inserted.empty()) {
-        //std::cout << vertices_not_inserted.size() << std::endl;
+        // std::cout << vertices_not_inserted.size() << std::endl;
         std::uniform_int_distribution<> dis(0,
                                             vertices_not_inserted.size() - 1);
 
