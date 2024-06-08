@@ -47,7 +47,7 @@ Order MeanPositionSolver::jittering(PaceGraph &graph, int iteration) {
                 break;
             case sum_along_crossing:
                 graph.init_crossing_matrix_if_necessary();
-                auto crossing_matrix_for_i = graph.crossing.matrix[i];
+                const auto &crossing_matrix_for_i = graph.crossing.matrix[i];
                 for (int j = 0; j < graph.size_free; ++j) {
                     avg += crossing_matrix_for_i[j];
                 }
