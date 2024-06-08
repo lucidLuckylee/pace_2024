@@ -1,4 +1,4 @@
-# PACE 2024 Student Submission
+# PACE 2024 - Arcee - Student Submission
 
 ## Requirements
 
@@ -53,7 +53,8 @@ make
 ```
 
 If your can not install Google OR-Tools on your system, you can use the following command to build the exact solver and
-parameterized solver (but it is much slower).
+parameterized solver (but it is much slower). Make sure to remove the `build` directory before rebuilding the project
+with ortools.
 
 ```sh
 mkdir build
@@ -72,3 +73,12 @@ file to sumbit to Optil.io:
 # Set the build type to Release (needed for optil.io)
 #set(CMAKE_BUILD_TYPE Release)
 ```
+
+### Rebuiding the project
+
+Ensure you have removed the `build` directory before rebuilding the project. For example, when activate/deactivate the
+ilp solver.
+
+```sh
+rm -rf build
+``` 
