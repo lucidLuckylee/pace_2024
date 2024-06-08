@@ -3,8 +3,8 @@
 //
 
 #include "crossing_matrix.hpp"
-#include "pace_graph.hpp"
 #include "order.hpp"
+#include "pace_graph.hpp"
 #include <algorithm>
 #include <iostream>
 
@@ -49,25 +49,19 @@ void CrossingMatrix::init_crossing_matrix(PaceGraph &graph) {
     for (int i = 0; i < graph.size_free; i++) {
         matrix[i] = new int[graph.size_free];
         matrix_diff[i] = new int[graph.size_free];
-
-        for (int j = 0; j < graph.size_free; j++) {
-            matrix[i][j] = 0;
-            matrix_diff[i][j] = 0;
-        }
     }
 
     for (int i = 0; i < graph.size_free; i++) {
+        matrix[i][i] = 0;
+        matrix_diff[i][i] = 0;
         for (int j = i + 1; j < graph.size_free; j++) {
             auto [a, b] = graph.calculatingCrossingNumber(i, j);
 
             matrix[i][j] = a;
             matrix[j][i] = b;
-        }
-    }
 
-    for (int i = 0; i < graph.size_free; ++i) {
-        for (int j = 0; j < graph.size_free; ++j) {
-            matrix_diff[i][j] = matrix[i][j] - matrix[j][i];
+            matrix_diff[i][j] = a - b;
+            matrix_diff[j][i] = -matrix_diff[i][j];
         }
     }
 
@@ -137,7 +131,9 @@ void CrossingMatrix::print_in_order(Order &order) {
 
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
-            std::cout << matrix[order.position_to_vertex[i]][order.position_to_vertex[j]] << ",";
+            std::cout << matrix[order.position_to_vertex[i]]
+                               [order.position_to_vertex[j]]
+                      << ",";
         }
         std::cout << std::endl;
     }
