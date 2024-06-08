@@ -53,7 +53,8 @@ make
 ```
 
 If your can not install Google OR-Tools on your system, you can use the following command to build the exact solver and
-parameterized solver (but it is much slower).
+parameterized solver (but it is much slower). Make sure to remove the `build` directory before rebuilding the project
+with ortools.
 
 ```sh
 mkdir build
