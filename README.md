@@ -26,6 +26,7 @@ any value you want.
 ### Build Heuristic Solver
 
 ```sh
+mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
@@ -44,6 +45,7 @@ or [build and install it from source](https://developers.google.com/optimization
 We have tested the code with Google OR-Tools version 9.10.
 
 ```sh
+mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_ILP_SOLVER=ON .. 
 make
@@ -54,6 +56,7 @@ If your can not install Google OR-Tools on your system, you can use the followin
 parameterized solver (but it is much slower).
 
 ```sh
+mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release  .. 
 make
