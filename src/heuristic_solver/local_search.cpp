@@ -144,16 +144,11 @@ long local_search(PaceGraph &graph, Order &order,
         position_array.push_back(i);
     }
 
-    bool improved = true;
-    while (improved && has_time_left()) {
+    while (has_time_left()) {
         long i = sifting(graph, order, parameter, position_array);
         improvement += i;
 
-        if (i == 0) {
-            improved = false;
-        }
-
-        if (!parameter.exhaustiveSifting) {
+        if (!parameter.exhaustiveSifting || i == 0) {
             break;
         }
     }
