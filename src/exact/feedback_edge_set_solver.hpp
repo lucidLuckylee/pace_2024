@@ -77,6 +77,7 @@ class FeedbackEdgeInstance {
 
     bool containCircle(Circle &circle);
     void writeToFile(std::ostream &gr);
+
     void saveCurrentInstanceToDataset();
 };
 
@@ -93,6 +94,8 @@ class FeedbackEdgeSetSolver : public SolutionSolver {
 
     void solveFeedbackEdgeSet(FeedbackEdgeInstance &instance, int k,
                               int cycleSearchStart);
+
+    Order tryToSolveByMatchingUBAndLB(PaceGraph &graph);
 
     std::vector<std::shared_ptr<Edge>> approximateFeedbackEdgeSetFromSolution(
         DirectedGraph &graph,

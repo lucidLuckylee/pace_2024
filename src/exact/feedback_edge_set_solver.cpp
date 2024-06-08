@@ -2,6 +2,7 @@
 #include "feedback_edge_set_solver.hpp"
 #include "../heuristic_solver/genetic_algorithm.hpp"
 #include "../heuristic_solver/greedy_insert_solver.hpp"
+#include "../heuristic_solver/heuristic_solver.hpp"
 #include "../lb/simple_lb.hpp"
 #include "feedback_edge_set_heuristic.hpp"
 
@@ -17,9 +18,29 @@ void Circle::permuteEdges() {
     }
 }
 
+Order FeedbackEdgeSetSolver::tryToSolveByMatchingUBAndLB(PaceGraph &graph) {
+    SimpleLBParameter parameter;
+    auto lb = simpleLB(graph, parameter);
+
+    Order order = largeGraphHeuristic(
+        graph, [&]() { return this->time_percentage_past() < 0.8; },
+        [&]() { return this->time_percentage_past(); });
+    
+    long crossings = order.count_crossings(graph);
+    if (crossings == lb) {
+        return order;
+    } else {
+        exit(-1);
+    }
+}
+
 Order FeedbackEdgeSetSolver::run(PaceGraph &graph) {
     branches = 0;
     graph.init_crossing_matrix_if_necessary();
+
+    if (!graph.crossing.is_initialized()) {
+        return tryToSolveByMatchingUBAndLB(graph);
+    }
 
     WeightedDirectedGraph weightedDirectedGraph =
         WeightedDirectedGraph::from_matrix(graph.crossing);

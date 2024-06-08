@@ -2,7 +2,9 @@
 #include "genetic_algorithm.hpp"
 #include "mean_position_heuristic.hpp"
 
-Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
+Order largeGraphHeuristic(PaceGraph &graph,
+                          const std::function<bool()> &has_time_left,
+                          const std::function<double()> &time_percentage_past) {
     std::vector<int> positionOrder(graph.size_free);
     for (int i = 0; i < graph.size_free; ++i) {
         positionOrder[i] = i;
@@ -11,17 +13,16 @@ Order HeuristicSolver::largeGraphHeuristic(PaceGraph &graph) {
     MeanPositionParameter meanPositionParameter;
     meanPositionParameter.meanType = average;
     MeanPositionSolver meanPositionSolver1(
-        [this](int it) {
-            return it == 0 && this->time_percentage_past() < 0.2;
+        [time_percentage_past](int it) {
+            return it == 0 && time_percentage_past() < 0.2;
         },
         meanPositionParameter);
 
     Order o1 = meanPositionSolver1.solve(graph);
     meanPositionParameter.meanType = median;
     MeanPositionSolver meanPositionSolver2(
-        [this](int it) {
-            return it == 0 && this->has_time_left() &&
-                   this->time_percentage_past() < 0.5;
+        [time_percentage_past](int it) {
+            return it == 0 && time_percentage_past() < 0.5;
         },
         meanPositionParameter);
 
@@ -156,5 +157,7 @@ Order HeuristicSolver::run(PaceGraph &graph) {
         return geneticHeuristic.solve(graph);
     }
 
-    return largeGraphHeuristic(graph);
+    return largeGraphHeuristic(
+        graph, [this]() { return this->has_time_left(); },
+        [this]() { return this->time_percentage_past(); });
 }

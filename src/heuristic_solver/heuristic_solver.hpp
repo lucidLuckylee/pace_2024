@@ -7,9 +7,11 @@
 #include "../pace_graph/pace_graph.hpp"
 #include "../pace_graph/solver.hpp"
 
+Order largeGraphHeuristic(PaceGraph &graph,
+                          const std::function<bool()> &has_time_left,
+                          const std::function<double()> &time_percentage_past);
+
 class HeuristicSolver : public SolutionSolver {
-  private:
-    Order largeGraphHeuristic(PaceGraph &graph);
 
   protected:
     Order run(PaceGraph &graph) override;
