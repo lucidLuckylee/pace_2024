@@ -1,5 +1,22 @@
 # PACE 2024 - Arcee - Student Submission
 
+This is our submission to the [Pace Challenge 2024](https://pacechallenge.org/2024/).
+
+> This year’s challenge is about the one-sided crossing minimization problem (OCM). This problem involves arranging the
+> nodes of a bipartite graph on two layers (typically horizontal), with one of the layers fixed, aiming to minimize the
+> number of edge crossings. OCM is one of the basic building block used for drawing hierarchical graphs. It is NP-hard,
+> even for trees, but admits good heuristics, can be constant-factor approximated and solved in FPT time. For an
+> extended
+> overview, see Chapter 13.5 of the Handbook of Graph Drawing.
+[[Pace](https://pacechallenge.org/2024/)]
+
+## Contributors
+
+- Kimon Boehmer (kimon.bohmer@universite-paris-saclay.fr)
+- Lukas Lee George (l.george@tu-berlin.de)
+- Fanny Hauser (f.hauser@tu-berlin.de)
+- Jesse Palarus (j.palarus@tu-berlin.de)
+
 ## Requirements
 
 - CMake 3.12 or higher
@@ -82,7 +99,7 @@ file to sumbit to Optil.io:
 #set(CMAKE_BUILD_TYPE Release)
 ```
 
-### Rebuiding the project
+### Rebuilding the project
 
 Ensure you have removed the `build` directory before rebuilding the project. For example, when activate/deactivate the
 ilp solver.
