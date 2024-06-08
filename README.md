@@ -1,5 +1,10 @@
 # PACE 2024 Student Submission
 
+## Requirements
+
+- CMake 3.12 or higher
+- a C++17 compiler (we used gcc/g++ 13.3.0)
+
 ## Set Timelimit for the heuristic solver
 
 Maybe it is useful to set a timelimit for the heuristic solver. You can do by editing the following line in
@@ -51,4 +56,14 @@ cd build
 cmake .. 
 make
 ./feedback_edge_set_solver < path/to/your/gr.file
+```
+
+### Submitting to Optil.io
+
+Since Optil.io does not seems to build in Release mode, you can uncomment the following line in the `CMakeLists.txt`
+file to sumbit to Optil.io:
+
+```cmake
+# Set the build type to Release (needed for optil.io)
+#set(CMAKE_BUILD_TYPE Release)
 ```
