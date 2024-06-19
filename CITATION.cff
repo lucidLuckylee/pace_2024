@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Boehmer
+    given-names: Kimon
+  - family-names: George
+    given-names: Lukas Lee
+  - family-names: Hause
+    given-names: Fanny
+  - family-names: Palarus
+    given-names: Jesse
+title: "Arcee"
+version: 1.0.0
+date-released: 2024-06-19
+url: https://github.com/lucidLuckylee/pace_2024
+doi: 10.5281/zenodo.12171404
